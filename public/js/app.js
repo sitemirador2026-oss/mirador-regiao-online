@@ -1,7 +1,7 @@
-// Dados de exemplo (serão salvos no localStorage)
+// Dados de exemplo (serão salvos no Firebase)
 const sampleNews = [
     {
-        id: 1,
+        id: '1',
         title: "Prefeitura anuncia obras de infraestrutura em Mirador",
         excerpt: "Novas obras prometem melhorar a qualidade de vida dos moradores da cidade.",
         category: "mirador",
@@ -12,7 +12,7 @@ const sampleNews = [
         featured: true
     },
     {
-        id: 2,
+        id: '2',
         title: "Região registra crescimento econômico no último trimestre",
         excerpt: "Dados mostram aumento de 15% na atividade econômica regional.",
         category: "regiao",
@@ -23,7 +23,7 @@ const sampleNews = [
         featured: true
     },
     {
-        id: 3,
+        id: '3',
         title: "Seleção Brasileira se prepara para próximos jogos",
         excerpt: "Técnico convoca novos jogadores para amistosos internacionais.",
         category: "brasil",
@@ -34,7 +34,7 @@ const sampleNews = [
         featured: false
     },
     {
-        id: 4,
+        id: '4',
         title: "Polícia prende suspeitos de assalto na região",
         excerpt: "Operação policial resulta na prisão de três pessoas.",
         category: "policia",
@@ -45,7 +45,7 @@ const sampleNews = [
         featured: false
     },
     {
-        id: 5,
+        id: '5',
         title: "Time local conquista campeonato regional",
         excerpt: "Vitória histórica marca temporada do clube.",
         category: "esportes",
@@ -56,7 +56,7 @@ const sampleNews = [
         featured: false
     },
     {
-        id: 6,
+        id: '6',
         title: "Câmara aprova novo projeto de lei municipal",
         excerpt: "Projeto visa melhorar serviços públicos na cidade.",
         category: "politica",
@@ -68,17 +68,36 @@ const sampleNews = [
     }
 ];
 
-// Inicializar localStorage com dados de exemplo
-function initializeData() {
-    if (!localStorage.getItem('news')) {
-        localStorage.setItem('news', JSON.stringify(sampleNews));
+// Inicializar dados de exemplo no Firebase (apenas se não existir)
+async function initializeData() {
+    try {
+        const snapshot = await db.collection('news').limit(1).get();
+
+        // Se não houver notícias, adicionar dados de exemplo
+        if (snapshot.empty) {
+            console.log('Adicionando dados de exemplo ao Firebase...');
+            const batch = db.batch();
+
+            sampleNews.forEach(news => {
+                const newsRef = db.collection('news').doc(news.id);
+                batch.set(newsRef, {
+                    ...news,
+                    views: 0,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+            });
+
+            await batch.commit();
+            console.log('Dados de exemplo adicionados!');
+        }
+    } catch (error) {
+        console.error('Erro ao inicializar dados:', error);
     }
 }
 
-// Carregar notícias do localStorage
-function loadNews() {
-    const newsData = localStorage.getItem('news');
-    return newsData ? JSON.parse(newsData) : [];
+// Carregar notícias do Firebase
+async function loadNews() {
+    return await loadNewsFromFirebase();
 }
 
 // Formatar data
@@ -94,7 +113,7 @@ function formatDate(dateString) {
 // Criar card de notícia
 function createNewsCard(news) {
     return `
-        <article class="news-card" onclick="viewNews(${news.id})">
+        <article class="news-card" onclick="viewNews('${news.id}')">
             <img src="${news.image}" alt="${news.title}" class="news-card-image">
             <div class="news-card-content">
                 <span class="news-card-category">${news.categoryName}</span>
@@ -110,8 +129,8 @@ function createNewsCard(news) {
 }
 
 // Renderizar notícias em destaque
-function renderFeaturedNews() {
-    const news = loadNews();
+async function renderFeaturedNews() {
+    const news = await loadNews();
     const featured = news.filter(n => n.featured);
     const container = document.getElementById('featuredNews');
 
@@ -124,8 +143,8 @@ function renderFeaturedNews() {
 }
 
 // Renderizar últimas notícias
-function renderLatestNews() {
-    const news = loadNews();
+async function renderLatestNews() {
+    const news = await loadNews();
     const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
     const container = document.getElementById('latestNews');
 
@@ -138,8 +157,8 @@ function renderLatestNews() {
 }
 
 // Filtrar por categoria
-function filterByCategory(category) {
-    const news = loadNews();
+async function filterByCategory(category) {
+    const news = await loadNews();
     const filtered = news.filter(n => n.category === category);
     const container = document.getElementById('latestNews');
 
@@ -162,8 +181,8 @@ function viewNews(id) {
 }
 
 // Busca de notícias
-function searchNews(query) {
-    const news = loadNews();
+async function searchNews(query) {
+    const news = await loadNews();
     const results = news.filter(n =>
         n.title.toLowerCase().includes(query.toLowerCase()) ||
         n.excerpt.toLowerCase().includes(query.toLowerCase())
@@ -196,13 +215,16 @@ function toggleMobileMenu() {
 }
 
 // Event Listeners
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
+    // Aplicar cores do Firebase
+    await applyFirebaseColors();
+
     // Inicializar dados
-    initializeData();
+    await initializeData();
 
     // Renderizar notícias
-    renderFeaturedNews();
-    renderLatestNews();
+    await renderFeaturedNews();
+    await renderLatestNews();
 
     // Botão de busca
     document.querySelector('.btn-search').addEventListener('click', toggleSearchModal);
