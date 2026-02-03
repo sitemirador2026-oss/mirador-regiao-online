@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Mirador Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+        }
+
+        /* Login Page */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 3rem 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo-placeholder {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+        }
+
+        .login-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-align: center;
+            color: #1e293b;
+        }
+
+        .login-subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .error {
+            color: #ef4444;
+            font-size: 0.875rem;
+            margin-top: 0.75rem;
+            display: none;
+            padding: 0.75rem;
+            background: #fee2e2;
+            border-radius: 8px;
+            border-left: 3px solid #ef4444;
+        }
+
+        .link-site {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #667eea;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .link-site:hover {
+            text-decoration: underline;
+        }
+
+        /* Admin Dashboard */
+        .admin-container {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .admin-layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: #1e293b;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+
+        .sidebar-logo-text {
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 1.5rem 0;
+        }
+
+        .nav-item {
+            padding: 0.875rem 1.5rem;
+            color: #cbd5e1;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(102, 126, 234, 0.15);
+            color: white;
+            border-left-color: #667eea;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+        }
+
+        .sidebar-footer {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .user-details {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-role {
+            font-size: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.75rem;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 260px;
+            padding: 2rem;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: #64748b;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.75rem;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue {
+            background: rgba(102, 126, 234, 0.1);
+            color: #667eea;
+        }
+
+        .stat-icon.green {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-icon.purple {
+            background: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        /* Content Section */
+        .content-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .btn-add {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        /* News List */
+        .news-list {
+            padding: 1rem;
+        }
+
+        .news-item {
+            padding: 1.25rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .news-item:last-child {
+            border-bottom: none;
+        }
+
+        .news-item:hover {
+            background: #f8fafc;
+        }
+
+        .news-info h3 {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+            font-weight: 600;
+        }
+
+        .news-meta {
+            font-size: 0.875rem;
+            color: #64748b;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .news-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-edit,
+        .btn-delete {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-edit {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .btn-edit:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-delete {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+            color: white;
+        }
+
+        .empty-state {
+            padding: 3rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        /* Color Controls */
+        .color-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .color-control label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .color-input-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .color-input-group input[type="color"] {
+            width: 60px;
+            height: 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .color-input-group input[type="text"] {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            background: #f8fafc;
+        }
+
+        .page-content {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Login -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-logo">
+                <div class="login-logo-placeholder">M</div>
+                <h1 class="login-title">Bem-vindo</h1>
+                <p class="login-subtitle">Faça login para acessar o painel</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="email" placeholder="seu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <div class="error" id="loginError">❌ Email ou senha incorretos</div>
+                <button type="submit" class="btn">Entrar no Painel</button>
+            </form>
+            <a href="../public/index.html" class="link-site">← Voltar para o site</a>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard -->
+    <div class="admin-container" id="adminContainer">
+        <div class="admin-layout">
+            <!-- Sidebar -->
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-logo">M</div>
+                    <div class="sidebar-logo-text">Mirador Online</div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                        </svg>
+                        Notícias
+                    </a>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                        </svg>
+                        Categorias
+                    </a>
+                    <a href="#" class="nav-item">
+                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Configurações
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="user-info">
+                        <div class="user-avatar">A</div>
+                        <div class="user-details">
+                            <div class="user-name">Administrador</div>
+                            <div class="user-role">Admin</div>
+                        </div>
+                    </div>
+                    <button class="btn-logout" onclick="logout()">Sair</button>
+                </div>
+            </aside>
+
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Page -->
+                <div id="dashboardPage" class="page-content">
+                    <div class="page-header">
+                        <h1 class="page-title">Dashboard</h1>
+                        <p class="page-subtitle">Visão geral do seu portal de notícias</p>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Total de Notícias</div>
+                                    <div class="stat-value" id="totalNews">0</div>
+                                </div>
+                                <div class="stat-icon blue">📰</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Em Destaque</div>
+                                    <div class="stat-value" id="featuredNews">0</div>
+                                </div>
+                                <div class="stat-icon green">⭐</div>
+                            </div>
+                        </div>
+
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-label">Categorias</div>
+                                    <div class="stat-value">6</div>
+                                </div>
+                                <div class="stat-icon purple">🏷️</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- News List -->
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Notícias Recentes</h2>
+                            <button class="btn-add" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 4v16m8-8H4" />
+                                </svg>
+                                Nova Notícia
+                            </button>
+                        </div>
+                        <div class="news-list" id="newsList">
+                            <!-- Notícias serão carregadas aqui -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settingsPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <h1 class="page-title">Configurações</h1>
+                        <p class="page-subtitle">Personalize as cores do seu site</p>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">🎨 Personalização de Cores</h2>
+                            <div style="display: flex; gap: 0.75rem;">
+                                <button class="btn-edit" onclick="resetColors()">Restaurar Padrão</button>
+                                <button class="btn-add" onclick="saveColors()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                    Salvar Alterações
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="padding: 2rem;">
+                            <!-- Cores Principais -->
+                            <div style="margin-bottom: 2.5rem;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                    Cores Principais
+                                </h3>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                    <div class="color-control">
+                                        <label>Cor Primária (Botões, Links)</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorPrimary" value="#2563eb">
+                                            <input type="text" id="colorPrimaryText" value="#2563eb" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="color-control">
+                                        <label>Cor Secundária</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorSecondary" value="#64748b">
+                                            <input type="text" id="colorSecondaryText" value="#64748b" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="color-control">
+                                        <label>Cor de Destaque</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorAccent" value="#f8fafc">
+                                            <input type="text" id="colorAccentText" value="#f8fafc" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cores de Fundo -->
+                            <div style="margin-bottom: 2.5rem;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                    Cores de Fundo
+                                </h3>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                    <div class="color-control">
+                                        <label>Fundo Principal</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorBackground" value="#ffffff">
+                                            <input type="text" id="colorBackgroundText" value="#ffffff" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="color-control">
+                                        <label>Fundo Secundário (Cards)</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorMuted" value="#f1f5f9">
+                                            <input type="text" id="colorMutedText" value="#f1f5f9" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cores de Texto -->
+                            <div style="margin-bottom: 2.5rem;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                    Cores de Texto
+                                </h3>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                    <div class="color-control">
+                                        <label>Texto Principal</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorForeground" value="#0f172a">
+                                            <input type="text" id="colorForegroundText" value="#0f172a" readonly>
+                                        </div>
+                                    </div>
+
+                                    <div class="color-control">
+                                        <label>Texto Secundário</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorMutedForeground" value="#64748b">
+                                            <input type="text" id="colorMutedForegroundText" value="#64748b" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cores de Borda -->
+                            <div style="margin-bottom: 2.5rem;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                    Bordas e Divisores
+                                </h3>
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                    <div class="color-control">
+                                        <label>Cor das Bordas</label>
+                                        <div class="color-input-group">
+                                            <input type="color" id="colorBorder" value="#e2e8f0">
+                                            <input type="text" id="colorBorderText" value="#e2e8f0" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview -->
+                            <div
+                                style="margin-top: 3rem; padding: 2rem; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
+                                <h3
+                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                    👁️ Pré-visualização
+                                </h3>
+                                <div id="colorPreview"
+                                    style="padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
+                                    <h4 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600;">Exemplo de
+                                        Título</h4>
+                                    <p style="margin-bottom: 1rem; color: #64748b;">Este é um exemplo de texto
+                                        secundário para você visualizar as cores.</p>
+                                    <button
+                                        style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                        Botão de Exemplo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div
+                                style="margin-top: 2rem; padding: 1.25rem; background: #dbeafe; border-radius: 8px; border-left: 4px solid #2563eb;">
+                                <p style="color: #1e40af; font-size: 0.875rem; line-height: 1.6;">
+                                    <strong>💡 Dica:</strong> As cores serão aplicadas automaticamente ao site público.
+                                    Clique em "Salvar Alterações" para confirmar as mudanças.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Credenciais
+        const ADMIN_EMAIL = 'sitemirador2026@gmail.com';
+        const ADMIN_PASSWORD = 'Casa@21@21.';
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+                localStorage.setItem('adminLoggedIn', 'true');
+                showAdmin();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        // Logout
+        function logout() {
+            if (confirm('Deseja realmente sair?')) {
+                localStorage.removeItem('adminLoggedIn');
+                location.reload();
+            }
+        }
+
+        // Mostrar admin
+        function showAdmin() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('adminContainer').style.display = 'block';
+            loadDashboard();
+        }
+
+        // Carregar dashboard
+        function loadDashboard() {
+            const newsData = localStorage.getItem('news');
+            const news = newsData ? JSON.parse(newsData) : [];
+
+            // Estatísticas
+            document.getElementById('totalNews').textContent = news.length;
+            document.getElementById('featuredNews').textContent = news.filter(n => n.featured).length;
+
+            // Lista de notícias
+            const newsList = document.getElementById('newsList');
+
+            if (news.length === 0) {
+                newsList.innerHTML = '<div class="empty-state">📭 Nenhuma notícia cadastrada</div>';
+                return;
+            }
+
+            newsList.innerHTML = news.map(n => `
+                <div class="news-item">
+                    <div class="news-info">
+                        <h3>${n.title}</h3>
+                        <div class="news-meta">
+                            <span>📁 ${n.categoryName}</span>
+                            <span>📅 ${new Date(n.date).toLocaleDateString('pt-BR')}</span>
+                            <span>✍️ ${n.author}</span>
+                        </div>
+                    </div>
+                    <div class="news-actions">
+                        <button class="btn-edit" onclick="alert('Funcionalidade em desenvolvimento!')">Editar</button>
+                        <button class="btn-delete" onclick="deleteNews(${n.id})">Excluir</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Deletar notícia
+        function deleteNews(id) {
+            if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;
+
+            const newsData = localStorage.getItem('news');
+            let news = newsData ? JSON.parse(newsData) : [];
+            news = news.filter(n => n.id !== id);
+            localStorage.setItem('news', JSON.stringify(news));
+            loadDashboard();
+        }
+
+        // Navegação entre páginas
+        function showPage(pageName) {
+            // Esconder todas as páginas
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+
+            // Remover active de todos os nav-items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Mostrar página selecionada
+            const pageMap = {
+                'dashboard': 'dashboardPage',
+                'settings': 'settingsPage'
+            };
+
+            const pageId = pageMap[pageName];
+            if (pageId) {
+                document.getElementById(pageId).style.display = 'block';
+            }
+
+            // Adicionar active no nav-item correspondente
+            event.target.closest('.nav-item').classList.add('active');
+
+            // Carregar dados se necessário
+            if (pageName === 'dashboard') {
+                loadDashboard();
+            } else if (pageName === 'settings') {
+                loadColors();
+            }
+        }
+
+        // Configurar navegação
+        document.addEventListener('DOMContentLoaded', function () {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach((item, index) => {
+                item.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const pages = ['dashboard', 'news', 'categories', 'settings'];
+                    showPage(pages[index]);
+                });
+            });
+
+            // Sincronizar color pickers com text inputs
+            const colorInputs = [
+                'Primary', 'Secondary', 'Accent', 'Background',
+                'Muted', 'Foreground', 'MutedForeground', 'Border'
+            ];
+
+            colorInputs.forEach(name => {
+                const colorInput = document.getElementById(`color${name}`);
+                const textInput = document.getElementById(`color${name}Text`);
+
+                if (colorInput && textInput) {
+                    colorInput.addEventListener('input', function () {
+                        textInput.value = this.value.toUpperCase();
+                        updatePreview();
+                    });
+                }
+            });
+        });
+
+        // Carregar cores salvas
+        function loadColors() {
+            const savedColors = localStorage.getItem('siteColors');
+            if (savedColors) {
+                const colors = JSON.parse(savedColors);
+                Object.keys(colors).forEach(key => {
+                    const colorInput = document.getElementById(`color${key}`);
+                    const textInput = document.getElementById(`color${key}Text`);
+                    if (colorInput && textInput) {
+                        colorInput.value = colors[key];
+                        textInput.value = colors[key].toUpperCase();
+                    }
+                });
+                updatePreview();
+            }
+        }
+
+        // Atualizar preview
+        function updatePreview() {
+            const preview = document.getElementById('colorPreview');
+            const primary = document.getElementById('colorPrimary').value;
+            const background = document.getElementById('colorBackground').value;
+            const foreground = document.getElementById('colorForeground').value;
+            const mutedForeground = document.getElementById('colorMutedForeground').value;
+            const border = document.getElementById('colorBorder').value;
+
+            if (preview) {
+                preview.style.background = background;
+                preview.style.borderColor = border;
+
+                const title = preview.querySelector('h4');
+                if (title) title.style.color = foreground;
+
+                const text = preview.querySelector('p');
+                if (text) text.style.color = mutedForeground;
+
+                const button = preview.querySelector('button');
+                if (button) button.style.background = primary;
+            }
+        }
+
+        // Salvar cores
+        function saveColors() {
+            const colors = {
+                Primary: document.getElementById('colorPrimary').value,
+                Secondary: document.getElementById('colorSecondary').value,
+                Accent: document.getElementById('colorAccent').value,
+                Background: document.getElementById('colorBackground').value,
+                Muted: document.getElementById('colorMuted').value,
+                Foreground: document.getElementById('colorForeground').value,
+                MutedForeground: document.getElementById('colorMutedForeground').value,
+                Border: document.getElementById('colorBorder').value
+            };
+
+            localStorage.setItem('siteColors', JSON.stringify(colors));
+
+            // Aplicar cores no CSS do site público
+            applyColorsToPublicSite(colors);
+
+            alert('✅ Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.');
+        }
+
+        // Aplicar cores ao site público
+        function applyColorsToPublicSite(colors) {
+            // Salvar no localStorage para o site público usar
+            localStorage.setItem('publicSiteColors', JSON.stringify(colors));
+        }
+
+        // Restaurar cores padrão
+        function resetColors() {
+            if (!confirm('Deseja restaurar as cores padrão?')) return;
+
+            const defaultColors = {
+                Primary: '#2563eb',
+                Secondary: '#64748b',
+                Accent: '#f8fafc',
+                Background: '#ffffff',
+                Muted: '#f1f5f9',
+                Foreground: '#0f172a',
+                MutedForeground: '#64748b',
+                Border: '#e2e8f0'
+            };
+
+            Object.keys(defaultColors).forEach(key => {
+                const colorInput = document.getElementById(`color${key}`);
+                const textInput = document.getElementById(`color${key}Text`);
+                if (colorInput && textInput) {
+                    colorInput.value = defaultColors[key];
+                    textInput.value = defaultColors[key].toUpperCase();
+                }
+            });
+
+            updatePreview();
+            localStorage.removeItem('siteColors');
+            localStorage.removeItem('publicSiteColors');
+
+            alert('✅ Cores restauradas para o padrão!');
+        }
+
+        // Verificar se está logado
+        if (localStorage.getItem('adminLoggedIn') === 'true') {
+            showAdmin();
+        }
+    </script>
+</body>
+
+</html>
