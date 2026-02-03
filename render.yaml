@@ -1,0 +1,25 @@
+# Configuração automática para Render
+# Este arquivo configura 2 Static Sites: site público e painel admin
+
+services:
+  # Site Público
+  - type: web
+    name: mirador-web
+    env: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishPath: ./public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Painel Admin
+  - type: web
+    name: mirador-admin
+    env: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishPath: ./admin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
