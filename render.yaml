@@ -7,7 +7,7 @@ services:
     name: mirador-web
     env: static
     buildCommand: echo "Static site - no build needed"
-    staticPublishPath: ./public
+    staticPublishPath: public
     routes:
       - type: rewrite
         source: /*
@@ -18,7 +18,7 @@ services:
     name: mirador-admin
     env: static
     buildCommand: echo "Static site - no build needed"
-    staticPublishPath: ./admin
+    staticPublishPath: admin
     routes:
       - type: rewrite
         source: /*
