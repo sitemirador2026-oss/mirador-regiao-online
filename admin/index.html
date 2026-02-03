@@ -967,14 +967,17 @@
         }
 
         // Deletar notícia
-        function deleteNews(id) {
+        async function deleteNews(id) {
             if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;
 
-            const newsData = localStorage.getItem('news');
-            let news = newsData ? JSON.parse(newsData) : [];
-            news = news.filter(n => n.id !== id);
-            localStorage.setItem('news', JSON.stringify(news));
-            loadDashboard();
+            try {
+                await db.collection('news').doc(id).delete();
+                alert('✅ Notícia excluída com sucesso!');
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao excluir notícia:', error);
+                alert('❌ Erro ao excluir notícia!');
+            }
         }
 
         // Navegação entre páginas
