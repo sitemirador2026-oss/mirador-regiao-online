@@ -20,7 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <style>
-        /* CSS Version: 2025-02-04-008 - CUSTOM CARDS INPUT */
+        /* CSS Version: 2025-02-04-009 - FOOTER TEXT & CARD REDESIGN */
         :root {
             /* Cores Principais - Paleta sofisticada */
             --primary: #1e40af;
@@ -2350,6 +2350,13 @@
                                                     <div class="color-item-value" id="colorCardValue">#FFFFFF</div>
                                                 </div>
                                             </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorFooterText" value="#64748b">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Texto do Rodapé</div>
+                                                    <div class="color-item-value" id="colorFooterTextValue">#64748B</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -3125,6 +3132,7 @@
             const header = document.getElementById('colorHeader').value;
             const headerText = document.getElementById('colorHeaderText').value;
             const card = document.getElementById('colorCard').value;
+            const footerText = document.getElementById('colorFooterText').value;
 
             // Atualizar valores dos textos
             document.getElementById('colorPrimaryValue').textContent = primary.toUpperCase();
@@ -3132,6 +3140,7 @@
             document.getElementById('colorAccentValue').textContent = accent.toUpperCase();
             document.getElementById('colorBackgroundValue').textContent = background.toUpperCase();
             document.getElementById('colorCardValue').textContent = card.toUpperCase();
+            document.getElementById('colorFooterTextValue').textContent = footerText.toUpperCase();
             document.getElementById('colorMutedValue').textContent = muted.toUpperCase();
             document.getElementById('colorForegroundValue').textContent = foreground.toUpperCase();
             document.getElementById('colorMutedForegroundValue').textContent = mutedForeground.toUpperCase();
@@ -3177,7 +3186,8 @@
                 MutedForeground: document.getElementById('colorMutedForeground').value,
                 Header: document.getElementById('colorHeader').value,
                 HeaderText: document.getElementById('colorHeaderText').value,
-                Card: document.getElementById('colorCard').value
+                Card: document.getElementById('colorCard').value,
+                FooterText: document.getElementById('colorFooterText').value
             };
 
             console.log('[Admin] Salvando cores:', colors);
@@ -3609,7 +3619,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const colorInputs = [
                 'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'Card'
+                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'Card', 'FooterText'
             ];
 
             colorInputs.forEach(name => {
@@ -3919,7 +3929,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-008';
+            const cssVersion = '2025-02-04-009';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);

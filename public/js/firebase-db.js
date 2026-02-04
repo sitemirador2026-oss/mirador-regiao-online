@@ -1,4 +1,4 @@
-// Firebase Database Functions v2.4 - Custom Cards Per Row
+// Firebase Database Functions v2.5 - Footer Text Color
 
 console.log('[Firebase DB] v2.2 - Script carregado');
 
@@ -168,7 +168,8 @@ function applyColors(colors) {
         'MutedForeground': '--muted-foreground',
         'Header': '--header-bg',
         'HeaderText': '--header-text',
-        'Card': '--card-bg'
+        'Card': '--card-bg',
+        'FooterText': '--footer-text'
     };
     
     for (const [key, cssVar] of Object.entries(colorMap)) {

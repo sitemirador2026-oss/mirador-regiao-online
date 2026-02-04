@@ -1,6 +1,6 @@
 // App principal do site público
 
-console.log('[App] v2.1 - Script carregado');
+console.log('[App] v2.2 - Script carregado');
 
 // Dados de exemplo
 const sampleNews = [
@@ -71,15 +71,15 @@ function formatDate(dateString) {
 function createNewsCard(news) {
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
-            <img src="${news.image}" alt="${news.title}" class="news-card-image">
-            <div class="news-card-content">
+            <div class="news-card-image-wrapper">
+                <img src="${news.image}" alt="${news.title}" class="news-card-image">
+                <div class="news-card-gradient"></div>
                 <span class="news-card-category">${news.categoryName}</span>
+            </div>
+            <div class="news-card-content">
+                <div class="news-card-author">${news.author}</div>
                 <h3 class="news-card-title">${news.title}</h3>
-                <p class="news-card-excerpt">${news.excerpt}</p>
-                <div class="news-card-meta">
-                    <span>${formatDate(news.date)}</span>
-                    <span>Por ${news.author}</span>
-                </div>
+                <div class="news-card-meta">${formatDate(news.date)}</div>
             </div>
         </article>
     `;
@@ -173,7 +173,7 @@ async function filterByCategory(category) {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('[App] v2.1 - Inicializando...');
+    console.log('[App] v2.2 - Inicializando...');
     
     // Inicializar dados
     await initializeData();
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     
-    console.log('[App] v2.1 - Pronto!');
+    console.log('[App] v2.2 - Pronto!');
 });
 
-console.log('[App] v2.1 - Script finalizado');
+console.log('[App] v2.2 - Script finalizado');
