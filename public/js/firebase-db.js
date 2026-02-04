@@ -1,6 +1,6 @@
-// Firebase Database Functions v2.1
+// Firebase Database Functions v2.2
 
-console.log('[Firebase DB] v2.1 - Script carregado');
+console.log('[Firebase DB] v2.2 - Script carregado');
 
 // Flag para rastrear se as configurações foram carregadas
 let settingsLoaded = {
@@ -323,4 +323,4 @@ window.loadNewsFromFirebase = loadNewsFromFirebase;
 window.loadNewsById = loadNewsById;
 window.incrementViews = incrementViews;
 
-console.log('[Firebase DB] v2.1 - Pronto!');
+console.log('[Firebase DB] v2.2 - Pronto!');

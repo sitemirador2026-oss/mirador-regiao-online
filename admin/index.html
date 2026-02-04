@@ -2835,13 +2835,19 @@
                     const date = new Date(n.date).toLocaleDateString('pt-BR');
                     const statusClass = n.status === 'draft' ? 'status-draft' : 'status-published';
                     const statusText = n.status === 'draft' ? 'Rascunho' : 'Publicado';
+                    const imageHtml = n.image ? `<img src="${n.image}" style="width: 80px; height: 50px; object-fit: cover; border-radius: var(--radius); margin-right: 0.75rem;">` : '';
 
                     const html = `
                         <tr>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                             <td class="news-title-cell">
-                                <div class="news-title">${n.title}</div>
-                                <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
+                                <div style="display: flex; align-items: center;">
+                                    ${imageHtml}
+                                    <div>
+                                        <div class="news-title">${n.title}</div>
+                                        <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
+                                    </div>
+                                </div>
                             </td>
                             <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
                             <td>${date}</td>

@@ -115,7 +115,7 @@ async function renderNews() {
 // Ver detalhes da notícia
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
-    window.location.href = 'noticia.html';
+    window.location.href = 'noticia.html?id=' + id;
 }
 
 // Busca
