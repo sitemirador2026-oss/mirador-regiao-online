@@ -1,3 +1,4 @@
+/* CSS Version: 2025-02-04-001 */
 /* Reset e Base */
 * {
     margin: 0;
@@ -19,6 +20,8 @@
     --header-bg: rgba(255, 255, 255, 0.95);
     --header-text: #0f172a;
     --radius: 8px;
+    --card-bg: #ffffff;
+    --news-columns: 3;
     
     /* Espaçamentos */
     --container-max: 1200px;
@@ -305,11 +308,11 @@ body {
 .news-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
 }
 
 .news-card {
-    background: white;
+    background: var(--card-bg, white);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -324,13 +327,13 @@ body {
 
 .news-card-image {
     width: 100%;
-    height: 200px;
+    height: 140px;
     object-fit: cover;
     background: var(--muted);
 }
 
 .news-card-content {
-    padding: var(--spacing-md);
+    padding: var(--spacing-sm);
 }
 
 .news-card-category {
@@ -346,18 +349,22 @@ body {
 }
 
 .news-card-title {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: bold;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0.5rem;
     color: var(--foreground);
-    line-height: 1.4;
+    line-height: 1.3;
 }
 
 .news-card-excerpt {
     color: var(--muted-foreground);
-    font-size: 0.875rem;
-    margin-bottom: var(--spacing-sm);
-    line-height: 1.6;
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .news-card-meta {
@@ -457,7 +464,7 @@ body {
 /* Responsive */
 @media (min-width: 768px) {
     .news-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(var(--news-columns, 3), 1fr);
     }
     
     .footer-grid {
@@ -475,7 +482,7 @@ body {
     }
     
     .news-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(var(--news-columns, 3), 1fr);
     }
     
     .footer-grid {

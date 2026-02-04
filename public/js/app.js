@@ -1,6 +1,6 @@
 // App principal do site público
 
-console.log('[App] v2.0 - Script carregado');
+console.log('[App] v2.1 - Script carregado');
 
 // Dados de exemplo
 const sampleNews = [
@@ -173,7 +173,7 @@ async function filterByCategory(category) {
 
 // Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('[App] v2.0 - Inicializando...');
+    console.log('[App] v2.1 - Inicializando...');
     
     // Inicializar dados
     await initializeData();
@@ -216,7 +216,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     
-    console.log('[App] v2.0 - Pronto!');
+    console.log('[App] v2.1 - Pronto!');
 });
 
-console.log('[App] v2.0 - Script finalizado');
+console.log('[App] v2.1 - Script finalizado');

@@ -1,4 +1,4 @@
-// Firebase Database Functions v2.2
+// Firebase Database Functions v2.3 - Added Layout Support
 
 console.log('[Firebase DB] v2.2 - Script carregado');
 
@@ -167,7 +167,8 @@ function applyColors(colors) {
         'Muted': '--muted',
         'MutedForeground': '--muted-foreground',
         'Header': '--header-bg',
-        'HeaderText': '--header-text'
+        'HeaderText': '--header-text',
+        'Card': '--card-bg'
     };
     
     for (const [key, cssVar] of Object.entries(colorMap)) {
@@ -304,6 +305,54 @@ async function incrementViews(newsId) {
     }
 }
 
+// Aplicar layout
+function applyLayout(layout) {
+    if (!layout) return;
+    
+    const cardSize = layout.cardSize || 'medium';
+    const root = document.documentElement;
+    
+    // Definir número de colunas baseado no tamanho
+    let columns;
+    switch(cardSize) {
+        case 'compact':
+            columns = '4';
+            break;
+        case 'large':
+            columns = '2';
+            break;
+        case 'medium':
+        default:
+            columns = '3';
+    }
+    
+    root.style.setProperty('--news-columns', columns);
+    console.log('[Aplicar Layout] Tamanho:', cardSize, 'Colunas:', columns);
+}
+
+// Carregar layout do Firebase
+async function applyFirebaseLayout() {
+    try {
+        const doc = await db.collection('settings').doc('layout').get();
+        if (doc.exists) {
+            applyLayout(doc.data());
+            localStorage.setItem('publicSiteLayout', JSON.stringify(doc.data()));
+            return true;
+        }
+    } catch (error) {
+        console.error('[Firebase DB] Erro ao carregar layout:', error);
+        // Tentar localStorage
+        const saved = localStorage.getItem('publicSiteLayout');
+        if (saved) {
+            try {
+                applyLayout(JSON.parse(saved));
+                return true;
+            } catch (e) {}
+        }
+    }
+    return false;
+}
+
 // Inicialização
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[Firebase DB] DOM carregado, iniciando...');
@@ -311,9 +360,19 @@ document.addEventListener('DOMContentLoaded', function() {
     // Carregar imediatamente
     applyFirebaseColors();
     applyFirebaseBrand();
+    applyFirebaseLayout();
     
     // Iniciar listeners em tempo real
     startRealtimeListeners();
+    
+    // Listener para layout
+    db.collection('settings').doc('layout').onSnapshot((doc) => {
+        if (doc.exists) {
+            console.log('[Firebase DB] Layout atualizado:', doc.data());
+            applyLayout(doc.data());
+            localStorage.setItem('publicSiteLayout', JSON.stringify(doc.data()));
+        }
+    });
 });
 
 // Exportar funções
