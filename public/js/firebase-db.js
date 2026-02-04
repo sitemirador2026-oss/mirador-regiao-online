@@ -1,4 +1,4 @@
-// Firebase Database Functions v2.5 - Footer Text Color
+// Firebase Database Functions v2.8 - Card Tooltip
 
 console.log('[Firebase DB] v2.2 - Script carregado');
 
@@ -180,6 +180,37 @@ function applyColors(colors) {
     }
     
     console.log('[Aplicar Cores]', count, 'cores aplicadas');
+    
+    // Ajustar cor do texto do footer baseado na cor de fundo
+    adjustFooterTextColor(colors);
+}
+
+// Detectar luminosidade da cor e retornar branco ou preto
+function getContrastColor(hexColor) {
+    // Remover # se existir
+    const hex = hexColor.replace('#', '');
+    
+    // Converter para RGB
+    const r = parseInt(hex.substr(0, 2), 16);
+    const g = parseInt(hex.substr(2, 2), 16);
+    const b = parseInt(hex.substr(4, 2), 16);
+    
+    // Calcular luminosidade (fórmula YIQ)
+    const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    
+    // Retornar branco para fundos escuros, preto para fundos claros
+    return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
+// Ajustar cor do texto do footer automaticamente
+function adjustFooterTextColor(colors) {
+    const footerBg = colors.Muted || '#f1f5f9';
+    const contrastColor = getContrastColor(footerBg);
+    
+    const root = document.documentElement;
+    root.style.setProperty('--footer-text-auto', contrastColor);
+    
+    console.log('[Aplicar Cores] Cor do footer ajustada:', contrastColor, 'para fundo:', footerBg);
 }
 
 // Aplicar marca

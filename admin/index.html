@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>Admin - Mirador e Região Online</title>
+    <title>Admin - Mirador e RegiÃ£o Online</title>
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -20,7 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <style>
-        /* CSS Version: 2025-02-04-009 - FOOTER TEXT & CARD REDESIGN */
+        /* CSS Version: 2025-02-04-012 - CARD FIX */
         :root {
             /* Cores Principais - Paleta sofisticada */
             --primary: #1e40af;
@@ -61,13 +61,13 @@
             --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
             
-            /* Espaçamentos */
+            /* EspaÃ§amentos */
             --radius-sm: 6px;
             --radius: 8px;
             --radius-lg: 12px;
             --radius-xl: 16px;
             
-            /* Transições */
+            /* TransiÃ§Ãµes */
             --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
@@ -336,7 +336,7 @@
             color: var(--primary-light);
         }
 
-        /* Ícones pequenos e elegantes */
+        /* Ãcones pequenos e elegantes */
         .nav-icon {
             width: 18px;
             height: 18px;
@@ -1553,7 +1553,7 @@
                 <div class="login-logo-icon" id="loginLogoIcon">M</div>
                 <img id="loginLogoImg" class="login-logo-icon" src="" alt="" style="display: none; padding: 0; object-fit: contain;">
                 <h1 class="login-title" id="loginTitle">Bem-vindo de volta</h1>
-                <p class="login-subtitle" id="loginSubtitle">Faça login para acessar o painel administrativo</p>
+                <p class="login-subtitle" id="loginSubtitle">FaÃ§a login para acessar o painel administrativo</p>
             </div>
             <div class="login-error" id="loginError">Email ou senha incorretos</div>
             <form id="loginForm">
@@ -1563,11 +1563,11 @@
                 </div>
                 <div class="form-group">
                     <label for="password">Senha</label>
-                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    <input type="password" id="password" class="form-input" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" required>
                 </div>
                 <button type="submit" class="btn-login">Entrar no Painel</button>
             </form>
-            <a href="../public/index.html" class="link-site">← Voltar para o site</a>
+            <a href="../public/index.html" class="link-site">â† Voltar para o site</a>
         </div>
     </div>
 
@@ -1581,18 +1581,18 @@
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="sidebar-brand" id="sidebarBrand">
-                        <!-- Modo ícone (sem logo) -->
+                        <!-- Modo Ã­cone (sem logo) -->
                         <div id="sidebarIconMode">
                             <div class="brand-icon" id="sidebarIcon">M</div>
                             <div>
                                 <div class="brand-text" id="sidebarBrandText">Mirador Online</div>
-                                <div class="brand-tagline" id="sidebarTagline">Portal de Notícias</div>
+                                <div class="brand-tagline" id="sidebarTagline">Portal de NotÃ­cias</div>
                             </div>
                         </div>
                         <!-- Modo logo (com logo) -->
                         <div id="sidebarLogoMode" style="display: none; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
                             <img id="sidebarLogo" class="sidebar-brand-logo-full" src="" alt="">
-                            <div class="brand-tagline" id="sidebarLogoTagline">Portal de Notícias</div>
+                            <div class="brand-tagline" id="sidebarLogoTagline">Portal de NotÃ­cias</div>
                         </div>
                     </div>
                 </div>
@@ -1610,7 +1610,7 @@
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                             </svg>
-                            Notícias
+                            NotÃ­cias
                             <span class="nav-badge" id="newsCountBadge">0</span>
                         </a>
                         <a href="#" class="nav-item" onclick="showPage('categories', this); return false;">
@@ -1623,24 +1623,24 @@
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            Mídia
+                            MÃ­dia
                         </a>
                     </div>
 
                     <div class="nav-section">
-                        <div class="nav-section-title">Configurações</div>
+                        <div class="nav-section-title">ConfiguraÃ§Ãµes</div>
                         <a href="#" class="nav-item" onclick="showPage('settings', this); return false;">
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
-                            Configurações
+                            ConfiguraÃ§Ãµes
                         </a>
                         <a href="#" class="nav-item" onclick="showPage('users', this); return false;">
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
                             </svg>
-                            Usuários
+                            UsuÃ¡rios
                         </a>
                     </div>
                 </nav>
@@ -1676,7 +1676,7 @@
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
-                            <input type="text" placeholder="Buscar notícias, categorias...">
+                            <input type="text" placeholder="Buscar notÃ­cias, categorias...">
                         </div>
                     </div>
                     <div class="header-actions">
@@ -1698,8 +1698,8 @@
                 <div id="dashboardPage" class="page-content">
                     <div class="page-header">
                         <div>
-                            <h1 class="page-title">Visão Geral</h1>
-                            <p class="page-subtitle">Acompanhe o desempenho do seu conteúdo em tempo real</p>
+                            <h1 class="page-title">VisÃ£o Geral</h1>
+                            <p class="page-subtitle">Acompanhe o desempenho do seu conteÃºdo em tempo real</p>
                         </div>
                     </div>
 
@@ -1715,7 +1715,7 @@
                                 <span class="stat-trend up">+12%</span>
                             </div>
                             <div class="stat-value" id="totalNews">0</div>
-                            <div class="stat-label">Notícias Publicadas</div>
+                            <div class="stat-label">NotÃ­cias Publicadas</div>
                         </div>
 
                         <div class="stat-card success">
@@ -1729,7 +1729,7 @@
                                 <span class="stat-trend up">+24%</span>
                             </div>
                             <div class="stat-value" id="totalViews">0</div>
-                            <div class="stat-label">Total de Visualizações</div>
+                            <div class="stat-label">Total de VisualizaÃ§Ãµes</div>
                         </div>
 
                         <div class="stat-card warning" onclick="showPage('news', document.querySelectorAll('.nav-item')[1])" style="cursor: pointer;">
@@ -1759,25 +1759,25 @@
                         </div>
                     </div>
 
-                    <!-- Ações Rápidas do Dashboard -->
+                    <!-- AÃ§Ãµes RÃ¡pidas do Dashboard -->
                     <div class="content-grid" style="margin-top: 2rem;">
                         <div class="content-section">
                             <div class="section-header">
-                                <h2 class="section-title">Ações Rápidas</h2>
+                                <h2 class="section-title">AÃ§Ãµes RÃ¡pidas</h2>
                             </div>
                             <div style="padding: 1.5rem;">
                                 <button class="quick-btn" onclick="showCreateNewsPage()" style="width: 100%; margin-bottom: 0.75rem;">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
-                                    Escrever nova notícia
+                                    Escrever nova notÃ­cia
                                 </button>
                                 <button class="quick-btn" onclick="showPage('settings', document.querySelectorAll('.nav-item')[5])" style="width: 100%;">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
-                                    Personalizar aparência
+                                    Personalizar aparÃªncia
                                 </button>
                             </div>
                         </div>
@@ -1793,8 +1793,8 @@
                                         </svg>
                                     </div>
                                     <div class="activity-content">
-                                        <div class="activity-text">Notícia <strong>"Nova obra inaugura"</strong> publicada</div>
-                                        <div class="activity-time">Há 2 horas</div>
+                                        <div class="activity-text">NotÃ­cia <strong>"Nova obra inaugura"</strong> publicada</div>
+                                        <div class="activity-time">HÃ¡ 2 horas</div>
                                     </div>
                                 </div>
                             </div>
@@ -1802,24 +1802,24 @@
                     </div>
                 </div>
 
-                <!-- NEWS PAGE - Página exclusiva de Notícias -->
+                <!-- NEWS PAGE - PÃ¡gina exclusiva de NotÃ­cias -->
                 <div id="newsPage" class="page-content" style="display: none;">
                     <div class="page-header">
                         <div>
-                            <h1 class="page-title">Notícias</h1>
-                            <p class="page-subtitle">Gerencie todas as suas notícias</p>
+                            <h1 class="page-title">NotÃ­cias</h1>
+                            <p class="page-subtitle">Gerencie todas as suas notÃ­cias</p>
                         </div>
                         <button class="btn btn-primary" onclick="showCreateNewsPage()">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Nova Notícia
+                            Nova NotÃ­cia
                         </button>
                     </div>
 
                     <div class="content-section">
                         <div class="section-header">
-                            <h2 class="section-title">Todas as Notícias</h2>
+                            <h2 class="section-title">Todas as NotÃ­cias</h2>
                             <div class="section-actions">
                                 <button class="btn btn-secondary btn-sm">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1841,14 +1841,14 @@
                                 <thead>
                                     <tr>
                                         <th>Capa</th>
-                                        <th>Título</th>
+                                        <th>TÃ­tulo</th>
                                         <th>Categoria</th>
                                         <th>Data</th>
-                                        <th>Ações</th>
+                                        <th>AÃ§Ãµes</th>
                                     </tr>
                                 </thead>
                                 <tbody id="newsListPage">
-                                    <!-- Notícias serão inseridas aqui -->
+                                    <!-- NotÃ­cias serÃ£o inseridas aqui -->
                                 </tbody>
                             </table>
                         </div>
@@ -1876,42 +1876,42 @@
                                             <span style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%;"></span>
                                             <span style="font-weight: 500;">Mirador</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                                             <span style="width: 12px; height: 12px; background: var(--success); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Região</span>
+                                            <span style="font-weight: 500;">RegiÃ£o</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                                             <span style="width: 12px; height: 12px; background: var(--danger); border-radius: 50%;"></span>
                                             <span style="font-weight: 500;">Brasil</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                                             <span style="width: 12px; height: 12px; background: var(--warning); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Polícia</span>
+                                            <span style="font-weight: 500;">PolÃ­cia</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                                             <span style="width: 12px; height: 12px; background: var(--info); border-radius: 50%;"></span>
                                             <span style="font-weight: 500;">Esportes</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
                                         <div style="display: flex; align-items: center; gap: 0.75rem;">
                                             <span style="width: 12px; height: 12px; background: #8b5cf6; border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Política</span>
+                                            <span style="font-weight: 500;">PolÃ­tica</span>
                                         </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notÃ­cias</span>
                                     </div>
                                 </div>
                             </div>
@@ -1942,10 +1942,10 @@
                 <div id="mediaPage" class="page-content" style="display: none;">
                     <div class="page-header">
                         <div>
-                            <h1 class="page-title">Mídia</h1>
+                            <h1 class="page-title">MÃ­dia</h1>
                             <p class="page-subtitle">Gerencie imagens e arquivos</p>
                         </div>
-                        <button class="btn btn-primary" onclick="showModal('Em breve!', 'Upload de mídia em desenvolvimento.', 'info')">
+                        <button class="btn btn-primary" onclick="showModal('Em breve!', 'Upload de mÃ­dia em desenvolvimento.', 'info')">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
@@ -1958,7 +1958,7 @@
                             <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; color: var(--text-muted);">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Biblioteca de Mídia</h3>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Biblioteca de MÃ­dia</h3>
                             <p style="color: var(--text-muted);">Funcionalidade em desenvolvimento.</p>
                         </div>
                     </div>
@@ -1968,16 +1968,16 @@
                 <div id="settingsPage" class="page-content" style="display: none;">
                     <div class="page-header">
                         <div>
-                            <h1 class="page-title">Configurações</h1>
-                            <p class="page-subtitle">Personalize a aparência do seu site de notícias</p>
+                            <h1 class="page-title">ConfiguraÃ§Ãµes</h1>
+                            <p class="page-subtitle">Personalize a aparÃªncia do seu site de notÃ­cias</p>
                         </div>
                     </div>
 
                     <div class="content-section" style="max-width: 900px;">
                         <div class="section-header">
-                            <h2 class="section-title">🏷️ Identidade Visual</h2>
+                            <h2 class="section-title">ðŸ·ï¸ Identidade Visual</h2>
                             <div class="section-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="resetBrand()">Restaurar Padrão</button>
+                                <button class="btn btn-secondary btn-sm" onclick="resetBrand()">Restaurar PadrÃ£o</button>
                                 <button class="btn btn-primary btn-sm" onclick="saveBrand()">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -2003,7 +2003,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                             </svg>
                                             <div class="logo-upload-text">Clique ou arraste uma imagem aqui</div>
-                                            <div class="logo-upload-hint">PNG, JPG ou SVG (máx. 2MB)</div>
+                                            <div class="logo-upload-hint">PNG, JPG ou SVG (mÃ¡x. 2MB)</div>
                                         </div>
                                         <div id="uploadChangePlaceholder" class="logo-upload-change" style="display: none;">
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2035,7 +2035,7 @@
                             <!-- Brand Name Inputs -->
                             <div style="margin-bottom: 1.5rem;">
                                 <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Informações da Marca
+                                    InformaÃ§Ãµes da Marca
                                 </h3>
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
                                     <div class="brand-input-group">
@@ -2043,8 +2043,8 @@
                                         <input type="text" id="siteName" class="brand-input" placeholder="Mirador Online" value="Mirador Online">
                                     </div>
                                     <div class="brand-input-group">
-                                        <label for="siteTagline">Tagline / Subtítulo</label>
-                                        <input type="text" id="siteTagline" class="brand-input" placeholder="Portal de Notícias" value="Portal de Notícias">
+                                        <label for="siteTagline">Tagline / SubtÃ­tulo</label>
+                                        <input type="text" id="siteTagline" class="brand-input" placeholder="Portal de NotÃ­cias" value="Portal de NotÃ­cias">
                                     </div>
                                 </div>
                             </div>
@@ -2052,7 +2052,7 @@
                             <!-- Preview da Marca -->
                             <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border: 1px solid var(--border);">
                                 <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
-                                    👁️ Pré-visualização da Marca
+                                    ðŸ‘ï¸ PrÃ©-visualizaÃ§Ã£o da Marca
                                 </h3>
                                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                                     <!-- Preview Sidebar -->
@@ -2062,13 +2062,13 @@
                                             <div id="brandPreviewIcon" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: white;">M</div>
                                             <div>
                                                 <div id="brandPreviewName" style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 700; color: white; letter-spacing: -0.02em;">Mirador Online</div>
-                                                <div id="brandPreviewTagline" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">Portal de Notícias</div>
+                                                <div id="brandPreviewTagline" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">Portal de NotÃ­cias</div>
                                             </div>
                                         </div>
                                         <!-- Modo com logo -->
                                         <div id="brandPreviewLogoMode" style="display: none; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
                                             <img id="brandPreviewLogo" class="sidebar-brand-logo-full" src="" alt="" style="max-width: 180px; max-height: 55px; object-fit: contain;">
-                                            <div id="brandPreviewLogoTagline" style="font-size: 0.75rem; color: var(--text-muted);">Portal de Notícias</div>
+                                            <div id="brandPreviewLogoTagline" style="font-size: 0.75rem; color: var(--text-muted);">Portal de NotÃ­cias</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2077,7 +2077,7 @@
                             </div>
                     </div>
 
-                    <!-- PERSONALIZAÇÃO DE CORES -->
+                    <!-- PERSONALIZAÃ‡ÃƒO DE CORES -->
                     <style>
                         .color-settings-grid {
                             display: grid;
@@ -2239,14 +2239,14 @@
 
                     <div class="content-section" style="max-width: 1200px; margin-top: 1.5rem;">
                         <div class="section-header">
-                            <h2 class="section-title">🎨 Personalização de Cores</h2>
+                            <h2 class="section-title">ðŸŽ¨ PersonalizaÃ§Ã£o de Cores</h2>
                             <div class="section-actions">
-                                <button class="btn btn-secondary btn-sm" onclick="resetColors()">Restaurar Padrão</button>
+                                <button class="btn btn-secondary btn-sm" onclick="resetColors()">Restaurar PadrÃ£o</button>
                                 <button class="btn btn-primary btn-sm" onclick="saveColors()">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
-                                    Salvar Alterações
+                                    Salvar AlteraÃ§Ãµes
                                 </button>
                             </div>
                         </div>
@@ -2262,14 +2262,14 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorPrimary" value="#2563eb">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Primária</div>
+                                                    <div class="color-item-label">PrimÃ¡ria</div>
                                                     <div class="color-item-value" id="colorPrimaryValue">#2563EB</div>
                                                 </div>
                                             </div>
                                             <div class="color-item">
                                                 <input type="color" id="colorSecondary" value="#64748b">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Secundária</div>
+                                                    <div class="color-item-label">SecundÃ¡ria</div>
                                                     <div class="color-item-value" id="colorSecondaryValue">#64748B</div>
                                                 </div>
                                             </div>
@@ -2290,7 +2290,7 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorBackground" value="#ffffff">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Página</div>
+                                                    <div class="color-item-label">PÃ¡gina</div>
                                                     <div class="color-item-value" id="colorBackgroundValue">#FFFFFF</div>
                                                 </div>
                                             </div>
@@ -2304,14 +2304,14 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorHeader" value="#ffffff">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Cabeçalho</div>
+                                                    <div class="color-item-label">CabeÃ§alho</div>
                                                     <div class="color-item-value" id="colorHeaderValue">#FFFFFF</div>
                                                 </div>
                                             </div>
                                             <div class="color-item">
                                                 <input type="color" id="colorHeaderText" value="#0f172a">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Texto do Cabeçalho</div>
+                                                    <div class="color-item-label">Texto do CabeÃ§alho</div>
                                                     <div class="color-item-value" id="colorHeaderTextValue">#0F172A</div>
                                                 </div>
                                             </div>
@@ -2332,7 +2332,7 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorMutedForeground" value="#64748b">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Secundário</div>
+                                                    <div class="color-item-label">SecundÃ¡rio</div>
                                                     <div class="color-item-value" id="colorMutedForegroundValue">#64748B</div>
                                                 </div>
                                             </div>
@@ -2341,7 +2341,7 @@
 
                                     <!-- Cor dos Cards -->
                                     <div class="color-group">
-                                        <div class="color-group-title">Cards de Notícias</div>
+                                        <div class="color-group-title">Cards de NotÃ­cias</div>
                                         <div class="color-items">
                                             <div class="color-item">
                                                 <input type="color" id="colorCard" value="#ffffff">
@@ -2353,7 +2353,7 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorFooterText" value="#64748b">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Texto do Rodapé</div>
+                                                    <div class="color-item-label">Texto do RodapÃ©</div>
                                                     <div class="color-item-value" id="colorFooterTextValue">#64748B</div>
                                                 </div>
                                             </div>
@@ -2365,7 +2365,7 @@
                                 <div class="preview-card">
                                     <div class="preview-header">
                                         <div class="preview-title">
-                                            👁️ Preview ao vivo
+                                            ðŸ‘ï¸ Preview ao vivo
                                         </div>
                                     </div>
                                     <div class="preview-content">
@@ -2373,16 +2373,16 @@
                                             <div class="mockup-header" id="previewHeader">
                                                 <div class="mockup-logo" id="previewLogo">Mirador Online</div>
                                                 <div class="mockup-nav" id="previewNav">
-                                                    <span>Início</span>
-                                                    <span>Notícias</span>
+                                                    <span>InÃ­cio</span>
+                                                    <span>NotÃ­cias</span>
                                                     <span>Sobre</span>
                                                 </div>
                                             </div>
                                             <div class="mockup-body" id="previewBody">
                                                 <div class="mockup-section-title" id="previewTitle">Destaques</div>
                                                 <div class="mockup-card" id="previewCard">
-                                                    <div class="mockup-card-title" id="previewCardTitle">Título da Notícia</div>
-                                                    <div class="mockup-card-text" id="previewCardText">Este é um exemplo de como o texto ficará no site com as cores selecionadas.</div>
+                                                    <div class="mockup-card-title" id="previewCardTitle">TÃ­tulo da NotÃ­cia</div>
+                                                    <div class="mockup-card-text" id="previewCardText">Este Ã© um exemplo de como o texto ficarÃ¡ no site com as cores selecionadas.</div>
                                                     <div class="mockup-button" id="previewButton">Ler mais</div>
                                                 </div>
                                             </div>
@@ -2394,7 +2394,7 @@
                             </div>
                     </div>
 
-                    <!-- CONFIGURAÇÃO DE LAYOUT DOS CARDS -->
+                    <!-- CONFIGURAÃ‡ÃƒO DE LAYOUT DOS CARDS -->
                     <style>
                         .layout-input-group {
                             display: flex;
@@ -2446,7 +2446,7 @@
 
                     <div class="content-section" style="max-width: 600px; margin-top: 1.5rem;">
                         <div class="section-header">
-                            <h2 class="section-title">📐 Layout dos Cards</h2>
+                            <h2 class="section-title">ðŸ“ Layout dos Cards</h2>
                             <div class="section-actions">
                                 <button class="btn btn-primary btn-sm" onclick="saveLayout()">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2475,7 +2475,7 @@
                     </div>
                 </div>
 
-                <!-- CRIAR/EDITAR NOTÍCIA PAGE -->
+                <!-- CRIAR/EDITAR NOTÃCIA PAGE -->
                 <div id="createNewsPage" class="page-content" style="display: none;">
                     <style>
                         .news-editor-container {
@@ -2671,8 +2671,8 @@
                                     Voltar
                                 </button>
                                 <div>
-                                    <h1 class="page-title" id="editorPageTitle">Nova Notícia</h1>
-                                    <p class="page-subtitle">Escreva e publique sua notícia</p>
+                                    <h1 class="page-title" id="editorPageTitle">Nova NotÃ­cia</h1>
+                                    <p class="page-subtitle">Escreva e publique sua notÃ­cia</p>
                                 </div>
                             </div>
                         </div>
@@ -2681,41 +2681,41 @@
                             <!-- MAIN EDITOR -->
                             <div class="editor-main">
                                 <div class="form-group">
-                                    <label class="form-label">Título da Notícia *</label>
-                                    <input type="text" id="newsTitle" class="form-input" placeholder="Digite o título da notícia..." oninput="generateSlug()">
+                                    <label class="form-label">TÃ­tulo da NotÃ­cia *</label>
+                                    <input type="text" id="newsTitle" class="form-input" placeholder="Digite o tÃ­tulo da notÃ­cia..." oninput="generateSlug()">
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">URL Amigável (Slug)</label>
+                                    <label class="form-label">URL AmigÃ¡vel (Slug)</label>
                                     <input type="text" id="newsSlug" class="form-input" placeholder="url-da-noticia" style="font-family: monospace; font-size: 0.875rem;">
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">Conteúdo *</label>
+                                    <label class="form-label">ConteÃºdo *</label>
                                     <div class="rich-text-editor">
                                         <div class="editor-toolbar">
                                             <button type="button" onclick="formatText('bold')" title="Negrito"><b>B</b></button>
-                                            <button type="button" onclick="formatText('italic')" title="Itálico"><i>I</i></button>
+                                            <button type="button" onclick="formatText('italic')" title="ItÃ¡lico"><i>I</i></button>
                                             <button type="button" onclick="formatText('underline')" title="Sublinhado"><u>U</u></button>
                                             <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('justifyLeft')" title="Alinhar Esquerda">⬅</button>
-                                            <button type="button" onclick="formatText('justifyCenter')" title="Centralizar">↔</button>
-                                            <button type="button" onclick="formatText('justifyRight')" title="Alinhar Direita">➡</button>
+                                            <button type="button" onclick="formatText('justifyLeft')" title="Alinhar Esquerda">â¬…</button>
+                                            <button type="button" onclick="formatText('justifyCenter')" title="Centralizar">â†”</button>
+                                            <button type="button" onclick="formatText('justifyRight')" title="Alinhar Direita">âž¡</button>
                                             <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('insertUnorderedList')" title="Lista">• Lista</button>
+                                            <button type="button" onclick="formatText('insertUnorderedList')" title="Lista">â€¢ Lista</button>
                                             <button type="button" onclick="formatText('insertOrderedList')" title="Lista Numerada">1. Lista</button>
                                             <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('formatBlock', 'H2')" title="Título">Título</button>
-                                            <button type="button" onclick="formatText('formatBlock', 'H3')" title="Subtítulo">Sub</button>
-                                            <button type="button" onclick="formatText('removeFormat')" title="Limpar Formatação">✕</button>
+                                            <button type="button" onclick="formatText('formatBlock', 'H2')" title="TÃ­tulo">TÃ­tulo</button>
+                                            <button type="button" onclick="formatText('formatBlock', 'H3')" title="SubtÃ­tulo">Sub</button>
+                                            <button type="button" onclick="formatText('removeFormat')" title="Limpar FormataÃ§Ã£o">âœ•</button>
                                         </div>
-                                        <div id="editorContent" class="editor-content" contenteditable="true" placeholder="Comece a escrever sua notícia aqui..."></div>
+                                        <div id="editorContent" class="editor-content" contenteditable="true" placeholder="Comece a escrever sua notÃ­cia aqui..."></div>
                                     </div>
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-label">Resumo/Excerpt</label>
-                                    <textarea id="newsExcerpt" class="form-textarea" placeholder="Um breve resumo da notícia (aparece na listagem)..." maxlength="300"></textarea>
+                                    <textarea id="newsExcerpt" class="form-textarea" placeholder="Um breve resumo da notÃ­cia (aparece na listagem)..." maxlength="300"></textarea>
                                     <div style="text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
                                         <span id="excerptCount">0</span>/300 caracteres
                                     </div>
@@ -2726,7 +2726,7 @@
                             <div class="editor-sidebar">
                                 <!-- Publicar -->
                                 <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title">📤 Publicar</div>
+                                    <div class="editor-sidebar-title">ðŸ“¤ Publicar</div>
                                     
                                     <div class="form-group">
                                         <label class="form-label">Status</label>
@@ -2743,7 +2743,7 @@
                                     </div>
 
                                     <div class="form-group">
-                                        <label class="form-label">Data de Publicação</label>
+                                        <label class="form-label">Data de PublicaÃ§Ã£o</label>
                                         <input type="datetime-local" id="newsDate" class="form-input">
                                     </div>
 
@@ -2762,16 +2762,16 @@
 
                                 <!-- Categoria -->
                                 <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title">🏷️ Categoria</div>
+                                    <div class="editor-sidebar-title">ðŸ·ï¸ Categoria</div>
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <select id="newsCategory" class="form-select">
                                             <option value="">Selecione uma categoria...</option>
                                             <option value="mirador">Mirador</option>
-                                            <option value="regiao">Região</option>
+                                            <option value="regiao">RegiÃ£o</option>
                                             <option value="brasil">Brasil</option>
-                                            <option value="policia">Polícia</option>
+                                            <option value="policia">PolÃ­cia</option>
                                             <option value="esportes">Esportes</option>
-                                            <option value="politica">Política</option>
+                                            <option value="politica">PolÃ­tica</option>
                                             <option value="geral">Geral</option>
                                         </select>
                                     </div>
@@ -2779,7 +2779,7 @@
 
                                 <!-- Imagem Destacada -->
                                 <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title">🖼️ Imagem Destacada</div>
+                                    <div class="editor-sidebar-title">ðŸ–¼ï¸ Imagem Destacada</div>
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <div class="featured-image-upload" onclick="document.getElementById('newsImageInput').click()">
                                             <input type="file" id="newsImageInput" accept="image/*" style="display: none;" onchange="handleNewsImageUpload(event)">
@@ -2787,7 +2787,7 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                             </svg>
                                             <div style="font-size: 0.875rem; color: var(--text-secondary);">Clique para adicionar imagem</div>
-                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">PNG, JPG (máx. 2MB)</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">PNG, JPG (mÃ¡x. 2MB)</div>
                                         </div>
                                         <img id="newsImagePreview" class="featured-image-preview" style="display: none;">
                                         <button type="button" id="removeImageBtn" class="btn btn-ghost btn-sm" style="display: none; margin-top: 0.5rem; width: 100%;" onclick="removeNewsImage()">
@@ -2796,19 +2796,28 @@
                                     </div>
                                 </div>
 
+                                <!-- Fonte Externa -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">ðŸ”— Fonte Externa</div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <input type="url" id="newsExternalUrl" class="form-input" placeholder="Cole a URL da noticia (G1, etc.)" oninput="handleExternalUrlInput()">
+                                        <div id="newsExternalDomainHint" style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);"></div>
+                                    </div>
+                                </div>
+
                                 <!-- Autor -->
                                 <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title">✍️ Autor</div>
+                                    <div class="editor-sidebar-title">âœï¸ Autor</div>
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <input type="text" id="newsAuthor" class="form-input" placeholder="Nome do autor" value="Redação">
+                                        <input type="text" id="newsAuthor" class="form-input" placeholder="Nome do autor" value="RedaÃ§Ã£o">
                                     </div>
                                 </div>
 
                                 <!-- Tags -->
                                 <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title">🏷️ Tags</div>
+                                    <div class="editor-sidebar-title">ðŸ·ï¸ Tags</div>
                                     <div class="form-group" style="margin-bottom: 0;">
-                                        <input type="text" id="newsTags" class="form-input" placeholder="Separe as tags por vírgula...">
+                                        <input type="text" id="newsTags" class="form-input" placeholder="Separe as tags por vÃ­rgula...">
                                     </div>
                                 </div>
                             </div>
@@ -2829,7 +2838,7 @@
                     </svg>
                 </div>
                 <h3 class="modal-title" id="modalTitle">Sucesso!</h3>
-                <p class="modal-message" id="modalMessage">Operação realizada com sucesso.</p>
+                <p class="modal-message" id="modalMessage">OperaÃ§Ã£o realizada com sucesso.</p>
             </div>
             <div class="modal-footer">
                 <button class="modal-btn" onclick="closeModal()">OK</button>
@@ -2838,7 +2847,7 @@
     </div>
 
     <script>
-        // Configuração do Firebase
+        // ConfiguraÃ§Ã£o do Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyBI1AcATNjWC08aMYZMKxVcqV37DwmixVI",
             authDomain: "sitemirador-fb33d.firebaseapp.com",
@@ -2887,7 +2896,7 @@
             updateUserInfo();
         }
 
-        // Atualizar informações do usuário logado
+        // Atualizar informaÃ§Ãµes do usuÃ¡rio logado
         function updateUserInfo() {
             const user = auth.currentUser;
             if (user) {
@@ -2909,9 +2918,9 @@
             overlay.classList.toggle('active');
         }
 
-        // Navegação entre páginas
+        // NavegaÃ§Ã£o entre pÃ¡ginas
         function showPage(pageName, element) {
-            // Esconder todas as páginas
+            // Esconder todas as pÃ¡ginas
             document.querySelectorAll('.page-content').forEach(page => {
                 page.style.display = 'none';
             });
@@ -2921,7 +2930,7 @@
                 item.classList.remove('active');
             });
 
-            // Mostrar página selecionada
+            // Mostrar pÃ¡gina selecionada
             const pageMap = {
                 'dashboard': 'dashboardPage',
                 'settings': 'settingsPage',
@@ -2946,7 +2955,7 @@
                 toggleSidebar();
             }
 
-            // Carregar dados se necessário
+            // Carregar dados se necessÃ¡rio
             if (pageName === 'dashboard') {
                 loadDashboard();
             } else if (pageName === 'news') {
@@ -2965,10 +2974,10 @@
                     news.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Atualizar Estatísticas
+                // Atualizar EstatÃ­sticas
                 document.getElementById('totalNews').innerText = news.length;
 
-                // Calcular visualizações
+                // Calcular visualizaÃ§Ãµes
                 const totalViews = news.reduce((acc, curr) => acc + (curr.views || 0), 0);
                 document.getElementById('totalViews').innerText = totalViews.toLocaleString('pt-BR');
 
@@ -2988,7 +2997,7 @@
             }
         }
 
-        // Carregar página de Notícias
+        // Carregar pÃ¡gina de NotÃ­cias
         async function loadNewsPage() {
             try {
                 const snapshot = await db.collection('news').orderBy('date', 'desc').get();
@@ -2997,7 +3006,7 @@
                     news.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Renderizar Tabela na página de Notícias
+                // Renderizar Tabela na pÃ¡gina de NotÃ­cias
                 const newsList = document.getElementById('newsListPage');
                 if (!newsList) return;
                 
@@ -3011,9 +3020,9 @@
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
-                                    <p>Nenhuma notícia encontrada</p>
+                                    <p>Nenhuma notÃ­cia encontrada</p>
                                     <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showCreateNewsPage()">
-                                        Criar primeira notícia
+                                        Criar primeira notÃ­cia
                                     </button>
                                 </div>
                             </td>
@@ -3045,7 +3054,7 @@
                             <td>${imageHtml}</td>
                             <td class="news-title-cell">
                                 <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
+                                <div class="news-meta">Por ${n.author || 'Admin'} â€¢ ${n.views || 0} visualizaÃ§Ãµes</div>
                             </td>
                             <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
                             <td>${date}</td>
@@ -3069,7 +3078,7 @@
                 });
 
             } catch (error) {
-                console.error("Erro ao carregar notícias:", error);
+                console.error("Erro ao carregar notÃ­cias:", error);
                 const newsList = document.getElementById('newsListPage');
                 if (newsList) {
                     newsList.innerHTML = `
@@ -3079,7 +3088,7 @@
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                                     </svg>
-                                    <p>Erro ao carregar notícias</p>
+                                    <p>Erro ao carregar notÃ­cias</p>
                                 </div>
                             </td>
                         </tr>`;
@@ -3087,18 +3096,18 @@
             }
         }
 
-        // Deletar notícia
+        // Deletar notÃ­cia
         async function deleteNews(id) {
-            if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;
+            if (!confirm('Tem certeza que deseja excluir esta notÃ­cia?')) return;
 
             try {
                 await db.collection('news').doc(id).delete();
-                showModal('Sucesso!', 'Notícia excluída com sucesso!', 'success');
+                showModal('Sucesso!', 'NotÃ­cia excluÃ­da com sucesso!', 'success');
                 loadDashboard();
                 loadNewsPage();
             } catch (error) {
-                console.error('Erro ao excluir notícia:', error);
-                showModal('Erro!', 'Não foi possível excluir a notícia.', 'error');
+                console.error('Erro ao excluir notÃ­cia:', error);
+                showModal('Erro!', 'NÃ£o foi possÃ­vel excluir a notÃ­cia.', 'error');
             }
         }
 
@@ -3197,20 +3206,20 @@
                 await db.collection('settings').doc('colors').set(colors);
                 console.log('[Admin] Cores salvas no Firebase com sucesso!');
                 
-                // Também salvar no localStorage para o admin
+                // TambÃ©m salvar no localStorage para o admin
                 localStorage.setItem('siteColors', JSON.stringify(colors));
                 
-                showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.', 'success');
+                showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alteraÃ§Ãµes foram aplicadas ao site pÃºblico.', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao salvar cores:', error);
-                console.error('[Admin] Código do erro:', error.code);
+                console.error('[Admin] CÃ³digo do erro:', error.code);
                 console.error('[Admin] Mensagem:', error.message);
-                showModal('Erro!', 'Não foi possível salvar as cores.\n\nVerifique o console para mais detalhes.', 'error');
+                showModal('Erro!', 'NÃ£o foi possÃ­vel salvar as cores.\n\nVerifique o console para mais detalhes.', 'error');
             }
         }
 
         // ========================================
-        // CONFIGURAÇÃO DE LAYOUT
+        // CONFIGURAÃ‡ÃƒO DE LAYOUT
         // ========================================
         
         function updateLayoutPreview() {
@@ -3223,7 +3232,7 @@
             // Atualizar grid do preview
             previewGrid.style.gridTemplateColumns = `repeat(${validCards}, 1fr)`;
             
-            // Atualizar número de cards no preview
+            // Atualizar nÃºmero de cards no preview
             previewGrid.innerHTML = '';
             for (let i = 0; i < validCards; i++) {
                 previewGrid.innerHTML += '<div class="layout-preview-card"></div>';
@@ -3245,7 +3254,7 @@
                 showModal('Sucesso!', 'Layout salvo com sucesso!', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao salvar layout:', error);
-                showModal('Erro!', 'Não foi possível salvar o layout.', 'error');
+                showModal('Erro!', 'NÃ£o foi possÃ­vel salvar o layout.', 'error');
             }
         }
 
@@ -3268,7 +3277,7 @@
         
         let currentLogo = null;
 
-        // Inicializar configurações de marca ao carregar
+        // Inicializar configuraÃ§Ãµes de marca ao carregar
         document.addEventListener('DOMContentLoaded', function() {
             loadBrandSettings();
             setupLogoDragAndDrop();
@@ -3322,13 +3331,13 @@
             // Validar tipo de arquivo
             const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
             if (!validTypes.includes(file.type)) {
-                showModal('Formato inválido!', 'Use PNG, JPG, SVG ou WebP.', 'error');
+                showModal('Formato invÃ¡lido!', 'Use PNG, JPG, SVG ou WebP.', 'error');
                 return;
             }
 
             // Validar tamanho (2MB)
             if (file.size > 2 * 1024 * 1024) {
-                showModal('Arquivo muito grande!', 'O tamanho máximo permitido é 2MB.', 'error');
+                showModal('Arquivo muito grande!', 'O tamanho mÃ¡ximo permitido Ã© 2MB.', 'error');
                 return;
             }
 
@@ -3384,7 +3393,7 @@
 
         function updateBrandPreview() {
             const siteName = document.getElementById('siteName').value || 'Mirador Online';
-            const siteTagline = document.getElementById('siteTagline').value || 'Portal de Notícias';
+            const siteTagline = document.getElementById('siteTagline').value || 'Portal de NotÃ­cias';
             
             const previewIconMode = document.getElementById('brandPreviewIconMode');
             const previewLogoMode = document.getElementById('brandPreviewLogoMode');
@@ -3414,11 +3423,11 @@
             }
         }
 
-        // Salvar configurações de marca no Firebase
+        // Salvar configuraÃ§Ãµes de marca no Firebase
         async function saveBrand() {
             const brandSettings = {
                 siteName: document.getElementById('siteName').value || 'Mirador Online',
-                siteTagline: document.getElementById('siteTagline').value || 'Portal de Notícias',
+                siteTagline: document.getElementById('siteTagline').value || 'Portal de NotÃ­cias',
                 logo: currentLogo,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -3430,29 +3439,29 @@
                 await db.collection('settings').doc('brand').set(brandSettings);
                 console.log('[Admin] Marca salva no Firebase com sucesso!');
                 
-                // Também salvar no localStorage para o admin
+                // TambÃ©m salvar no localStorage para o admin
                 localStorage.setItem('siteBrand', JSON.stringify(brandSettings));
 
                 // Aplicar imediatamente no admin
                 applyBrandToAdmin(brandSettings);
 
-                showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.', 'success');
+                showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alteraÃ§Ãµes foram aplicadas ao site pÃºblico e ao painel.', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao salvar identidade visual:', error);
-                console.error('[Admin] Código do erro:', error.code);
+                console.error('[Admin] CÃ³digo do erro:', error.code);
                 console.error('[Admin] Mensagem:', error.message);
-                showModal('Erro!', 'Não foi possível salvar a identidade visual.\n\nVerifique o console para mais detalhes.', 'error');
+                showModal('Erro!', 'NÃ£o foi possÃ­vel salvar a identidade visual.\n\nVerifique o console para mais detalhes.', 'error');
             }
         }
 
-        // Carregar configurações de marca
+        // Carregar configuraÃ§Ãµes de marca
         function loadBrandSettings() {
             const savedBrand = localStorage.getItem('siteBrand');
             if (savedBrand) {
                 const settings = JSON.parse(savedBrand);
                 
                 document.getElementById('siteName').value = settings.siteName || 'Mirador Online';
-                document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de Notícias';
+                document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de NotÃ­cias';
                 
                 if (settings.logo) {
                     currentLogo = settings.logo;
@@ -3467,7 +3476,7 @@
         // Aplicar marca ao painel admin
         function applyBrandToAdmin(settings) {
             const siteName = settings.siteName || 'Mirador Online';
-            const siteTagline = settings.siteTagline || 'Portal de Notícias';
+            const siteTagline = settings.siteTagline || 'Portal de NotÃ­cias';
             
             const sidebarIconMode = document.getElementById('sidebarIconMode');
             const sidebarLogoMode = document.getElementById('sidebarLogoMode');
@@ -3476,7 +3485,7 @@
             const sidebarLogoTagline = document.getElementById('sidebarLogoTagline');
 
             if (settings.logo && sidebarLogo) {
-                // Modo com logo: mostrar só logo + tagline
+                // Modo com logo: mostrar sÃ³ logo + tagline
                 if (sidebarIconMode) sidebarIconMode.style.display = 'none';
                 if (sidebarLogoMode) {
                     sidebarLogoMode.style.display = 'flex';
@@ -3485,7 +3494,7 @@
                 }
                 if (sidebarLogoTagline) sidebarLogoTagline.textContent = siteTagline;
             } else {
-                // Modo sem logo: mostrar ícone + nome + tagline
+                // Modo sem logo: mostrar Ã­cone + nome + tagline
                 if (sidebarIconMode) sidebarIconMode.style.display = 'flex';
                 if (sidebarLogoMode) sidebarLogoMode.style.display = 'none';
                 if (sidebarIcon) {
@@ -3497,14 +3506,14 @@
                 if (sidebarTagline) sidebarTagline.textContent = siteTagline;
             }
 
-            // Atualizar título da página
+            // Atualizar tÃ­tulo da pÃ¡gina
             document.title = `Admin - ${siteName}`;
         }
 
-        // Aplicar marca na página de login
+        // Aplicar marca na pÃ¡gina de login
         function applyBrandToLogin(settings) {
             const siteName = settings.siteName || 'Mirador Online';
-            const siteTagline = settings.siteTagline || 'Portal de Notícias';
+            const siteTagline = settings.siteTagline || 'Portal de NotÃ­cias';
             
             const loginLogoIcon = document.getElementById('loginLogoIcon');
             const loginLogoImg = document.getElementById('loginLogoImg');
@@ -3529,7 +3538,7 @@
                     loginSubtitle.style.color = 'var(--text-secondary)';
                 }
             } else {
-                // Sem logo: ícone + nome + tagline
+                // Sem logo: Ã­cone + nome + tagline
                 if (loginLogoIcon) {
                     loginLogoIcon.style.display = 'flex';
                     loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
@@ -3542,20 +3551,20 @@
                 }
                 if (loginSubtitle) {
                     loginSubtitle.style.display = 'block';
-                    loginSubtitle.textContent = 'Faça login para acessar o ' + siteName;
+                    loginSubtitle.textContent = 'FaÃ§a login para acessar o ' + siteName;
                 }
             }
             
             document.title = 'Admin - ' + siteName;
         }
 
-        // Restaurar marca padrão
+        // Restaurar marca padrÃ£o
         function resetBrand() {
-            if (!confirm('Deseja restaurar a identidade visual padrão?')) return;
+            if (!confirm('Deseja restaurar a identidade visual padrÃ£o?')) return;
 
             currentLogo = null;
             document.getElementById('siteName').value = 'Mirador Online';
-            document.getElementById('siteTagline').value = 'Portal de Notícias';
+            document.getElementById('siteTagline').value = 'Portal de NotÃ­cias';
             
             // Limpar preview
             const uploadArea = document.getElementById('logoUploadArea');
@@ -3569,10 +3578,10 @@
             previewContainer.style.display = 'none';
             document.getElementById('logoInput').value = '';
 
-            // Aplicar padrão
+            // Aplicar padrÃ£o
             const defaultBrand = {
                 siteName: 'Mirador Online',
-                siteTagline: 'Portal de Notícias',
+                siteTagline: 'Portal de NotÃ­cias',
                 logo: null
             };
 
@@ -3582,12 +3591,12 @@
             localStorage.removeItem('siteBrand');
             localStorage.removeItem('publicSiteBrand');
 
-            showModal('Restaurado!', 'Identidade visual restaurada para o padrão.', 'info');
+            showModal('Restaurado!', 'Identidade visual restaurada para o padrÃ£o.', 'info');
         }
 
-        // Restaurar cores padrão
+        // Restaurar cores padrÃ£o
         function resetColors() {
-            if (!confirm('Deseja restaurar as cores padrão?')) return;
+            if (!confirm('Deseja restaurar as cores padrÃ£o?')) return;
 
             const defaultColors = {
                 Primary: '#2563eb',
@@ -3612,7 +3621,7 @@
             localStorage.removeItem('siteColors');
             localStorage.removeItem('publicSiteColors');
 
-            showModal('Restaurado!', 'Cores restauradas para o padrão.', 'info');
+            showModal('Restaurado!', 'Cores restauradas para o padrÃ£o.', 'info');
         }
 
         // Sincronizar color pickers
@@ -3641,23 +3650,23 @@
         let currentNewsImage = null;
         let editingNewsId = null;
 
-        // Mostrar página de criar notícia
+        // Mostrar pÃ¡gina de criar notÃ­cia
         function showCreateNewsPage(newsId = null) {
-            // Esconder todas as páginas
+            // Esconder todas as pÃ¡ginas
             document.querySelectorAll('.page-content').forEach(page => {
                 page.style.display = 'none';
             });
             
-            // Mostrar página do editor
+            // Mostrar pÃ¡gina do editor
             document.getElementById('createNewsPage').style.display = 'block';
             
-            // Resetar formulário se for nova notícia
+            // Resetar formulÃ¡rio se for nova notÃ­cia
             if (!newsId) {
                 resetNewsForm();
-                document.getElementById('editorPageTitle').textContent = 'Nova Notícia';
+                document.getElementById('editorPageTitle').textContent = 'Nova NotÃ­cia';
             } else {
                 editingNewsId = newsId;
-                document.getElementById('editorPageTitle').textContent = 'Editar Notícia';
+                document.getElementById('editorPageTitle').textContent = 'Editar NotÃ­cia';
                 loadNewsForEdit(newsId);
             }
             
@@ -3672,7 +3681,7 @@
             });
         }
 
-        // Resetar formulário
+        // Resetar formulÃ¡rio
         function resetNewsForm() {
             document.getElementById('newsTitle').value = '';
             document.getElementById('newsSlug').value = '';
@@ -3680,14 +3689,19 @@
             document.getElementById('newsExcerpt').value = '';
             document.getElementById('excerptCount').textContent = '0';
             document.getElementById('newsCategory').value = '';
-            document.getElementById('newsAuthor').value = 'Redação';
+            document.getElementById('newsAuthor').value = 'RedaÃ§Ã£o';
             document.getElementById('newsTags').value = '';
+            if (document.getElementById('newsExternalUrl')) {
+                document.getElementById('newsExternalUrl').value = '';
+            }
+            const externalHint = document.getElementById('newsExternalDomainHint');
+            if (externalHint) externalHint.textContent = '';
             document.querySelector('input[name="newsStatus"][value="published"]').checked = true;
             removeNewsImage();
             editingNewsId = null;
         }
 
-        // Gerar slug do título
+        // Gerar slug do tÃ­tulo
         function generateSlug() {
             const title = document.getElementById('newsTitle').value;
             const slug = title
@@ -3706,13 +3720,13 @@
             document.getElementById('editorContent').focus();
         }
 
-        // Upload de imagem da notícia
+        // Upload de imagem da notÃ­cia
         function handleNewsImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
 
             if (file.size > 2 * 1024 * 1024) {
-                showModal('Erro!', 'Imagem muito grande. Máximo 2MB.', 'error');
+                showModal('Erro!', 'Imagem muito grande. MÃ¡ximo 2MB.', 'error');
                 return;
             }
 
@@ -3741,24 +3755,31 @@
             await saveNews('draft');
         }
 
-        // Publicar notícia
+        // Publicar notÃ­cia
         async function publishNews() {
             await saveNews('published');
         }
 
-        // Salvar notícia
+        // Salvar notÃ­cia
         async function saveNews(status) {
             const title = document.getElementById('newsTitle').value.trim();
             const content = document.getElementById('editorContent').innerHTML.trim();
             const category = document.getElementById('newsCategory').value;
+            const externalUrl = document.getElementById('newsExternalUrl')?.value.trim() || '';
+            const sourceDomain = normalizeDomainFromUrl(externalUrl);
 
             if (!title) {
-                showModal('Erro!', 'O título é obrigatório.', 'error');
+                showModal('Erro!', 'O tÃ­tulo Ã© obrigatÃ³rio.', 'error');
                 return;
             }
 
-            if (!content || content === '<br>') {
-                showModal('Erro!', 'O conteúdo é obrigatório.', 'error');
+            if ((!content || content === '<br>') && !externalUrl) {
+                showModal('Erro!', 'O conteÃºdo Ã© obrigatÃ³rio.', 'error');
+                return;
+            }
+
+            if (externalUrl && !sourceDomain) {
+                showModal('Erro!', 'URL externa invÃ¡lida.', 'error');
                 return;
             }
 
@@ -3775,23 +3796,25 @@
                 category: category,
                 categoryName: getCategoryName(category),
                 image: currentNewsImage,
-                author: document.getElementById('newsAuthor').value || 'Redação',
+                author: document.getElementById('newsAuthor').value || 'RedaÃ§Ã£o',
                 tags: document.getElementById('newsTags').value.split(',').map(t => t.trim()).filter(t => t),
                 status: status,
                 featured: false,
                 views: 0,
                 date: new Date(document.getElementById('newsDate').value).toISOString(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                externalUrl: externalUrl,
+                sourceDomain: sourceDomain
             };
 
             try {
                 if (editingNewsId) {
                     await db.collection('news').doc(editingNewsId).update(newsData);
-                    showModal('Sucesso!', `Notícia atualizada como ${status === 'published' ? 'Publicada' : 'Rascunho'}!`, 'success');
+                    showModal('Sucesso!', `NotÃ­cia atualizada como ${status === 'published' ? 'Publicada' : 'Rascunho'}!`, 'success');
                 } else {
                     newsData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     await db.collection('news').add(newsData);
-                    showModal('Sucesso!', `Notícia ${status === 'published' ? 'Publicada' : 'Salva como Rascunho'}!`, 'success');
+                    showModal('Sucesso!', `NotÃ­cia ${status === 'published' ? 'Publicada' : 'Salva como Rascunho'}!`, 'success');
                 }
                 
                 resetNewsForm();
@@ -3799,8 +3822,8 @@
                 loadNewsPage();
                 loadDashboard();
             } catch (error) {
-                console.error('Erro ao salvar notícia:', error);
-                showModal('Erro!', 'Não foi possível salvar a notícia.', 'error');
+                console.error('Erro ao salvar notÃ­cia:', error);
+                showModal('Erro!', 'NÃ£o foi possÃ­vel salvar a notÃ­cia.', 'error');
             }
         }
 
@@ -3815,21 +3838,39 @@
                 .substring(0, 100);
         }
 
+        function normalizeDomainFromUrl(url) {
+            if (!url) return '';
+            try {
+                const parsed = new URL(url.trim());
+                return parsed.hostname.replace(/^www\./i, '');
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function handleExternalUrlInput() {
+            const input = document.getElementById('newsExternalUrl');
+            const hint = document.getElementById('newsExternalDomainHint');
+            if (!input || !hint) return;
+            const domain = normalizeDomainFromUrl(input.value);
+            hint.textContent = domain ? `Fonte detectada: ${domain}` : '';
+        }
+
         // Obter nome da categoria
         function getCategoryName(value) {
             const categories = {
                 'mirador': 'Mirador',
-                'regiao': 'Região',
+                'regiao': 'RegiÃ£o',
                 'brasil': 'Brasil',
-                'policia': 'Polícia',
+                'policia': 'PolÃ­cia',
                 'esportes': 'Esportes',
-                'politica': 'Política',
+                'politica': 'PolÃ­tica',
                 'geral': 'Geral'
             };
             return categories[value] || value;
         }
 
-        // Carregar notícia para edição
+        // Carregar notÃ­cia para ediÃ§Ã£o
         async function loadNewsForEdit(newsId) {
             try {
                 const doc = await db.collection('news').doc(newsId).get();
@@ -3841,9 +3882,13 @@
                     document.getElementById('newsExcerpt').value = news.excerpt || '';
                     document.getElementById('excerptCount').textContent = (news.excerpt || '').length;
                     document.getElementById('newsCategory').value = news.category || '';
-                    document.getElementById('newsAuthor').value = news.author || 'Redação';
+                    document.getElementById('newsAuthor').value = news.author || 'RedaÃ§Ã£o';
                     document.getElementById('newsTags').value = (news.tags || []).join(', ');
                     document.getElementById('newsDate').value = news.date ? news.date.slice(0, 16) : '';
+                    if (document.getElementById('newsExternalUrl')) {
+                        document.getElementById('newsExternalUrl').value = news.externalUrl || '';
+                        handleExternalUrlInput();
+                    }
                     
                     if (news.image) {
                         currentNewsImage = news.image;
@@ -3857,8 +3902,8 @@
                     document.querySelector(`input[name="newsStatus"][value="${status}"]`).checked = true;
                 }
             } catch (error) {
-                console.error('Erro ao carregar notícia:', error);
-                showModal('Erro!', 'Não foi possível carregar a notícia.', 'error');
+                console.error('Erro ao carregar notÃ­cia:', error);
+                showModal('Erro!', 'NÃ£o foi possÃ­vel carregar a notÃ­cia.', 'error');
             }
         }
 
@@ -3871,7 +3916,7 @@
             const titleEl = document.getElementById('modalTitle');
             const messageEl = document.getElementById('modalMessage');
             
-            // Configurar ícone baseado no tipo
+            // Configurar Ã­cone baseado no tipo
             const icons = {
                 success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
                 error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
@@ -3908,8 +3953,8 @@
             }
         }
 
-        // Verificar estado de autenticação
-        // Carregar configurações de marca na inicialização
+        // Verificar estado de autenticaÃ§Ã£o
+        // Carregar configuraÃ§Ãµes de marca na inicializaÃ§Ã£o
         (function initBrand() {
             const savedBrand = localStorage.getItem('siteBrand');
             if (savedBrand) {
@@ -3929,7 +3974,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-009';
+            const cssVersion = '2025-02-04-012';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);

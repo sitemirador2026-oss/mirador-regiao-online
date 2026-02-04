@@ -1,6 +1,6 @@
-// App principal do site público
+﻿// App principal do site pÃºblico
 
-console.log('[App] v2.2 - Script carregado');
+console.log('[App] v2.5 - Script carregado');
 
 // Dados de exemplo
 const sampleNews = [
@@ -11,30 +11,30 @@ const sampleNews = [
         category: "mirador",
         categoryName: "Mirador",
         image: "https://via.placeholder.com/800x400/2563eb/ffffff?text=Mirador",
-        date: "2026-02-03",
-        author: "Redação",
+        date: "2026-02-03T12:30:00",
+        author: "RedaÃ§Ã£o",
         featured: true
     },
     {
         id: '2',
-        title: "Região registra crescimento econômico no último trimestre",
-        excerpt: "Dados mostram aumento de 15% na atividade econômica regional.",
+        title: "RegiÃ£o registra crescimento econÃ´mico no Ãºltimo trimestre",
+        excerpt: "Dados mostram aumento de 15% na atividade econÃ´mica regional.",
         category: "regiao",
-        categoryName: "Região",
-        image: "https://via.placeholder.com/800x400/059669/ffffff?text=Região",
-        date: "2026-02-03",
-        author: "Redação",
+        categoryName: "RegiÃ£o",
+        image: "https://via.placeholder.com/800x400/059669/ffffff?text=RegiÃ£o",
+        date: "2026-02-03T10:15:00",
+        author: "RedaÃ§Ã£o",
         featured: true
     },
     {
         id: '3',
-        title: "Seleção Brasileira se prepara para próximos jogos",
-        excerpt: "Técnico convoca novos jogadores para amistosos internacionais.",
+        title: "SeleÃ§Ã£o Brasileira se prepara para prÃ³ximos jogos",
+        excerpt: "TÃ©cnico convoca novos jogadores para amistosos internacionais.",
         category: "brasil",
         categoryName: "Brasil",
         image: "https://via.placeholder.com/800x400/dc2626/ffffff?text=Brasil",
-        date: "2026-02-02",
-        author: "Redação",
+        date: "2026-02-02T18:05:00",
+        author: "RedaÃ§Ã£o",
         featured: false
     }
 ];
@@ -44,14 +44,14 @@ async function initializeData() {
     try {
         const snapshot = await db.collection('news').limit(1).get();
         if (snapshot.empty) {
-            console.log('[App] Adicionando notícias de exemplo...');
+            console.log('[App] Adicionando notÃ­cias de exemplo...');
             const batch = db.batch();
             sampleNews.forEach(news => {
                 const ref = db.collection('news').doc(news.id);
                 batch.set(ref, { ...news, views: 0 });
             });
             await batch.commit();
-            console.log('[App] Notícias adicionadas!');
+            console.log('[App] NotÃ­cias adicionadas!');
         }
     } catch (error) {
         console.error('[App] Erro ao inicializar dados:', error);
@@ -67,25 +67,59 @@ function formatDate(dateString) {
     });
 }
 
-// Criar card de notícia
+// Formatar data e hora
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    const dateStr = date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'short'
+    });
+    const timeStr = date.toLocaleTimeString('pt-BR', {
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    return `${dateStr} â€¢ ${timeStr}`;
+}
+
+function getDomainFromUrl(url) {
+    if (!url) return '';
+    try {
+        const parsed = new URL(url);
+        return parsed.hostname.replace(/^www\./i, '');
+    } catch (e) {
+        return '';
+    }
+}
+
+// Criar card de notÃ­cia
 function createNewsCard(news) {
+    const categoryLabel = news.categoryName || news.category || 'Geral';
+    const sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl || '');
+    const sourceLogo = sourceDomain
+        ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
+        : '';
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
             <div class="news-card-image-wrapper">
                 <img src="${news.image}" alt="${news.title}" class="news-card-image">
                 <div class="news-card-gradient"></div>
-                <span class="news-card-category">${news.categoryName}</span>
+                <div class="news-card-overlay">
+                    <h3 class="news-card-title">${news.title}</h3>
+                </div>
             </div>
-            <div class="news-card-content">
-                <div class="news-card-author">${news.author}</div>
-                <h3 class="news-card-title">${news.title}</h3>
-                <div class="news-card-meta">${formatDate(news.date)}</div>
+            <div class="news-card-footer">
+                <div class="news-card-meta">
+                    <span class="news-card-category-text">${categoryLabel}</span>
+                    <span class="news-card-meta-divider">â€¢</span>
+                    <span class="news-card-date">${formatDateTime(news.date)}</span>
+                </div>
+                ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="${sourceDomain}"></div>` : ''}
             </div>
         </article>
     `;
 }
 
-// Renderizar notícias
+// Renderizar notÃ­cias
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
@@ -96,23 +130,23 @@ async function renderNews() {
         if (featuredContainer) {
             featuredContainer.innerHTML = featured.length > 0 
                 ? featured.map(createNewsCard).join('')
-                : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
+                : '<div class="empty-state">Nenhuma notÃ­cia em destaque.</div>';
         }
         
-        // Últimas notícias
+        // Ãšltimas notÃ­cias
         const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
         const latestContainer = document.getElementById('latestNews');
         if (latestContainer) {
             latestContainer.innerHTML = latest.length > 0
                 ? latest.map(createNewsCard).join('')
-                : '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+                : '<div class="empty-state">Nenhuma notÃ­cia encontrada.</div>';
         }
     } catch (error) {
-        console.error('[App] Erro ao renderizar notícias:', error);
+        console.error('[App] Erro ao renderizar notÃ­cias:', error);
     }
 }
 
-// Ver detalhes da notícia
+// Ver detalhes da notÃ­cia
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html?id=' + id;
@@ -160,7 +194,7 @@ async function filterByCategory(category) {
     if (container) {
         container.innerHTML = filtered.length > 0
             ? filtered.map(createNewsCard).join('')
-            : '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
+            : '<div class="empty-state">Nenhuma notÃ­cia nesta categoria.</div>';
         container.scrollIntoView({ behavior: 'smooth' });
     }
     
@@ -171,14 +205,14 @@ async function filterByCategory(category) {
     }
 }
 
-// Inicialização
+// InicializaÃ§Ã£o
 document.addEventListener('DOMContentLoaded', async function() {
-    console.log('[App] v2.2 - Inicializando...');
+    console.log('[App] v2.5 - Inicializando...');
     
     // Inicializar dados
     await initializeData();
     
-    // Renderizar notícias
+    // Renderizar notÃ­cias
     await renderNews();
     
     // Event Listeners
@@ -216,7 +250,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     
-    console.log('[App] v2.2 - Pronto!');
+    console.log('[App] v2.5 - Pronto!');
 });
 
-console.log('[App] v2.2 - Script finalizado');
+console.log('[App] v2.5 - Script finalizado');
