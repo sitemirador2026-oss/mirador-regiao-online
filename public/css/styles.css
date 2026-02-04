@@ -1,4 +1,4 @@
-﻿/* CSS Version: 2025-02-04-006 - CARD FIX */
+﻿/* CSS Version: 2025-02-04-007 - CATEGORY SECTIONS */
 /* Reset e Base */
 * {
     margin: 0;
@@ -300,6 +300,60 @@ body {
 
 .view-all:hover {
     text-decoration: underline;
+}
+
+/* Category Sections */
+.category-section {
+    margin-bottom: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 2px solid var(--border);
+}
+
+.category-section:first-of-type {
+    border-top: 3px solid var(--primary);
+}
+
+.category-section .section-title {
+    font-size: 1.75rem;
+    position: relative;
+    padding-left: 1rem;
+}
+
+.category-section .section-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 70%;
+    background: var(--primary);
+    border-radius: 2px;
+}
+
+/* Cores diferentes para cada categoria */
+.category-section[data-category="esportes"] .section-title::before {
+    background: #059669;
+}
+
+.category-section[data-category="politica"] .section-title::before {
+    background: #dc2626;
+}
+
+.category-section[data-category="policia"] .section-title::before {
+    background: #7c3aed;
+}
+
+.category-section[data-category="regiao"] .section-title::before {
+    background: #ea580c;
+}
+
+.category-section[data-category="mirador"] .section-title::before {
+    background: #0891b2;
+}
+
+.category-section[data-category="brasil"] .section-title::before {
+    background: #2563eb;
 }
 
 /* News Grid - Layout compacto estilo G1 */

@@ -201,6 +201,55 @@ function createHorizontalNewsCard(news) {
 }
 
 // Renderizar notícias com layout alternado
+// Renderizar bloco de notícias com padrão: 2 normais + 1 especial
+function renderNewsBlock(newsItems, startIndex, container) {
+    const cardsPerRow = 5;
+    const cardsInSpecialRow = 4;
+    let html = '';
+    let index = startIndex;
+    let rowsRendered = 0;
+    
+    // Padrão: 2 normais + 1 especial (repetido 2x = 4 normais + 2 especiais)
+    for (let cycle = 0; cycle < 2 && index < newsItems.length; cycle++) {
+        // Fileira normal 1
+        if (index < newsItems.length) {
+            for (let i = 0; i < cardsPerRow && index < newsItems.length; i++) {
+                html += createNewsCard(newsItems[index++]);
+            }
+            rowsRendered++;
+        }
+        
+        // Fileira normal 2
+        if (index < newsItems.length) {
+            for (let i = 0; i < cardsPerRow && index < newsItems.length; i++) {
+                html += createNewsCard(newsItems[index++]);
+            }
+            rowsRendered++;
+        }
+        
+        // Fileira especial horizontal
+        if (index < newsItems.length) {
+            html += '<div class="news-row-horizontal">';
+            for (let i = 0; i < cardsInSpecialRow && index < newsItems.length; i++) {
+                html += createHorizontalNewsCard(newsItems[index++]);
+            }
+            html += '</div>';
+            rowsRendered++;
+        }
+    }
+    
+    // Se sobrar notícias, completar com cards normais
+    while (index < newsItems.length) {
+        html += createNewsCard(newsItems[index++]);
+    }
+    
+    if (container) {
+        container.innerHTML = html || '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+    }
+    
+    return index; // Retorna o índice final
+}
+
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
@@ -214,46 +263,42 @@ async function renderNews() {
                 : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
         }
         
-        // Últimas notícias - layout alternado
+        // Últimas notícias - padrão: 2 normais + 1 especial + 2 normais + 1 especial
         const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date));
         const latestContainer = document.getElementById('latestNews');
         
         if (latestContainer) {
-            let html = '';
-            const cardsPerRow = 5; // Cards normais por fileira
-            const cardsInSpecialRow = 4; // Cards na fileira horizontal
-            let index = 0;
+            renderNewsBlock(latest, 0, latestContainer);
+        }
+        
+        // Renderizar seções por categoria
+        const categories = [
+            { id: 'esportes', containerId: 'categoryEsportes' },
+            { id: 'politica', containerId: 'categoryPolitica' },
+            { id: 'policia', containerId: 'categoryPolicia' },
+            { id: 'regiao', containerId: 'categoryRegiao' },
+            { id: 'mirador', containerId: 'categoryMirador' },
+            { id: 'brasil', containerId: 'categoryBrasil' }
+        ];
+        
+        categories.forEach(cat => {
+            const categoryNews = news
+                .filter(n => n.category === cat.id)
+                .sort((a, b) => new Date(b.date) - new Date(a.date));
             
-            while (index < latest.length) {
-                // Fileira 1: Normal (5 cards)
-                for (let i = 0; i < cardsPerRow && index < latest.length; i++) {
-                    html += createNewsCard(latest[index++]);
-                }
-                
-                // Fileira 2: Normal (5 cards)
-                for (let i = 0; i < cardsPerRow && index < latest.length; i++) {
-                    html += createNewsCard(latest[index++]);
-                }
-                
-                // Fileira 3: Especial horizontal (4 cards)
-                if (index + cardsInSpecialRow <= latest.length) {
-                    html += '<div class="news-row-horizontal">';
-                    for (let i = 0; i < cardsInSpecialRow && index < latest.length; i++) {
-                        html += createHorizontalNewsCard(latest[index++]);
-                    }
-                    html += '</div>';
+            const container = document.getElementById(cat.containerId);
+            const sectionElement = document.querySelector(`[data-category="${cat.id}"]`);
+            
+            if (container && sectionElement) {
+                if (categoryNews.length > 0) {
+                    renderNewsBlock(categoryNews, 0, container);
+                    sectionElement.style.display = 'block';
                 } else {
-                    // Se não tiver notícias suficientes, completa com cards normais
-                    while (index < latest.length) {
-                        html += createNewsCard(latest[index++]);
-                    }
+                    sectionElement.style.display = 'none';
                 }
             }
-            
-            latestContainer.innerHTML = latest.length > 0
-                ? html
-                : '<div class="empty-state">Nenhuma notícia encontrada.</div>';
-        }
+        });
+        
     } catch (error) {
         console.error('[App] Erro ao renderizar notícias:', error);
     }
@@ -263,6 +308,12 @@ async function renderNews() {
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html?id=' + id;
+}
+
+// Filtrar por categoria
+async function filterByCategory(category) {
+    localStorage.setItem('selectedCategory', category);
+    window.location.href = 'categoria.html?cat=' + category;
 }
 
 // Busca
