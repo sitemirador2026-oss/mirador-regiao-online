@@ -1604,7 +1604,7 @@
                     </div>
                 </header>
 
-                <!-- Dashboard Page -->
+                <!-- DASHBOARD PAGE -->
                 <div id="dashboardPage" class="page-content">
                     <div class="page-header">
                         <div>
@@ -1615,19 +1615,14 @@
 
                     <!-- Stats Grid -->
                     <div class="stats-grid">
-                        <div class="stat-card primary">
+                        <div class="stat-card primary" onclick="showPage('news', document.querySelectorAll('.nav-item')[1])" style="cursor: pointer;">
                             <div class="stat-header">
                                 <div class="stat-icon primary">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                                     </svg>
                                 </div>
-                                <span class="stat-trend up">
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                                    </svg>
-                                    +12%
-                                </span>
+                                <span class="stat-trend up">+12%</span>
                             </div>
                             <div class="stat-value" id="totalNews">0</div>
                             <div class="stat-label">Notícias Publicadas</div>
@@ -1641,30 +1636,20 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                     </svg>
                                 </div>
-                                <span class="stat-trend up">
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                                    </svg>
-                                    +24%
-                                </span>
+                                <span class="stat-trend up">+24%</span>
                             </div>
                             <div class="stat-value" id="totalViews">0</div>
                             <div class="stat-label">Total de Visualizações</div>
                         </div>
 
-                        <div class="stat-card warning">
+                        <div class="stat-card warning" onclick="showPage('news', document.querySelectorAll('.nav-item')[1])" style="cursor: pointer;">
                             <div class="stat-header">
                                 <div class="stat-icon warning">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                 </div>
-                                <span class="stat-trend down">
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                                    </svg>
-                                    -5%
-                                </span>
+                                <span class="stat-trend down">-5%</span>
                             </div>
                             <div class="stat-value" id="draftNews">0</div>
                             <div class="stat-label">Rascunhos Pendentes</div>
@@ -1677,86 +1662,207 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                                     </svg>
                                 </div>
-                                <span class="stat-trend up">
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                                    </svg>
-                                    +8%
-                                </span>
+                                <span class="stat-trend up">+8%</span>
                             </div>
                             <div class="stat-value">1.2K</div>
                             <div class="stat-label">Leitores Ativos</div>
                         </div>
                     </div>
 
-                    <!-- Content Grid -->
-                    <div class="content-grid">
-                        <!-- News Table -->
+                    <!-- Ações Rápidas do Dashboard -->
+                    <div class="content-grid" style="margin-top: 2rem;">
                         <div class="content-section">
                             <div class="section-header">
-                                <h2 class="section-title">Últimas Publicações</h2>
-                                <div class="section-actions">
-                                    <button class="btn btn-secondary btn-sm">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                                        </svg>
-                                        Filtrar
-                                    </button>
-                                    <button class="btn btn-primary btn-sm" onclick="showCreateNewsPage()">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                        </svg>
-                                        Nova Notícia
-                                    </button>
-                                </div>
+                                <h2 class="section-title">Ações Rápidas</h2>
                             </div>
-                            <div class="table-container">
-                                <table class="data-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Status</th>
-                                            <th>Título</th>
-                                            <th>Categoria</th>
-                                            <th>Data</th>
-                                            <th>Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="newsList">
-                                        <!-- Notícias serão inseridas aqui -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Quick Actions - Apenas Escrever Notícia -->
-                        <div class="quick-actions">
-                            <div class="action-card">
-                                <h3 class="action-card-title">Ações Rápidas</h3>
-                                <button class="quick-btn" onclick="showCreateNewsPage()">
+                            <div style="padding: 1.5rem;">
+                                <button class="quick-btn" onclick="showCreateNewsPage()" style="width: 100%; margin-bottom: 0.75rem;">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                     Escrever nova notícia
                                 </button>
+                                <button class="quick-btn" onclick="showPage('settings', document.querySelectorAll('.nav-item')[5])" style="width: 100%;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    Personalizar aparência
+                                </button>
                             </div>
+                        </div>
 
-                            <!-- Recent Activity -->
-                            <div class="action-card">
-                                <h3 class="action-card-title">Atividade Recente</h3>
-                                <div class="activity-list" id="activityList">
-                                    <div class="activity-item">
-                                        <div class="activity-icon published">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                        </div>
-                                        <div class="activity-content">
-                                            <div class="activity-text">Notícia <strong>"Nova obra inaugura"</strong> publicada</div>
-                                            <div class="activity-time">Há 2 horas</div>
-                                        </div>
+                        <!-- Recent Activity -->
+                        <div class="action-card">
+                            <h3 class="action-card-title">Atividade Recente</h3>
+                            <div class="activity-list" id="activityList">
+                                <div class="activity-item">
+                                    <div class="activity-icon published">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <div class="activity-content">
+                                        <div class="activity-text">Notícia <strong>"Nova obra inaugura"</strong> publicada</div>
+                                        <div class="activity-time">Há 2 horas</div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NEWS PAGE - Página exclusiva de Notícias -->
+                <div id="newsPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Notícias</h1>
+                            <p class="page-subtitle">Gerencie todas as suas notícias</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="showCreateNewsPage()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Nova Notícia
+                        </button>
+                    </div>
+
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Todas as Notícias</h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary btn-sm">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                    </svg>
+                                    Filtrar
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Título</th>
+                                        <th>Categoria</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="newsListPage">
+                                    <!-- Notícias serão inseridas aqui -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CATEGORIES PAGE -->
+                <div id="categoriesPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Categorias</h1>
+                            <p class="page-subtitle">Gerencie as categorias do seu site</p>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Categorias Existentes</h2>
+                            </div>
+                            <div style="padding: 1.5rem;">
+                                <div id="categoriesList" style="display: grid; gap: 0.75rem;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Mirador</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: var(--success); border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Região</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: var(--danger); border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Brasil</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: var(--warning); border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Polícia</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: var(--info); border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Esportes</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                            <span style="width: 12px; height: 12px; background: #8b5cf6; border-radius: 50%;"></span>
+                                            <span style="font-weight: 500;">Política</span>
+                                        </div>
+                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 notícias</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="content-section" style="max-width: 400px;">
+                            <div class="section-header">
+                                <h2 class="section-title">Adicionar Categoria</h2>
+                            </div>
+                            <div style="padding: 1.5rem;">
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Nome da Categoria</label>
+                                    <input type="text" class="form-input" placeholder="Ex: Tecnologia" style="width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: var(--radius);">
+                                </div>
+                                <div class="form-group" style="margin-bottom: 1rem;">
+                                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Cor</label>
+                                    <input type="color" value="#2563eb" style="width: 100%; height: 40px; border: 1px solid var(--border); border-radius: var(--radius);">
+                                </div>
+                                <button class="btn btn-primary" style="width: 100%;" onclick="showModal('Em breve!', 'Gerenciamento de categorias em desenvolvimento.', 'info')">
+                                    Adicionar Categoria
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MEDIA PAGE -->
+                <div id="mediaPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Mídia</h1>
+                            <p class="page-subtitle">Gerencie imagens e arquivos</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="showModal('Em breve!', 'Upload de mídia em desenvolvimento.', 'info')">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Upload
+                        </button>
+                    </div>
+
+                    <div class="content-section">
+                        <div style="padding: 3rem; text-align: center;">
+                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; color: var(--text-muted);">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Biblioteca de Mídia</h3>
+                            <p style="color: var(--text-muted);">Funcionalidade em desenvolvimento.</p>
                         </div>
                     </div>
                 </div>
@@ -2372,7 +2478,7 @@
                     <div class="news-editor-container">
                         <div class="page-header" style="margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 1rem;">
-                                <button class="btn btn-secondary" onclick="showPage('dashboard', document.querySelector('.nav-item.active'))">
+                                <button class="btn btn-secondary" onclick="showPage('news', document.querySelectorAll('.nav-item')[1])">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                                     </svg>
@@ -2633,9 +2739,9 @@
             const pageMap = {
                 'dashboard': 'dashboardPage',
                 'settings': 'settingsPage',
-                'news': 'dashboardPage',
-                'categories': 'dashboardPage',
-                'media': 'dashboardPage',
+                'news': 'newsPage',
+                'categories': 'categoriesPage',
+                'media': 'mediaPage',
                 'users': 'dashboardPage'
             };
 
@@ -2655,8 +2761,10 @@
             }
 
             // Carregar dados se necessário
-            if (pageName === 'dashboard' || pageName === 'news') {
+            if (pageName === 'dashboard') {
                 loadDashboard();
+            } else if (pageName === 'news') {
+                loadNewsPage();
             } else if (pageName === 'settings') {
                 loadColors();
             }
@@ -2681,8 +2789,28 @@
                 // Rascunhos (simulado por enquanto)
                 document.getElementById('draftNews').innerText = "0";
 
-                // Renderizar Tabela
-                const newsList = document.getElementById('newsList');
+                // Rascunhos
+                const drafts = news.filter(n => n.status === 'draft').length;
+                document.getElementById('draftNews').innerText = drafts;
+
+            } catch (error) {
+                console.error("Erro ao carregar dashboard:", error);
+            }
+        }
+
+        // Carregar página de Notícias
+        async function loadNewsPage() {
+            try {
+                const snapshot = await db.collection('news').orderBy('date', 'desc').get();
+                const news = [];
+                snapshot.forEach(doc => {
+                    news.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Renderizar Tabela na página de Notícias
+                const newsList = document.getElementById('newsListPage');
+                if (!newsList) return;
+                
                 newsList.innerHTML = '';
 
                 if (news.length === 0) {
@@ -2705,8 +2833,8 @@
 
                 news.forEach(n => {
                     const date = new Date(n.date).toLocaleDateString('pt-BR');
-                    const statusClass = n.status === 'DRAFT' ? 'status-draft' : 'status-published';
-                    const statusText = n.status === 'DRAFT' ? 'Rascunho' : 'Publicado';
+                    const statusClass = n.status === 'draft' ? 'status-draft' : 'status-published';
+                    const statusText = n.status === 'draft' ? 'Rascunho' : 'Publicado';
 
                     const html = `
                         <tr>
@@ -2737,18 +2865,21 @@
                 });
 
             } catch (error) {
-                console.error("Erro ao carregar dashboard:", error);
-                document.getElementById('newsList').innerHTML = `
-                    <tr>
-                        <td colspan="5">
-                            <div class="empty-state">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                                </svg>
-                                <p>Erro ao carregar notícias</p>
-                            </div>
-                        </td>
-                    </tr>`;
+                console.error("Erro ao carregar notícias:", error);
+                const newsList = document.getElementById('newsListPage');
+                if (newsList) {
+                    newsList.innerHTML = `
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                    </svg>
+                                    <p>Erro ao carregar notícias</p>
+                                </div>
+                            </td>
+                        </tr>`;
+                }
             }
         }
 
@@ -2760,6 +2891,7 @@
                 await db.collection('news').doc(id).delete();
                 showModal('Sucesso!', 'Notícia excluída com sucesso!', 'success');
                 loadDashboard();
+                loadNewsPage();
             } catch (error) {
                 console.error('Erro ao excluir notícia:', error);
                 showModal('Erro!', 'Não foi possível excluir a notícia.', 'error');
@@ -3397,7 +3529,8 @@
                 }
                 
                 resetNewsForm();
-                showPage('dashboard', document.querySelector('.nav-item'));
+                showPage('news', document.querySelectorAll('.nav-item')[1]);
+                loadNewsPage();
                 loadDashboard();
             } catch (error) {
                 console.error('Erro ao salvar notícia:', error);
