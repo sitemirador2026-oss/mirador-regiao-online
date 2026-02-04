@@ -1,4 +1,4 @@
-﻿// App principal do site pÃºblico
+﻿// App principal do site público
 
 console.log('[App] v2.5 - Script carregado');
 
@@ -12,29 +12,29 @@ const sampleNews = [
         categoryName: "Mirador",
         image: "https://via.placeholder.com/800x400/2563eb/ffffff?text=Mirador",
         date: "2026-02-03T12:30:00",
-        author: "RedaÃ§Ã£o",
+        author: "Redação",
         featured: true
     },
     {
         id: '2',
-        title: "RegiÃ£o registra crescimento econÃ´mico no Ãºltimo trimestre",
-        excerpt: "Dados mostram aumento de 15% na atividade econÃ´mica regional.",
+        title: "Região registra crescimento econômico no último trimestre",
+        excerpt: "Dados mostram aumento de 15% na atividade econômica regional.",
         category: "regiao",
-        categoryName: "RegiÃ£o",
-        image: "https://via.placeholder.com/800x400/059669/ffffff?text=RegiÃ£o",
+        categoryName: "Região",
+        image: "https://via.placeholder.com/800x400/059669/ffffff?text=Região",
         date: "2026-02-03T10:15:00",
-        author: "RedaÃ§Ã£o",
+        author: "Redação",
         featured: true
     },
     {
         id: '3',
-        title: "SeleÃ§Ã£o Brasileira se prepara para prÃ³ximos jogos",
-        excerpt: "TÃ©cnico convoca novos jogadores para amistosos internacionais.",
+        title: "Seleção Brasileira se prepara para próximos jogos",
+        excerpt: "Técnico convoca novos jogadores para amistosos internacionais.",
         category: "brasil",
         categoryName: "Brasil",
         image: "https://via.placeholder.com/800x400/dc2626/ffffff?text=Brasil",
         date: "2026-02-02T18:05:00",
-        author: "RedaÃ§Ã£o",
+        author: "Redação",
         featured: false
     }
 ];
@@ -44,14 +44,14 @@ async function initializeData() {
     try {
         const snapshot = await db.collection('news').limit(1).get();
         if (snapshot.empty) {
-            console.log('[App] Adicionando notÃ­cias de exemplo...');
+            console.log('[App] Adicionando notícias de exemplo...');
             const batch = db.batch();
             sampleNews.forEach(news => {
                 const ref = db.collection('news').doc(news.id);
                 batch.set(ref, { ...news, views: 0 });
             });
             await batch.commit();
-            console.log('[App] NotÃ­cias adicionadas!');
+            console.log('[App] Notícias adicionadas!');
         }
     } catch (error) {
         console.error('[App] Erro ao inicializar dados:', error);
@@ -78,7 +78,7 @@ function formatDateTime(dateString) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    return `${dateStr} â€¢ ${timeStr}`;
+    return `${dateStr} • ${timeStr}`;
 }
 
 function getDomainFromUrl(url) {
@@ -91,7 +91,7 @@ function getDomainFromUrl(url) {
     }
 }
 
-// Criar card de notÃ­cia
+// Criar card de notícia
 function createNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
     const sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl || '');
@@ -110,7 +110,7 @@ function createNewsCard(news) {
             <div class="news-card-footer">
                 <div class="news-card-meta">
                     <span class="news-card-category-text">${categoryLabel}</span>
-                    <span class="news-card-meta-divider">â€¢</span>
+                    <span class="news-card-meta-divider">•</span>
                     <span class="news-card-date">${formatDateTime(news.date)}</span>
                 </div>
                 ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="${sourceDomain}"></div>` : ''}
@@ -119,7 +119,7 @@ function createNewsCard(news) {
     `;
 }
 
-// Renderizar notÃ­cias
+// Renderizar notícias
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
@@ -130,23 +130,23 @@ async function renderNews() {
         if (featuredContainer) {
             featuredContainer.innerHTML = featured.length > 0 
                 ? featured.map(createNewsCard).join('')
-                : '<div class="empty-state">Nenhuma notÃ­cia em destaque.</div>';
+                : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
         }
         
-        // Ãšltimas notÃ­cias
+        // Últimas notícias
         const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
         const latestContainer = document.getElementById('latestNews');
         if (latestContainer) {
             latestContainer.innerHTML = latest.length > 0
                 ? latest.map(createNewsCard).join('')
-                : '<div class="empty-state">Nenhuma notÃ­cia encontrada.</div>';
+                : '<div class="empty-state">Nenhuma notícia encontrada.</div>';
         }
     } catch (error) {
-        console.error('[App] Erro ao renderizar notÃ­cias:', error);
+        console.error('[App] Erro ao renderizar notícias:', error);
     }
 }
 
-// Ver detalhes da notÃ­cia
+// Ver detalhes da notícia
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html?id=' + id;
@@ -194,7 +194,7 @@ async function filterByCategory(category) {
     if (container) {
         container.innerHTML = filtered.length > 0
             ? filtered.map(createNewsCard).join('')
-            : '<div class="empty-state">Nenhuma notÃ­cia nesta categoria.</div>';
+            : '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
         container.scrollIntoView({ behavior: 'smooth' });
     }
     
@@ -205,14 +205,14 @@ async function filterByCategory(category) {
     }
 }
 
-// InicializaÃ§Ã£o
+// Inicialização
 document.addEventListener('DOMContentLoaded', async function() {
     console.log('[App] v2.5 - Inicializando...');
     
     // Inicializar dados
     await initializeData();
     
-    // Renderizar notÃ­cias
+    // Renderizar notícias
     await renderNews();
     
     // Event Listeners
@@ -254,3 +254,4 @@ document.addEventListener('DOMContentLoaded', async function() {
 });
 
 console.log('[App] v2.5 - Script finalizado');
+

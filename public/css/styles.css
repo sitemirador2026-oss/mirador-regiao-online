@@ -25,7 +25,7 @@
     --footer-text: #64748b;
     --footer-text-auto: #64748b;
     
-    /* EspaÃ§amentos */
+    /* Espaçamentos */
     --container-max: 1200px;
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
@@ -618,3 +618,4 @@ body {
         grid-template-columns: repeat(2, 1fr);
     }
 }
+

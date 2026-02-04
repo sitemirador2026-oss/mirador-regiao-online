@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NotÃ­cias de Mirador, regiÃ£o e Brasil">
-    <title id="siteTitle">NotÃ­cia - Mirador e RegiÃ£o Online</title>
+    <meta name="description" content="Notícias de Mirador, região e Brasil">
+    <title id="siteTitle">Notícia - Mirador e Região Online</title>
     <link rel="stylesheet" href="css/styles.css?v=16">
     
     <style>
@@ -230,16 +230,16 @@
             <div class="header-content">
                 <a href="index.html" class="logo" id="siteLogoLink">
                     <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
-                    <span id="siteLogoText" class="logo-text">Mirador e RegiÃ£o Online</span>
+                    <span id="siteLogoText" class="logo-text">Mirador e Região Online</span>
                 </a>
 
                 <nav class="nav-desktop">
                     <a href="index.html?category=mirador">Mirador</a>
-                    <a href="index.html?category=regiao">RegiÃ£o</a>
+                    <a href="index.html?category=regiao">Região</a>
                     <a href="index.html?category=brasil">Brasil</a>
-                    <a href="index.html?category=policia">PolÃ­cia</a>
+                    <a href="index.html?category=policia">Polícia</a>
                     <a href="index.html?category=esportes">Esportes</a>
-                    <a href="index.html?category=politica">PolÃ­tica</a>
+                    <a href="index.html?category=politica">Política</a>
                 </nav>
 
                 <div class="header-actions">
@@ -265,7 +265,7 @@
     <div class="search-modal" id="searchModal">
         <div class="search-modal-content">
             <button class="search-close" onclick="closeSearch()">&times;</button>
-            <input type="text" id="searchInput" placeholder="Buscar notÃ­cias..." class="search-input" onkeyup="handleSearch(event)">
+            <input type="text" id="searchInput" placeholder="Buscar notícias..." class="search-input" onkeyup="handleSearch(event)">
             <div id="searchResults" class="search-results"></div>
         </div>
     </div>
@@ -275,18 +275,18 @@
         <button class="mobile-menu-close" onclick="toggleMobileMenu()">&times;</button>
         <nav class="mobile-nav">
             <a href="index.html?category=mirador">Mirador</a>
-            <a href="index.html?category=regiao">RegiÃ£o</a>
+            <a href="index.html?category=regiao">Região</a>
             <a href="index.html?category=brasil">Brasil</a>
-            <a href="index.html?category=policia">PolÃ­cia</a>
+            <a href="index.html?category=policia">Polícia</a>
             <a href="index.html?category=esportes">Esportes</a>
-            <a href="index.html?category=politica">PolÃ­tica</a>
+            <a href="index.html?category=politica">Política</a>
         </nav>
     </div>
 
     <!-- Main Content -->
     <main class="main">
         <article class="article-container" id="newsArticle">
-            <!-- ConteÃºdo serÃ¡ carregado aqui -->
+            <!-- Conteúdo será carregado aqui -->
         </article>
     </main>
 
@@ -295,28 +295,28 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
-                    <h3 class="footer-title" id="footerSiteName">Mirador e RegiÃ£o Online</h3>
-                    <p class="footer-text">NotÃ­cias de Mirador, regiÃ£o e Brasil. InformaÃ§Ã£o com credibilidade e agilidade.</p>
+                    <h3 class="footer-title" id="footerSiteName">Mirador e Região Online</h3>
+                    <p class="footer-text">Notícias de Mirador, região e Brasil. Informação com credibilidade e agilidade.</p>
                 </div>
 
                 <div class="footer-col">
                     <h4 class="footer-heading">Categorias</h4>
                     <ul class="footer-links">
                         <li><a href="index.html?category=mirador">Mirador</a></li>
-                        <li><a href="index.html?category=regiao">RegiÃ£o</a></li>
+                        <li><a href="index.html?category=regiao">Região</a></li>
                         <li><a href="index.html?category=brasil">Brasil</a></li>
-                        <li><a href="index.html?category=policia">PolÃ­cia</a></li>
+                        <li><a href="index.html?category=policia">Polícia</a></li>
                         <li><a href="index.html?category=esportes">Esportes</a></li>
-                        <li><a href="index.html?category=politica">PolÃ­tica</a></li>
+                        <li><a href="index.html?category=politica">Política</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-col">
                     <h4 class="footer-heading">Links</h4>
                     <ul class="footer-links">
-                        <li><a href="sobre.html">Sobre nÃ³s</a></li>
+                        <li><a href="sobre.html">Sobre nós</a></li>
                         <li><a href="contato.html">Contato</a></li>
-                        <li><a href="privacidade.html">PolÃ­tica de Privacidade</a></li>
+                        <li><a href="privacidade.html">Política de Privacidade</a></li>
                         <li><a href="termos.html">Termos de Uso</a></li>
                     </ul>
                 </div>
@@ -339,7 +339,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p id="footerCopyright">&copy; 2026 Mirador e RegiÃ£o Online. Todos os direitos reservados.</p>
+                <p id="footerCopyright">&copy; 2026 Mirador e Região Online. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -384,7 +384,7 @@
                     .get();
 
                 if (snapshot.empty) {
-                    resultsContainer.innerHTML = '<div class="search-no-results">Nenhuma notÃ­cia encontrada</div>';
+                    resultsContainer.innerHTML = '<div class="search-no-results">Nenhuma notícia encontrada</div>';
                     return;
                 }
 
@@ -416,7 +416,7 @@
         // FIREBASE FUNCTIONS
         // ============================================
 
-        // Carregar configuraÃ§Ãµes do Firebase
+        // Carregar configurações do Firebase
         async function loadAndApplySettings() {
             try {
                 // Carregar cores
@@ -440,11 +440,11 @@
                 const brandDoc = await db.collection('settings').doc('brand').get();
                 if (brandDoc.exists) {
                     const brand = brandDoc.data();
-                    const siteName = brand.siteName || 'Mirador e RegiÃ£o Online';
+                    const siteName = brand.siteName || 'Mirador e Região Online';
                     
                     // Update title
                     const siteTitleEl = document.getElementById('siteTitle');
-                    if (siteTitleEl) siteTitleEl.textContent = 'NotÃ­cia - ' + siteName;
+                    if (siteTitleEl) siteTitleEl.textContent = 'Notícia - ' + siteName;
                     
                     // Update logo in header
                     const logoImg = document.getElementById('siteLogoImg');
@@ -472,12 +472,12 @@
                     return siteName;
                 }
             } catch (error) {
-                console.error('Erro ao carregar configuraÃ§Ãµes:', error);
+                console.error('Erro ao carregar configurações:', error);
             }
-            return 'Mirador e RegiÃ£o Online';
+            return 'Mirador e Região Online';
         }
         
-        // Carregar notÃ­cia do Firebase
+        // Carregar notícia do Firebase
         async function loadNewsFromFirebase(newsId) {
             try {
                 const doc = await db.collection('news').doc(newsId).get();
@@ -486,16 +486,16 @@
                 }
                 return null;
             } catch (error) {
-                console.error('Erro ao carregar notÃ­cia:', error);
+                console.error('Erro ao carregar notícia:', error);
                 return null;
             }
         }
         
         document.addEventListener('DOMContentLoaded', async function () {
-            // Carregar configuraÃ§Ãµes do Firebase
+            // Carregar configurações do Firebase
             const siteName = await loadAndApplySettings();
             
-            // Pegar ID da notÃ­cia da URL
+            // Pegar ID da notícia da URL
             const urlParams = new URLSearchParams(window.location.search);
             const newsId = urlParams.get('id');
             
@@ -504,22 +504,22 @@
             if (!newsId) {
                 container.innerHTML = `
                     <div class="empty-state" style="padding: 4rem 0; text-align: center;">
-                        <h2>NotÃ­cia nÃ£o encontrada</h2>
-                        <p>ID da notÃ­cia nÃ£o especificado.</p>
-                        <a href="index.html" class="back-link" style="margin-top: 1rem;">â† Voltar para home</a>
+                        <h2>Notícia não encontrada</h2>
+                        <p>ID da notícia não especificado.</p>
+                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar para home</a>
                     </div>`;
                 return;
             }
 
-            // Carregar notÃ­cia do Firebase
+            // Carregar notícia do Firebase
             const article = await loadNewsFromFirebase(newsId);
 
             if (!article) {
                 container.innerHTML = `
                     <div class="empty-state" style="padding: 4rem 0; text-align: center;">
-                        <h2>NotÃ­cia nÃ£o encontrada</h2>
-                        <p>NÃ£o foi possÃ­vel encontrar a notÃ­cia solicitada.</p>
-                        <a href="index.html" class="back-link" style="margin-top: 1rem;">â† Voltar para home</a>
+                        <h2>Notícia não encontrada</h2>
+                        <p>Não foi possível encontrar a notícia solicitada.</p>
+                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar para home</a>
                     </div>`;
                 return;
             }
@@ -567,18 +567,18 @@
                 `
                 : '';
 
-            // Status da publicaÃ§Ã£o
+            // Status da publicação
             const statusText = article.status === 'draft' ? 'Rascunho' : 'Publicado';
             const statusClass = article.status === 'draft' ? 'draft' : 'published';
 
-            // Montar HTML da notÃ­cia
+            // Montar HTML da notícia
             let html = `
                 <div class="article-header">
                     <span class="article-category">${article.categoryName || article.category || 'Geral'}</span>
                     <h1 class="article-title">${article.title}</h1>
                     <div class="article-meta">
                         <span>${formattedDateTime}</span>
-                        <span>Por ${article.author || 'RedaÃ§Ã£o'}</span>
+                        <span>Por ${article.author || 'Redação'}</span>
                     </div>
                 ${sourceHtml}
                 </div>
@@ -618,12 +618,12 @@
                     <div class="article-embed">
                         <iframe class="article-embed-frame" src="${externalUrl}" loading="lazy"></iframe>
                         <div class="article-embed-fallback">
-                            Se o conteÃºdo nÃ£o carregar, <a href="${externalUrl}" target="_blank" rel="noopener">abra no site original</a>.
+                            Se o conteúdo não carregar, <a href="${externalUrl}" target="_blank" rel="noopener">abra no site original</a>.
                         </div>
                     </div>
                 `;
             } else {
-                // Adicionar conteÃºdo interno
+                // Adicionar conteúdo interno
                 html += `
                     <div class="article-content">
                         ${article.content || article.excerpt || ''}
@@ -633,13 +633,13 @@
 
             html += `
                 <div class="article-footer">
-                    <a href="index.html" class="back-link">â† Voltar para home</a>
+                    <a href="index.html" class="back-link">&larr; Voltar para home</a>
                 </div>
             `;
             
             container.innerHTML = html;
             
-            // Incrementar visualizaÃ§Ãµes
+            // Incrementar visualizações
             try {
                 await db.collection('news').doc(newsId).update({
                     views: firebase.firestore.FieldValue.increment(1)
@@ -652,3 +652,4 @@
 </body>
 
 </html>
+
