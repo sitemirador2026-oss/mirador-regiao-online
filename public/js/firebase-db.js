@@ -35,11 +35,16 @@ function startRealtimeListeners() {
     db.collection('settings').doc('brand')
         .onSnapshot((doc) => {
             if (doc.exists) {
-                console.log('[Firebase DB] Marca atualizada:', doc.data());
-                applyBrand(doc.data());
-                localStorage.setItem('publicSiteBrand', JSON.stringify(doc.data()));
+                const data = doc.data();
+                console.log('[Firebase DB] Marca atualizada:', data);
+                console.log('[Firebase DB] Logo presente?', !!data.logo, 'Tamanho:', data.logo ? data.logo.length : 0);
+                console.log('[Firebase DB] SiteName:', data.siteName);
+                applyBrand(data);
+                localStorage.setItem('publicSiteBrand', JSON.stringify(data));
                 settingsLoaded.brand = true;
                 hideLoadingWarning();
+            } else {
+                console.log('[Firebase DB] Documento brand NÃO EXISTE no Firebase');
             }
         }, (error) => {
             console.error('[Firebase DB] Erro ao carregar marca:', error.code, error.message);
@@ -175,7 +180,12 @@ function applyColors(colors) {
 
 // Aplicar marca
 function applyBrand(brand) {
-    if (!brand) return;
+    console.log('[Aplicar Marca] Iniciando...', brand);
+    
+    if (!brand) {
+        console.log('[Aplicar Marca] Nenhuma marca recebida');
+        return;
+    }
     
     // Nome do site
     if (brand.siteName) {
@@ -188,17 +198,24 @@ function applyBrand(brand) {
     const logoImg = document.getElementById('siteLogoImg');
     const logoText = document.getElementById('siteLogoText');
     
+    console.log('[Aplicar Marca] Elementos - logoImg:', !!logoImg, 'logoText:', !!logoText);
+    console.log('[Aplicar Marca] Tem logo?', !!brand.logo);
+    
     if (brand.logo && logoImg) {
+        console.log('[Aplicar Marca] Aplicando logo...');
         logoImg.src = brand.logo;
         logoImg.style.display = 'block';
         logoImg.alt = brand.siteName || 'Logo';
         if (logoText) logoText.style.display = 'none';
-        console.log('[Aplicar Marca] Logo aplicada');
+        console.log('[Aplicar Marca] ✅ Logo aplicada!');
     } else if (brand.siteName && logoText) {
+        console.log('[Aplicar Marca] Aplicando texto:', brand.siteName);
         logoText.textContent = brand.siteName;
         logoText.style.display = 'block';
         if (logoImg) logoImg.style.display = 'none';
-        console.log('[Aplicar Marca] Texto aplicado:', brand.siteName);
+        console.log('[Aplicar Marca] ✅ Texto aplicado!');
+    } else {
+        console.log('[Aplicar Marca] ❌ Não foi possível aplicar marca');
     }
     
     // Footer
