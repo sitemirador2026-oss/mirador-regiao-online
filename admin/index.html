@@ -2334,17 +2334,22 @@
                 MutedForeground: document.getElementById('colorMutedForeground').value
             };
 
+            console.log('[Admin] Salvando cores:', colors);
+
             try {
                 // Salvar no Firebase Firestore
                 await db.collection('settings').doc('colors').set(colors);
+                console.log('[Admin] Cores salvas no Firebase com sucesso!');
                 
                 // Também salvar no localStorage para o admin
                 localStorage.setItem('siteColors', JSON.stringify(colors));
                 
                 showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.', 'success');
             } catch (error) {
-                console.error('Erro ao salvar cores:', error);
-                showModal('Erro!', 'Não foi possível salvar as cores.', 'error');
+                console.error('[Admin] Erro ao salvar cores:', error);
+                console.error('[Admin] Código do erro:', error.code);
+                console.error('[Admin] Mensagem:', error.message);
+                showModal('Erro!', 'Não foi possível salvar as cores.\n\nVerifique o console para mais detalhes.', 'error');
             }
         }
 
@@ -2509,9 +2514,12 @@
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
+            console.log('[Admin] Salvando marca:', { ...brandSettings, logo: brandSettings.logo ? '[BASE64_IMAGE]' : null });
+
             try {
                 // Salvar no Firebase Firestore
                 await db.collection('settings').doc('brand').set(brandSettings);
+                console.log('[Admin] Marca salva no Firebase com sucesso!');
                 
                 // Também salvar no localStorage para o admin
                 localStorage.setItem('siteBrand', JSON.stringify(brandSettings));
@@ -2521,8 +2529,10 @@
 
                 showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.', 'success');
             } catch (error) {
-                console.error('Erro ao salvar identidade visual:', error);
-                showModal('Erro!', 'Não foi possível salvar a identidade visual.', 'error');
+                console.error('[Admin] Erro ao salvar identidade visual:', error);
+                console.error('[Admin] Código do erro:', error.code);
+                console.error('[Admin] Mensagem:', error.message);
+                showModal('Erro!', 'Não foi possível salvar a identidade visual.\n\nVerifique o console para mais detalhes.', 'error');
             }
         }
 

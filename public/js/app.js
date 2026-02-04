@@ -75,7 +75,7 @@ async function initializeData() {
 
         // Se não houver notícias, adicionar dados de exemplo
         if (snapshot.empty) {
-            console.log('Adicionando dados de exemplo ao Firebase...');
+            console.log('[App] Adicionando dados de exemplo ao Firebase...');
             const batch = db.batch();
 
             sampleNews.forEach(news => {
@@ -88,10 +88,10 @@ async function initializeData() {
             });
 
             await batch.commit();
-            console.log('Dados de exemplo adicionados!');
+            console.log('[App] Dados de exemplo adicionados!');
         }
     } catch (error) {
-        console.error('Erro ao inicializar dados:', error);
+        console.error('[App] Erro ao inicializar dados:', error);
     }
 }
 
@@ -216,9 +216,26 @@ function toggleMobileMenu() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async function () {
-    // Aplicar cores e marca do Firebase
-    await applyFirebaseColors();
-    await applyFirebaseBrand();
+    console.log('[App] DOM carregado, iniciando aplicação...');
+    
+    // Verificar se as funções do Firebase estão disponíveis
+    console.log('[App] Verificando funções:', {
+        applyFirebaseColors: typeof window.applyFirebaseColors,
+        applyFirebaseBrand: typeof window.applyFirebaseBrand
+    });
+    
+    try {
+        // Aplicar cores e marca do Firebase
+        console.log('[App] Aplicando cores do Firebase...');
+        const coresResult = await applyFirebaseColors();
+        console.log('[App] Resultado cores:', coresResult);
+        
+        console.log('[App] Aplicando marca do Firebase...');
+        const marcaResult = await applyFirebaseBrand();
+        console.log('[App] Resultado marca:', marcaResult);
+    } catch (error) {
+        console.error('[App] ERRO ao aplicar configurações:', error);
+    }
 
     // Inicializar dados
     await initializeData();
@@ -278,4 +295,6 @@ document.addEventListener('DOMContentLoaded', async function () {
             menu.classList.remove('active');
         }
     });
+    
+    console.log('[App] Aplicação inicializada!');
 });
