@@ -1702,7 +1702,7 @@
                                         </svg>
                                         Filtrar
                                     </button>
-                                    <button class="btn btn-primary btn-sm" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
+                                    <button class="btn btn-primary btn-sm" onclick="showCreateNewsPage()">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                         </svg>
@@ -1728,42 +1728,22 @@
                             </div>
                         </div>
 
-                        <!-- Quick Actions & Activity -->
+                        <!-- Quick Actions - Apenas Escrever Notícia -->
                         <div class="quick-actions">
-                            <!-- Quick Actions -->
                             <div class="action-card">
                                 <h3 class="action-card-title">Ações Rápidas</h3>
-                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
+                                <button class="quick-btn" onclick="showCreateNewsPage()">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                     Escrever nova notícia
-                                </button>
-                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    Fazer upload de imagem
-                                </button>
-                                <button class="quick-btn" onclick="showPage('settings', document.querySelectorAll('.nav-item')[4]); return false;">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                    Personalizar aparência
-                                </button>
-                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                                    </svg>
-                                    Gerar relatório
                                 </button>
                             </div>
 
                             <!-- Recent Activity -->
                             <div class="action-card">
                                 <h3 class="action-card-title">Atividade Recente</h3>
-                                <div class="activity-list">
+                                <div class="activity-list" id="activityList">
                                     <div class="activity-item">
                                         <div class="activity-icon published">
                                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1773,28 +1753,6 @@
                                         <div class="activity-content">
                                             <div class="activity-text">Notícia <strong>"Nova obra inaugura"</strong> publicada</div>
                                             <div class="activity-time">Há 2 horas</div>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon edited">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                            </svg>
-                                        </div>
-                                        <div class="activity-content">
-                                            <div class="activity-text"><strong>João</strong> editou uma notícia</div>
-                                            <div class="activity-time">Há 4 horas</div>
-                                        </div>
-                                    </div>
-                                    <div class="activity-item">
-                                        <div class="activity-icon deleted">
-                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                            </svg>
-                                        </div>
-                                        <div class="activity-content">
-                                            <div class="activity-text">Notícia <strong>"Evento cancelado"</strong> excluída</div>
-                                            <div class="activity-time">Há 6 horas</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2224,6 +2182,347 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- CRIAR/EDITAR NOTÍCIA PAGE -->
+                <div id="createNewsPage" class="page-content" style="display: none;">
+                    <style>
+                        .news-editor-container {
+                            max-width: 1200px;
+                        }
+                        .news-editor-layout {
+                            display: grid;
+                            grid-template-columns: 1fr 320px;
+                            gap: 1.5rem;
+                        }
+                        @media (max-width: 1024px) {
+                            .news-editor-layout {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+                        .editor-main {
+                            background: var(--bg-card);
+                            border-radius: var(--radius-lg);
+                            border: 1px solid var(--border);
+                            padding: 1.5rem;
+                        }
+                        .editor-sidebar {
+                            display: flex;
+                            flex-direction: column;
+                            gap: 1rem;
+                        }
+                        .editor-sidebar-card {
+                            background: var(--bg-card);
+                            border-radius: var(--radius-lg);
+                            border: 1px solid var(--border);
+                            padding: 1rem;
+                        }
+                        .editor-sidebar-title {
+                            font-size: 0.875rem;
+                            font-weight: 600;
+                            margin-bottom: 0.75rem;
+                            color: var(--text-primary);
+                        }
+                        .form-group {
+                            margin-bottom: 1.25rem;
+                        }
+                        .form-group:last-child {
+                            margin-bottom: 0;
+                        }
+                        .form-label {
+                            display: block;
+                            font-size: 0.8125rem;
+                            font-weight: 500;
+                            color: var(--text-secondary);
+                            margin-bottom: 0.375rem;
+                        }
+                        .form-input, .form-select, .form-textarea {
+                            width: 100%;
+                            padding: 0.625rem 0.875rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            font-size: 0.9375rem;
+                            background: var(--bg-card);
+                            color: var(--text-primary);
+                            transition: var(--transition);
+                        }
+                        .form-input:focus, .form-select:focus, .form-textarea:focus {
+                            outline: none;
+                            border-color: var(--primary-light);
+                            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+                        }
+                        .form-textarea {
+                            resize: vertical;
+                            min-height: 100px;
+                        }
+                        .rich-text-editor {
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            overflow: hidden;
+                        }
+                        .editor-toolbar {
+                            display: flex;
+                            flex-wrap: wrap;
+                            gap: 0.25rem;
+                            padding: 0.5rem;
+                            background: var(--bg-primary);
+                            border-bottom: 1px solid var(--border);
+                        }
+                        .editor-toolbar button {
+                            padding: 0.375rem 0.625rem;
+                            background: transparent;
+                            border: 1px solid transparent;
+                            border-radius: var(--radius-sm);
+                            cursor: pointer;
+                            font-size: 0.875rem;
+                            color: var(--text-secondary);
+                            transition: all 0.2s;
+                        }
+                        .editor-toolbar button:hover {
+                            background: var(--bg-secondary);
+                            border-color: var(--border);
+                            color: var(--text-primary);
+                        }
+                        .editor-content {
+                            min-height: 400px;
+                            padding: 1rem;
+                            outline: none;
+                            line-height: 1.8;
+                        }
+                        .editor-content:focus {
+                            background: var(--bg-primary);
+                        }
+                        .editor-content p {
+                            margin-bottom: 1rem;
+                        }
+                        .editor-content h2 {
+                            font-size: 1.5rem;
+                            font-weight: 600;
+                            margin: 1.5rem 0 1rem;
+                        }
+                        .editor-content h3 {
+                            font-size: 1.25rem;
+                            font-weight: 600;
+                            margin: 1.25rem 0 0.75rem;
+                        }
+                        .editor-content blockquote {
+                            border-left: 4px solid var(--primary);
+                            padding-left: 1rem;
+                            margin: 1rem 0;
+                            font-style: italic;
+                            color: var(--text-secondary);
+                        }
+                        .editor-content ul, .editor-content ol {
+                            margin: 1rem 0;
+                            padding-left: 2rem;
+                        }
+                        .editor-content li {
+                            margin-bottom: 0.5rem;
+                        }
+                        .featured-image-upload {
+                            border: 2px dashed var(--border);
+                            border-radius: var(--radius);
+                            padding: 1.5rem;
+                            text-align: center;
+                            cursor: pointer;
+                            transition: var(--transition);
+                            background: var(--bg-primary);
+                        }
+                        .featured-image-upload:hover {
+                            border-color: var(--primary-light);
+                            background: var(--info-light);
+                        }
+                        .featured-image-preview {
+                            max-width: 100%;
+                            max-height: 200px;
+                            border-radius: var(--radius);
+                            margin-top: 0.5rem;
+                        }
+                        .status-radio {
+                            display: flex;
+                            gap: 0.75rem;
+                        }
+                        .status-radio label {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            padding: 0.5rem 0.75rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            cursor: pointer;
+                            font-size: 0.875rem;
+                            transition: var(--transition);
+                        }
+                        .status-radio input[type="radio"] {
+                            display: none;
+                        }
+                        .status-radio input[type="radio"]:checked + span {
+                            color: var(--primary);
+                            font-weight: 500;
+                        }
+                        .status-radio label:has(input:checked) {
+                            border-color: var(--primary);
+                            background: var(--info-light);
+                        }
+                        .btn-full {
+                            width: 100%;
+                            justify-content: center;
+                        }
+                    </style>
+
+                    <div class="news-editor-container">
+                        <div class="page-header" style="margin-bottom: 1.5rem;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <button class="btn btn-secondary" onclick="showPage('dashboard', document.querySelector('.nav-item.active'))">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                                    </svg>
+                                    Voltar
+                                </button>
+                                <div>
+                                    <h1 class="page-title" id="editorPageTitle">Nova Notícia</h1>
+                                    <p class="page-subtitle">Escreva e publique sua notícia</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="news-editor-layout">
+                            <!-- MAIN EDITOR -->
+                            <div class="editor-main">
+                                <div class="form-group">
+                                    <label class="form-label">Título da Notícia *</label>
+                                    <input type="text" id="newsTitle" class="form-input" placeholder="Digite o título da notícia..." oninput="generateSlug()">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">URL Amigável (Slug)</label>
+                                    <input type="text" id="newsSlug" class="form-input" placeholder="url-da-noticia" style="font-family: monospace; font-size: 0.875rem;">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Conteúdo *</label>
+                                    <div class="rich-text-editor">
+                                        <div class="editor-toolbar">
+                                            <button type="button" onclick="formatText('bold')" title="Negrito"><b>B</b></button>
+                                            <button type="button" onclick="formatText('italic')" title="Itálico"><i>I</i></button>
+                                            <button type="button" onclick="formatText('underline')" title="Sublinhado"><u>U</u></button>
+                                            <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
+                                            <button type="button" onclick="formatText('justifyLeft')" title="Alinhar Esquerda">⬅</button>
+                                            <button type="button" onclick="formatText('justifyCenter')" title="Centralizar">↔</button>
+                                            <button type="button" onclick="formatText('justifyRight')" title="Alinhar Direita">➡</button>
+                                            <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
+                                            <button type="button" onclick="formatText('insertUnorderedList')" title="Lista">• Lista</button>
+                                            <button type="button" onclick="formatText('insertOrderedList')" title="Lista Numerada">1. Lista</button>
+                                            <span style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
+                                            <button type="button" onclick="formatText('formatBlock', 'H2')" title="Título">Título</button>
+                                            <button type="button" onclick="formatText('formatBlock', 'H3')" title="Subtítulo">Sub</button>
+                                            <button type="button" onclick="formatText('removeFormat')" title="Limpar Formatação">✕</button>
+                                        </div>
+                                        <div id="editorContent" class="editor-content" contenteditable="true" placeholder="Comece a escrever sua notícia aqui..."></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Resumo/Excerpt</label>
+                                    <textarea id="newsExcerpt" class="form-textarea" placeholder="Um breve resumo da notícia (aparece na listagem)..." maxlength="300"></textarea>
+                                    <div style="text-align: right; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                                        <span id="excerptCount">0</span>/300 caracteres
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SIDEBAR -->
+                            <div class="editor-sidebar">
+                                <!-- Publicar -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">📤 Publicar</div>
+                                    
+                                    <div class="form-group">
+                                        <label class="form-label">Status</label>
+                                        <div class="status-radio">
+                                            <label>
+                                                <input type="radio" name="newsStatus" value="published" checked>
+                                                <span>Publicado</span>
+                                            </label>
+                                            <label>
+                                                <input type="radio" name="newsStatus" value="draft">
+                                                <span>Rascunho</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label class="form-label">Data de Publicação</label>
+                                        <input type="datetime-local" id="newsDate" class="form-input">
+                                    </div>
+
+                                    <div style="display: flex; gap: 0.5rem;">
+                                        <button class="btn btn-secondary btn-full" onclick="saveNewsDraft()">
+                                            Salvar Rascunho
+                                        </button>
+                                    </div>
+                                    <button class="btn btn-primary btn-full" onclick="publishNews()" style="margin-top: 0.5rem;">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                        Publicar
+                                    </button>
+                                </div>
+
+                                <!-- Categoria -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">🏷️ Categoria</div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <select id="newsCategory" class="form-select">
+                                            <option value="">Selecione uma categoria...</option>
+                                            <option value="mirador">Mirador</option>
+                                            <option value="regiao">Região</option>
+                                            <option value="brasil">Brasil</option>
+                                            <option value="policia">Polícia</option>
+                                            <option value="esportes">Esportes</option>
+                                            <option value="politica">Política</option>
+                                            <option value="geral">Geral</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Imagem Destacada -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">🖼️ Imagem Destacada</div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <div class="featured-image-upload" onclick="document.getElementById('newsImageInput').click()">
+                                            <input type="file" id="newsImageInput" accept="image/*" style="display: none;" onchange="handleNewsImageUpload(event)">
+                                            <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem; color: var(--text-muted);">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            <div style="font-size: 0.875rem; color: var(--text-secondary);">Clique para adicionar imagem</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">PNG, JPG (máx. 2MB)</div>
+                                        </div>
+                                        <img id="newsImagePreview" class="featured-image-preview" style="display: none;">
+                                        <button type="button" id="removeImageBtn" class="btn btn-ghost btn-sm" style="display: none; margin-top: 0.5rem; width: 100%;" onclick="removeNewsImage()">
+                                            Remover Imagem
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Autor -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">✍️ Autor</div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <input type="text" id="newsAuthor" class="form-input" placeholder="Nome do autor" value="Redação">
+                                    </div>
+                                </div>
+
+                                <!-- Tags -->
+                                <div class="editor-sidebar-card">
+                                    <div class="editor-sidebar-title">🏷️ Tags</div>
+                                    <div class="form-group" style="margin-bottom: 0;">
+                                        <input type="text" id="newsTags" class="form-input" placeholder="Separe as tags por vírgula...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -2395,7 +2694,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
                                     <p>Nenhuma notícia encontrada</p>
-                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
+                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showCreateNewsPage()">
                                         Criar primeira notícia
                                     </button>
                                 </div>
@@ -2420,7 +2719,7 @@
                             <td>${date}</td>
                             <td>
                                 <div class="actions-cell">
-                                    <button class="action-btn" onclick="showModal('Em breve!', 'Edição de notícias em desenvolvimento.', 'info')" title="Editar">
+                                    <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
@@ -2937,6 +3236,232 @@
             // Inicializar preview
             updatePreview();
         });
+
+        // ========================================
+        // NEWS EDITOR FUNCTIONS
+        // ========================================
+        let currentNewsImage = null;
+        let editingNewsId = null;
+
+        // Mostrar página de criar notícia
+        function showCreateNewsPage(newsId = null) {
+            // Esconder todas as páginas
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+            
+            // Mostrar página do editor
+            document.getElementById('createNewsPage').style.display = 'block';
+            
+            // Resetar formulário se for nova notícia
+            if (!newsId) {
+                resetNewsForm();
+                document.getElementById('editorPageTitle').textContent = 'Nova Notícia';
+            } else {
+                editingNewsId = newsId;
+                document.getElementById('editorPageTitle').textContent = 'Editar Notícia';
+                loadNewsForEdit(newsId);
+            }
+            
+            // Definir data atual
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            document.getElementById('newsDate').value = now.toISOString().slice(0, 16);
+            
+            // Contador de caracteres
+            document.getElementById('newsExcerpt').addEventListener('input', function() {
+                document.getElementById('excerptCount').textContent = this.value.length;
+            });
+        }
+
+        // Resetar formulário
+        function resetNewsForm() {
+            document.getElementById('newsTitle').value = '';
+            document.getElementById('newsSlug').value = '';
+            document.getElementById('editorContent').innerHTML = '';
+            document.getElementById('newsExcerpt').value = '';
+            document.getElementById('excerptCount').textContent = '0';
+            document.getElementById('newsCategory').value = '';
+            document.getElementById('newsAuthor').value = 'Redação';
+            document.getElementById('newsTags').value = '';
+            document.querySelector('input[name="newsStatus"][value="published"]').checked = true;
+            removeNewsImage();
+            editingNewsId = null;
+        }
+
+        // Gerar slug do título
+        function generateSlug() {
+            const title = document.getElementById('newsTitle').value;
+            const slug = title
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .substring(0, 100);
+            document.getElementById('newsSlug').value = slug;
+        }
+
+        // Formatar texto no editor
+        function formatText(command, value = null) {
+            document.execCommand(command, false, value);
+            document.getElementById('editorContent').focus();
+        }
+
+        // Upload de imagem da notícia
+        function handleNewsImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (file.size > 2 * 1024 * 1024) {
+                showModal('Erro!', 'Imagem muito grande. Máximo 2MB.', 'error');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentNewsImage = e.target.result;
+                document.getElementById('newsImagePreview').src = currentNewsImage;
+                document.getElementById('newsImagePreview').style.display = 'block';
+                document.getElementById('removeImageBtn').style.display = 'block';
+                document.querySelector('.featured-image-upload').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Remover imagem
+        function removeNewsImage() {
+            currentNewsImage = null;
+            document.getElementById('newsImagePreview').style.display = 'none';
+            document.getElementById('removeImageBtn').style.display = 'none';
+            document.querySelector('.featured-image-upload').style.display = 'block';
+            document.getElementById('newsImageInput').value = '';
+        }
+
+        // Salvar rascunho
+        async function saveNewsDraft() {
+            await saveNews('draft');
+        }
+
+        // Publicar notícia
+        async function publishNews() {
+            await saveNews('published');
+        }
+
+        // Salvar notícia
+        async function saveNews(status) {
+            const title = document.getElementById('newsTitle').value.trim();
+            const content = document.getElementById('editorContent').innerHTML.trim();
+            const category = document.getElementById('newsCategory').value;
+
+            if (!title) {
+                showModal('Erro!', 'O título é obrigatório.', 'error');
+                return;
+            }
+
+            if (!content || content === '<br>') {
+                showModal('Erro!', 'O conteúdo é obrigatório.', 'error');
+                return;
+            }
+
+            if (!category) {
+                showModal('Erro!', 'Selecione uma categoria.', 'error');
+                return;
+            }
+
+            const newsData = {
+                title: title,
+                slug: document.getElementById('newsSlug').value || generateSlugFromTitle(title),
+                content: content,
+                excerpt: document.getElementById('newsExcerpt').value.trim(),
+                category: category,
+                categoryName: getCategoryName(category),
+                image: currentNewsImage,
+                author: document.getElementById('newsAuthor').value || 'Redação',
+                tags: document.getElementById('newsTags').value.split(',').map(t => t.trim()).filter(t => t),
+                status: status,
+                featured: false,
+                views: 0,
+                date: new Date(document.getElementById('newsDate').value).toISOString(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                if (editingNewsId) {
+                    await db.collection('news').doc(editingNewsId).update(newsData);
+                    showModal('Sucesso!', `Notícia atualizada como ${status === 'published' ? 'Publicada' : 'Rascunho'}!`, 'success');
+                } else {
+                    newsData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('news').add(newsData);
+                    showModal('Sucesso!', `Notícia ${status === 'published' ? 'Publicada' : 'Salva como Rascunho'}!`, 'success');
+                }
+                
+                resetNewsForm();
+                showPage('dashboard', document.querySelector('.nav-item'));
+                loadDashboard();
+            } catch (error) {
+                console.error('Erro ao salvar notícia:', error);
+                showModal('Erro!', 'Não foi possível salvar a notícia.', 'error');
+            }
+        }
+
+        // Gerar slug
+        function generateSlugFromTitle(title) {
+            return title
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^\w\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .substring(0, 100);
+        }
+
+        // Obter nome da categoria
+        function getCategoryName(value) {
+            const categories = {
+                'mirador': 'Mirador',
+                'regiao': 'Região',
+                'brasil': 'Brasil',
+                'policia': 'Polícia',
+                'esportes': 'Esportes',
+                'politica': 'Política',
+                'geral': 'Geral'
+            };
+            return categories[value] || value;
+        }
+
+        // Carregar notícia para edição
+        async function loadNewsForEdit(newsId) {
+            try {
+                const doc = await db.collection('news').doc(newsId).get();
+                if (doc.exists) {
+                    const news = doc.data();
+                    document.getElementById('newsTitle').value = news.title || '';
+                    document.getElementById('newsSlug').value = news.slug || '';
+                    document.getElementById('editorContent').innerHTML = news.content || '';
+                    document.getElementById('newsExcerpt').value = news.excerpt || '';
+                    document.getElementById('excerptCount').textContent = (news.excerpt || '').length;
+                    document.getElementById('newsCategory').value = news.category || '';
+                    document.getElementById('newsAuthor').value = news.author || 'Redação';
+                    document.getElementById('newsTags').value = (news.tags || []).join(', ');
+                    document.getElementById('newsDate').value = news.date ? news.date.slice(0, 16) : '';
+                    
+                    if (news.image) {
+                        currentNewsImage = news.image;
+                        document.getElementById('newsImagePreview').src = news.image;
+                        document.getElementById('newsImagePreview').style.display = 'block';
+                        document.getElementById('removeImageBtn').style.display = 'block';
+                        document.querySelector('.featured-image-upload').style.display = 'none';
+                    }
+                    
+                    const status = news.status || 'published';
+                    document.querySelector(`input[name="newsStatus"][value="${status}"]`).checked = true;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar notícia:', error);
+                showModal('Erro!', 'Não foi possível carregar a notícia.', 'error');
+            }
+        }
 
         // ========================================
         // NOTIFICATION MODAL FUNCTIONS
