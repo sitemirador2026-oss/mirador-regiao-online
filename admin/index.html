@@ -4,6 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Admin - Mirador e Região Online</title>
 
     <!-- Google Fonts -->
@@ -17,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <style>
+        /* CSS Version: 2025-02-04-005 - FORCE RELOAD */
         :root {
             /* Cores Principais - Paleta sofisticada */
             --primary: #1e40af;
@@ -900,66 +904,66 @@
             color: var(--text-muted);
         }
 
-        /* News Table Styles */
+        /* News Table Styles - OVERRIDE data-table */
         .news-table {
-            width: 100%;
-            table-layout: fixed;
+            table-layout: fixed !important;
+            border-collapse: separate !important;
         }
 
         .news-table th,
         .news-table td {
-            padding: 1rem;
-            vertical-align: middle;
+            padding: 0.75rem !important;
         }
 
-        .news-table th:first-child,
-        .news-table td:first-child {
+        .news-table colgroup col:first-child {
             width: 100px;
         }
 
-        .news-table th:nth-child(2),
-        .news-table td:nth-child(2) {
+        .news-table colgroup col:nth-child(2) {
             width: 70px;
         }
 
-        .news-table th:nth-child(3) {
+        .news-table colgroup col:nth-child(3) {
             width: auto;
         }
 
-        .news-table th:nth-child(4),
-        .news-table td:nth-child(4) {
-            width: 120px;
-        }
-
-        .news-table th:nth-child(5),
-        .news-table td:nth-child(5) {
+        .news-table colgroup col:nth-child(4) {
             width: 100px;
         }
 
-        .news-table th:nth-child(6),
+        .news-table colgroup col:nth-child(5) {
+            width: 90px;
+        }
+
+        .news-table colgroup col:nth-child(6) {
+            width: 80px;
+        }
+
         .news-table td:nth-child(6) {
-            width: 100px;
             text-align: center;
         }
 
         .news-thumb {
-            width: 60px;
-            height: 40px;
+            width: 50px;
+            height: 35px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 4px;
             display: block;
         }
 
         .news-title-cell {
-            min-width: 0;
+            overflow: hidden !important;
+            max-width: 100%;
         }
 
         .news-title {
             font-weight: 500;
             color: var(--text-primary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            line-height: 1.4;
+            display: block;
             max-width: 100%;
         }
 
@@ -1348,18 +1352,20 @@
             }
 
             /* Responsive News Table */
+            .news-table colgroup col:nth-child(2),
             .news-table th:nth-child(2),
             .news-table td:nth-child(2) {
                 display: none;
             }
 
+            .news-table colgroup col:first-child,
             .news-table th:first-child,
             .news-table td:first-child {
                 width: 80px;
             }
 
             .news-title {
-                max-width: 150px;
+                max-width: 120px;
             }
         }
 
@@ -1809,6 +1815,14 @@
                         </div>
                         <div class="table-container">
                             <table class="data-table news-table">
+                                <colgroup>
+                                    <col>
+                                    <col>
+                                    <col>
+                                    <col>
+                                    <col>
+                                    <col>
+                                </colgroup>
                                 <thead>
                                     <tr>
                                         <th>Status</th>
@@ -2905,13 +2919,16 @@
                     const statusClass = n.status === 'draft' ? 'status-draft' : 'status-published';
                     const statusText = n.status === 'draft' ? 'Rascunho' : 'Publicado';
                     const imageHtml = n.image ? `<img src="${n.image}" class="news-thumb" alt="">` : '<div class="news-thumb" style="background: var(--bg-tertiary);"></div>';
+                    
+                    // Escape quotes for HTML attributes
+                    const escapedTitle = (n.title || '').replace(/"/g, '&quot;');
 
                     const html = `
                         <tr>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                             <td>${imageHtml}</td>
                             <td class="news-title-cell">
-                                <div class="news-title" title="${n.title}">${n.title}</div>
+                                <div class="news-title" title="${escapedTitle}">${n.title}</div>
                                 <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
                             </td>
                             <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
@@ -3731,6 +3748,18 @@
                 document.getElementById('adminContainer').style.display = 'none';
             }
         });
+
+        // Force reload if cache is old
+        (function() {
+            const cssVersion = '2025-02-04-005';
+            const lastVersion = localStorage.getItem('admin_css_version');
+            if (lastVersion !== cssVersion) {
+                localStorage.setItem('admin_css_version', cssVersion);
+                if (lastVersion) {
+                    window.location.reload(true);
+                }
+            }
+        })();
     </script>
 </body>
 
