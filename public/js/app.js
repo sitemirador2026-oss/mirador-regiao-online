@@ -349,6 +349,55 @@ function toggleMobileMenu() {
     if (menu) menu.classList.toggle('active');
 }
 
+// Side Panel (Categories Menu)
+let sidePanelTimer = null;
+
+function openSidePanel() {
+    const panel = document.getElementById('sidePanel');
+    
+    if (panel) {
+        panel.classList.add('active');
+        
+        // Start auto-close timer (10 seconds)
+        startSidePanelTimer();
+    }
+}
+
+function closeSidePanel() {
+    const panel = document.getElementById('sidePanel');
+    
+    if (panel) {
+        panel.classList.remove('active');
+        
+        // Clear timer
+        clearSidePanelTimer();
+    }
+}
+
+function startSidePanelTimer() {
+    // Clear existing timer if any
+    clearSidePanelTimer();
+    
+    // Set new timer for 10 seconds
+    sidePanelTimer = setTimeout(() => {
+        closeSidePanel();
+    }, 10000);
+}
+
+function clearSidePanelTimer() {
+    if (sidePanelTimer) {
+        clearTimeout(sidePanelTimer);
+        sidePanelTimer = null;
+    }
+}
+
+function resetSidePanelTimer() {
+    // Reset timer on user interaction
+    if (document.getElementById('sidePanel')?.classList.contains('active')) {
+        startSidePanelTimer();
+    }
+}
+
 // Filtrar por categoria
 async function filterByCategory(category) {
     const news = await loadNewsFromFirebase();
@@ -385,6 +434,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.querySelector('.btn-menu-mobile')?.addEventListener('click', toggleMobileMenu);
     document.querySelector('.mobile-menu-close')?.addEventListener('click', toggleMobileMenu);
     
+    // Side Panel Events
+    document.getElementById('btnSideMenu')?.addEventListener('click', openSidePanel);
+    document.getElementById('sidePanelClose')?.addEventListener('click', closeSidePanel);
+    
+    // Reset timer on interaction with side panel
+    const sidePanel = document.getElementById('sidePanel');
+    if (sidePanel) {
+        sidePanel.addEventListener('mouseenter', clearSidePanelTimer);
+        sidePanel.addEventListener('mouseleave', startSidePanelTimer);
+        sidePanel.addEventListener('click', resetSidePanelTimer);
+    }
+    
     // Busca em tempo real
     document.getElementById('searchInput')?.addEventListener('input', function(e) {
         if (e.target.value.length >= 2) {
@@ -405,7 +466,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         });
     });
     
-    // Fechar menu ao clicar fora
+    // Fechar menu mobile ao clicar fora
     document.addEventListener('click', function(e) {
         const menu = document.getElementById('mobileMenu');
         const btn = document.querySelector('.btn-menu-mobile');
@@ -414,8 +475,69 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     });
     
+    // Carregar e aplicar configurações de links do rodapé
+    loadFooterLinks();
+    
     console.log('[App] v2.5 - Pronto!');
 });
+
+// Carregar configurações de links do rodapé
+async function loadFooterLinks() {
+    try {
+        const doc = await db.collection('settings').doc('footer').get();
+        if (doc.exists) {
+            const links = doc.data();
+            applyFooterLinks(links);
+            localStorage.setItem('publicFooterLinks', JSON.stringify(links));
+        } else {
+            const saved = localStorage.getItem('publicFooterLinks');
+            if (saved) applyFooterLinks(JSON.parse(saved));
+        }
+    } catch (error) {
+        const saved = localStorage.getItem('publicFooterLinks');
+        if (saved) applyFooterLinks(JSON.parse(saved));
+    }
+}
+
+function applyFooterLinks(links) {
+    if (!links) return;
+    
+    if (links.about) {
+        const el = document.getElementById('footerLinkAboutEl');
+        if (el) el.href = links.about;
+    }
+    if (links.contact) {
+        const el = document.getElementById('footerLinkContactEl');
+        if (el) el.href = links.contact;
+    }
+    if (links.privacy) {
+        const el = document.getElementById('footerLinkPrivacyEl');
+        if (el) el.href = links.privacy;
+    }
+    if (links.terms) {
+        const el = document.getElementById('footerLinkTermsEl');
+        if (el) el.href = links.terms;
+    }
+    
+    if (links.social) {
+        if (links.social.instagram) {
+            const el = document.getElementById('footerSocialInstagramEl');
+            if (el) { el.href = links.social.instagram; el.style.display = 'flex'; }
+        }
+        if (links.social.facebook) {
+            const el = document.getElementById('footerSocialFacebookEl');
+            if (el) { el.href = links.social.facebook; el.style.display = 'flex'; }
+        }
+        if (links.social.twitter) {
+            const el = document.getElementById('footerSocialTwitterEl');
+            if (el) { el.href = links.social.twitter; el.style.display = 'flex'; }
+        }
+        if (links.social.youtube) {
+            const el = document.getElementById('footerSocialYoutubeEl');
+            if (el) { el.href = links.social.youtube; el.style.display = 'flex'; }
+        }
+    }
+}
 
 console.log('[App] v2.5 - Script finalizado');
 

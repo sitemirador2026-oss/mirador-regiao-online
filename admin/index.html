@@ -2104,6 +2104,95 @@
                             </div>
                     </div>
 
+                    <!-- CONFIGURAÇÃO DE LINKS DO RODAPÉ -->
+                    <div class="content-section" style="max-width: 900px; margin-top: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">🔗 Links do Rodapé</h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="resetFooterLinks()">Restaurar Padrão</button>
+                                <button class="btn btn-primary btn-sm" onclick="saveFooterLinks()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Salvar Links
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="padding: 2rem;">
+                            <!-- Links de Navegação -->
+                            <div style="margin-bottom: 2rem;">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Páginas Institucionais
+                                </h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
+                                    <div class="brand-input-group">
+                                        <label for="footerLinkAbout">Sobre Nós (URL)</label>
+                                        <input type="url" id="footerLinkAbout" class="brand-input" placeholder="https://... ou sobre.html">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerLinkContact">Contato (URL)</label>
+                                        <input type="url" id="footerLinkContact" class="brand-input" placeholder="https://... ou contato.html">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerLinkPrivacy">Política de Privacidade (URL)</label>
+                                        <input type="url" id="footerLinkPrivacy" class="brand-input" placeholder="https://... ou privacidade.html">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerLinkTerms">Termos de Uso (URL)</label>
+                                        <input type="url" id="footerLinkTerms" class="brand-input" placeholder="https://... ou termos.html">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Redes Sociais -->
+                            <div>
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Redes Sociais
+                                </h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
+                                    <div class="brand-input-group">
+                                        <label for="footerSocialInstagram">
+                                            <svg width="16" height="16" style="vertical-align: middle; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01M7.5 3h9a4.5 4.5 0 014.5 4.5v9a4.5 4.5 0 01-4.5 4.5h-9A4.5 4.5 0 013 16.5v-9A4.5 4.5 0 017.5 3z"/>
+                                            </svg>
+                                            Instagram
+                                        </label>
+                                        <input type="url" id="footerSocialInstagram" class="brand-input" placeholder="https://instagram.com/...">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerSocialFacebook">
+                                            <svg width="16" height="16" style="vertical-align: middle; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                                            </svg>
+                                            Facebook
+                                        </label>
+                                        <input type="url" id="footerSocialFacebook" class="brand-input" placeholder="https://facebook.com/...">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerSocialTwitter">
+                                            <svg width="16" height="16" style="vertical-align: middle; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                                            </svg>
+                                            Twitter / X
+                                        </label>
+                                        <input type="url" id="footerSocialTwitter" class="brand-input" placeholder="https://twitter.com/...">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="footerSocialYoutube">
+                                            <svg width="16" height="16" style="vertical-align: middle; margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.33 29 29 0 00-.46-5.33z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 15.02l5.75-3.27-5.75-3.27v6.54z"/>
+                                            </svg>
+                                            YouTube
+                                        </label>
+                                        <input type="url" id="footerSocialYoutube" class="brand-input" placeholder="https://youtube.com/...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- PERSONALIZAÇÃO DE CORES -->
                     <style>
                         .color-settings-grid {
@@ -3225,85 +3314,23 @@
             }
         }
 
-        // Carregar página de Notícias
+        // Variáveis para paginação
+        let allNewsData = [];
+        let currentNewsPage = 1;
+        const newsPerPage = 10;
+
+        // Carregar página de Notícias com paginação
         async function loadNewsPage() {
             try {
                 const snapshot = await db.collection('news').orderBy('date', 'desc').get();
-                const news = [];
+                allNewsData = [];
                 snapshot.forEach(doc => {
-                    news.push({ id: doc.id, ...doc.data() });
+                    allNewsData.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Renderizar Tabela na página de Notícias
-                const newsList = document.getElementById('newsListPage');
-                if (!newsList) return;
-                
-                newsList.innerHTML = '';
-
-                if (news.length === 0) {
-                    newsList.innerHTML = `
-                        <tr>
-                            <td colspan="5">
-                                <div class="empty-state">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                                    </svg>
-                                    <p>Nenhuma notícia encontrada</p>
-                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showCreateNewsPage()">
-                                        Criar primeira notícia
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>`;
-                    return;
-                }
-
-                news.forEach(n => {
-                    const date = new Date(n.date).toLocaleDateString('pt-BR');
-                    const indicatorClass = n.status === 'draft' ? 'draft' : 'published';
-                    const indicatorTitle = n.status === 'draft' ? 'Rascunho' : 'Publicado';
-                    
-                    // Escape quotes for HTML attributes
-                    const escapedTitle = (n.title || '').replace(/"/g, '&quot;');
-                    
-                    // Imagem com indicador de status
-                    const imageHtml = n.image 
-                        ? `<div class="news-thumb-container" title="${indicatorTitle}">
-                             <span class="status-indicator ${indicatorClass}"></span>
-                             <img src="${n.image}" class="news-thumb" alt="">
-                           </div>`
-                        : `<div class="news-thumb-container" title="${indicatorTitle}">
-                             <span class="status-indicator ${indicatorClass}"></span>
-                             <div class="news-thumb-placeholder"></div>
-                           </div>`;
-
-                    const html = `
-                        <tr>
-                            <td>${imageHtml}</td>
-                            <td class="news-title-cell">
-                                <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${n.views || 0} visualizações</div>
-                            </td>
-                            <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
-                            <td>${date}</td>
-                            <td>
-                                <div class="actions-cell">
-                                    <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    newsList.innerHTML += html;
-                });
+                // Resetar para primeira página
+                currentNewsPage = 1;
+                renderNewsTable();
 
             } catch (error) {
                 console.error("Erro ao carregar notícias:", error);
@@ -3325,6 +3352,106 @@
         }
 
         // Deletar notícia
+        // Renderizar tabela de notícias com paginação
+        function renderNewsTable() {
+            const newsList = document.getElementById('newsListPage');
+            if (!newsList) return;
+            
+            newsList.innerHTML = '';
+
+            if (allNewsData.length === 0) {
+                newsList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                <p>Nenhuma notícia encontrada</p>
+                                <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showCreateNewsPage()">
+                                    Criar primeira notícia
+                                </button>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            // Calcular quantas notícias mostrar
+            const endIndex = currentNewsPage * newsPerPage;
+            const newsToShow = allNewsData.slice(0, endIndex);
+
+            newsToShow.forEach(n => {
+                const date = new Date(n.date).toLocaleDateString('pt-BR');
+                const indicatorClass = n.status === 'draft' ? 'draft' : 'published';
+                const indicatorTitle = n.status === 'draft' ? 'Rascunho' : 'Publicado';
+                
+                const escapedTitle = (n.title || '').replace(/"/g, '&quot;');
+                
+                const imageHtml = n.image 
+                    ? `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <img src="${n.image}" class="news-thumb" alt="">
+                       </div>`
+                    : `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <div class="news-thumb-placeholder"></div>
+                       </div>`;
+
+                const html = `
+                    <tr>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${n.title}</div>
+                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${n.views || 0} visualizações</div>
+                        </td>
+                        <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                newsList.innerHTML += html;
+            });
+
+            // Adicionar linha do botão "Ver mais" se houver mais notícias
+            if (endIndex < allNewsData.length) {
+                const remaining = allNewsData.length - endIndex;
+                const loadMoreRow = `
+                    <tr id="loadMoreRow">
+                        <td colspan="5" style="padding: 1.5rem; text-align: center;">
+                            <button class="btn btn-secondary" onclick="loadMoreNews()">
+                                <svg width="16" height="16" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                                Ver mais ${Math.min(remaining, newsPerPage)} notícias
+                                <span style="margin-left: 0.5rem; color: var(--text-muted);">(${remaining} restantes)</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                newsList.innerHTML += loadMoreRow;
+            }
+        }
+
+        // Carregar mais notícias
+        function loadMoreNews() {
+            currentNewsPage++;
+            renderNewsTable();
+        }
+
         async function deleteNews(id) {
             if (!confirm('Tem certeza que deseja excluir esta notícia?')) return;
 
@@ -3522,6 +3649,7 @@
             // Configurar upload de logo na página de configurações
             if (document.getElementById('logoUploadArea')) {
                 loadBrandSettings();
+                loadFooterLinks();
                 setupLogoDragAndDrop();
             }
             
@@ -3728,6 +3856,67 @@
                 applyBrandToAdmin(settings);
             }
             updateBrandPreview();
+        }
+
+        // Salvar configurações de links do rodapé
+        async function saveFooterLinks() {
+            const footerLinks = {
+                about: document.getElementById('footerLinkAbout').value || '',
+                contact: document.getElementById('footerLinkContact').value || '',
+                privacy: document.getElementById('footerLinkPrivacy').value || '',
+                terms: document.getElementById('footerLinkTerms').value || '',
+                social: {
+                    instagram: document.getElementById('footerSocialInstagram').value || '',
+                    facebook: document.getElementById('footerSocialFacebook').value || '',
+                    twitter: document.getElementById('footerSocialTwitter').value || '',
+                    youtube: document.getElementById('footerSocialYoutube').value || ''
+                },
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            try {
+                await db.collection('settings').doc('footer').set(footerLinks);
+                localStorage.setItem('siteFooterLinks', JSON.stringify(footerLinks));
+                showModal('Sucesso!', 'Links do rodapé salvos com sucesso!', 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar links:', error);
+                showModal('Erro!', 'Não foi possível salvar os links.', 'error');
+            }
+        }
+
+        // Carregar configurações de links do rodapé
+        async function loadFooterLinks() {
+            try {
+                const doc = await db.collection('settings').doc('footer').get();
+                if (doc.exists) {
+                    const links = doc.data();
+                    document.getElementById('footerLinkAbout').value = links.about || '';
+                    document.getElementById('footerLinkContact').value = links.contact || '';
+                    document.getElementById('footerLinkPrivacy').value = links.privacy || '';
+                    document.getElementById('footerLinkTerms').value = links.terms || '';
+                    if (links.social) {
+                        document.getElementById('footerSocialInstagram').value = links.social.instagram || '';
+                        document.getElementById('footerSocialFacebook').value = links.social.facebook || '';
+                        document.getElementById('footerSocialTwitter').value = links.social.twitter || '';
+                        document.getElementById('footerSocialYoutube').value = links.social.youtube || '';
+                    }
+                    localStorage.setItem('siteFooterLinks', JSON.stringify(links));
+                }
+            } catch (error) {
+                console.error('[Admin] Erro ao carregar links:', error);
+            }
+        }
+
+        // Restaurar links padrão
+        function resetFooterLinks() {
+            document.getElementById('footerLinkAbout').value = 'sobre.html';
+            document.getElementById('footerLinkContact').value = 'contato.html';
+            document.getElementById('footerLinkPrivacy').value = 'privacidade.html';
+            document.getElementById('footerLinkTerms').value = 'termos.html';
+            document.getElementById('footerSocialInstagram').value = '';
+            document.getElementById('footerSocialFacebook').value = '';
+            document.getElementById('footerSocialTwitter').value = '';
+            document.getElementById('footerSocialYoutube').value = '';
         }
 
         // Aplicar marca ao painel admin
