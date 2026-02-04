@@ -187,38 +187,46 @@
     <script>
         // Load and apply brand settings
         (function() {
-            const brandSettings = localStorage.getItem('publicSiteBrand');
-            if (brandSettings) {
-                const settings = JSON.parse(brandSettings);
-                applyBrandSettings(settings);
-            }
-            
             function applyBrandSettings(settings) {
                 const siteName = settings.siteName || 'Mirador e Região Online';
                 const siteTagline = settings.siteTagline || '';
                 
                 // Update title
                 document.title = siteName;
-                document.getElementById('siteTitle').textContent = siteName;
+                var siteTitleEl = document.getElementById('siteTitle');
+                if (siteTitleEl) siteTitleEl.textContent = siteName;
                 
                 // Update logo in header
-                const logoImg = document.getElementById('siteLogoImg');
-                const logoText = document.getElementById('siteLogoText');
+                var logoImg = document.getElementById('siteLogoImg');
+                var logoText = document.getElementById('siteLogoText');
                 
-                if (settings.logo) {
+                if (settings.logo && logoImg) {
                     logoImg.src = settings.logo;
                     logoImg.alt = siteName;
                     logoImg.style.display = 'block';
-                    logoText.style.display = 'none';
-                } else {
-                    logoImg.style.display = 'none';
+                    if (logoText) logoText.style.display = 'none';
+                } else if (logoText) {
+                    if (logoImg) logoImg.style.display = 'none';
                     logoText.style.display = 'block';
                     logoText.textContent = siteName;
                 }
                 
                 // Update footer
-                document.getElementById('footerSiteName').textContent = siteName;
-                document.getElementById('footerCopyright').innerHTML = `&copy; ${new Date().getFullYear()} ${siteName}. Todos os direitos reservados.`;
+                var footerSiteName = document.getElementById('footerSiteName');
+                var footerCopyright = document.getElementById('footerCopyright');
+                if (footerSiteName) footerSiteName.textContent = siteName;
+                if (footerCopyright) footerCopyright.innerHTML = '&copy; ' + new Date().getFullYear() + ' ' + siteName + '. Todos os direitos reservados.';
+            }
+            
+            // Try to get from localStorage
+            var brandSettings = localStorage.getItem('publicSiteBrand');
+            if (brandSettings) {
+                try {
+                    var settings = JSON.parse(brandSettings);
+                    applyBrandSettings(settings);
+                } catch(e) {
+                    console.log('Error parsing brand settings');
+                }
             }
         })();
     </script>

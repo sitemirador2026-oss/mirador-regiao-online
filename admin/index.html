@@ -984,17 +984,18 @@
            LOGO UPLOAD STYLES
            ======================================== */
         .logo-upload-section {
-            margin-bottom: 2.5rem;
+            margin-bottom: 2rem;
         }
 
         .logo-upload-area {
             border: 2px dashed var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
+            border-radius: var(--radius);
+            padding: 1.25rem;
             text-align: center;
             background: var(--bg-primary);
             transition: var(--transition);
             cursor: pointer;
+            max-width: 400px;
         }
 
         .logo-upload-area:hover {
@@ -1014,21 +1015,21 @@
         }
 
         .logo-upload-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 1rem;
+            width: 32px;
+            height: 32px;
+            margin: 0 auto 0.5rem;
             color: var(--text-muted);
         }
 
         .logo-upload-text {
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             color: var(--text-primary);
             font-weight: 500;
             margin-bottom: 0.25rem;
         }
 
         .logo-upload-hint {
-            font-size: 0.8125rem;
+            font-size: 0.75rem;
             color: var(--text-secondary);
         }
 
@@ -1036,35 +1037,34 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         .logo-preview {
-            max-width: 200px;
-            max-height: 80px;
+            max-width: 150px;
+            max-height: 60px;
             object-fit: contain;
             border-radius: var(--radius);
         }
 
         .logo-preview-dark {
             background: var(--bg-sidebar);
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             border-radius: var(--radius);
         }
 
         .logo-preview-light {
             background: white;
-            padding: 1rem 1.5rem;
+            padding: 0.75rem 1rem;
             border-radius: var(--radius);
             border: 1px solid var(--border);
         }
 
         .logo-preview-label {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             color: var(--text-muted);
             text-align: center;
-            margin-top: 0.5rem;
+            margin-top: 0.375rem;
         }
 
         .logo-remove-btn {
@@ -1124,8 +1124,14 @@
         }
 
         .sidebar-brand-text-logo {
-            max-width: 140px;
-            max-height: 36px;
+            max-width: 180px;
+            max-height: 50px;
+            object-fit: contain;
+        }
+
+        .sidebar-brand-logo-full {
+            max-width: 180px;
+            max-height: 55px;
             object-fit: contain;
         }
 
@@ -1318,11 +1324,18 @@
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
                     <div class="sidebar-brand" id="sidebarBrand">
-                        <div class="brand-icon" id="sidebarIcon">M</div>
-                        <img id="sidebarLogo" class="sidebar-brand-text-logo" src="" alt="" style="display: none;">
-                        <div id="sidebarText">
-                            <div class="brand-text" id="sidebarBrandText">Mirador Online</div>
-                            <div class="brand-tagline" id="sidebarTagline">Portal de Notícias</div>
+                        <!-- Modo ícone (sem logo) -->
+                        <div id="sidebarIconMode">
+                            <div class="brand-icon" id="sidebarIcon">M</div>
+                            <div>
+                                <div class="brand-text" id="sidebarBrandText">Mirador Online</div>
+                                <div class="brand-tagline" id="sidebarTagline">Portal de Notícias</div>
+                            </div>
+                        </div>
+                        <!-- Modo logo (com logo) -->
+                        <div id="sidebarLogoMode" style="display: none; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                            <img id="sidebarLogo" class="sidebar-brand-logo-full" src="" alt="">
+                            <div class="brand-tagline" id="sidebarLogoTagline">Portal de Notícias</div>
                         </div>
                     </div>
                 </div>
@@ -1712,12 +1725,19 @@
                                 </h3>
                                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                                     <!-- Preview Sidebar -->
-                                    <div style="padding: 1.25rem; background: var(--bg-sidebar); border-radius: var(--radius); display: flex; align-items: center; gap: 0.875rem;">
-                                        <div id="brandPreviewIcon" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: white;">M</div>
-                                        <img id="brandPreviewLogo" class="sidebar-brand-text-logo" src="" alt="" style="display: none;">
-                                        <div>
-                                            <div id="brandPreviewName" style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 700; color: white; letter-spacing: -0.02em;">Mirador Online</div>
-                                            <div id="brandPreviewTagline" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">Portal de Notícias</div>
+                                    <div id="brandPreviewContainer" style="padding: 1.25rem; background: var(--bg-sidebar); border-radius: var(--radius); display: flex; align-items: center; gap: 0.875rem;">
+                                        <!-- Modo sem logo -->
+                                        <div id="brandPreviewIconMode" style="display: flex; align-items: center; gap: 0.875rem;">
+                                            <div id="brandPreviewIcon" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: white;">M</div>
+                                            <div>
+                                                <div id="brandPreviewName" style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 700; color: white; letter-spacing: -0.02em;">Mirador Online</div>
+                                                <div id="brandPreviewTagline" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">Portal de Notícias</div>
+                                            </div>
+                                        </div>
+                                        <!-- Modo com logo -->
+                                        <div id="brandPreviewLogoMode" style="display: none; flex-direction: column; align-items: flex-start; gap: 0.25rem;">
+                                            <img id="brandPreviewLogo" class="sidebar-brand-logo-full" src="" alt="" style="max-width: 180px; max-height: 55px; object-fit: contain;">
+                                            <div id="brandPreviewLogoTagline" style="font-size: 0.75rem; color: var(--text-muted);">Portal de Notícias</div>
                                         </div>
                                     </div>
                                 </div>
@@ -2242,22 +2262,31 @@
             const siteName = document.getElementById('siteName').value || 'Mirador Online';
             const siteTagline = document.getElementById('siteTagline').value || 'Portal de Notícias';
             
-            const previewName = document.getElementById('brandPreviewName');
-            const previewTagline = document.getElementById('brandPreviewTagline');
+            const previewIconMode = document.getElementById('brandPreviewIconMode');
+            const previewLogoMode = document.getElementById('brandPreviewLogoMode');
             const previewIcon = document.getElementById('brandPreviewIcon');
             const previewLogo = document.getElementById('brandPreviewLogo');
-
-            previewName.textContent = siteName;
-            previewTagline.textContent = siteTagline;
+            const previewLogoTagline = document.getElementById('brandPreviewLogoTagline');
 
             if (currentLogo) {
-                previewIcon.style.display = 'none';
-                previewLogo.src = currentLogo;
-                previewLogo.style.display = 'block';
+                // Modo com logo
+                if (previewIconMode) previewIconMode.style.display = 'none';
+                if (previewLogoMode) {
+                    previewLogoMode.style.display = 'flex';
+                    previewLogo.src = currentLogo;
+                    previewLogo.alt = siteName;
+                }
+                if (previewLogoTagline) previewLogoTagline.textContent = siteTagline;
             } else {
-                previewIcon.style.display = 'flex';
-                previewIcon.textContent = siteName.charAt(0).toUpperCase();
-                previewLogo.style.display = 'none';
+                // Modo sem logo
+                if (previewIconMode) previewIconMode.style.display = 'flex';
+                if (previewLogoMode) previewLogoMode.style.display = 'none';
+                
+                const previewName = document.getElementById('brandPreviewName');
+                const previewTagline = document.getElementById('brandPreviewTagline');
+                if (previewName) previewName.textContent = siteName;
+                if (previewTagline) previewTagline.textContent = siteTagline;
+                if (previewIcon) previewIcon.textContent = siteName.charAt(0).toUpperCase();
             }
         }
 
@@ -2302,26 +2331,32 @@
             const siteName = settings.siteName || 'Mirador Online';
             const siteTagline = settings.siteTagline || 'Portal de Notícias';
             
-            // Atualizar sidebar
-            const sidebarBrandText = document.getElementById('sidebarBrandText');
-            const sidebarTagline = document.getElementById('sidebarTagline');
-            
-            if (sidebarBrandText) sidebarBrandText.textContent = siteName;
-            if (sidebarTagline) sidebarTagline.textContent = siteTagline;
-            
+            const sidebarIconMode = document.getElementById('sidebarIconMode');
+            const sidebarLogoMode = document.getElementById('sidebarLogoMode');
             const sidebarIcon = document.getElementById('sidebarIcon');
             const sidebarLogo = document.getElementById('sidebarLogo');
-            const sidebarText = document.getElementById('sidebarText');
+            const sidebarLogoTagline = document.getElementById('sidebarLogoTagline');
 
             if (settings.logo && sidebarLogo) {
-                if (sidebarIcon) sidebarIcon.style.display = 'none';
-                sidebarLogo.src = settings.logo;
-                sidebarLogo.style.display = 'block';
-                if (sidebarText) sidebarText.style.display = 'block';
-            } else if (sidebarIcon) {
-                sidebarIcon.style.display = 'flex';
-                sidebarIcon.textContent = siteName.charAt(0).toUpperCase();
-                if (sidebarLogo) sidebarLogo.style.display = 'none';
+                // Modo com logo: mostrar só logo + tagline
+                if (sidebarIconMode) sidebarIconMode.style.display = 'none';
+                if (sidebarLogoMode) {
+                    sidebarLogoMode.style.display = 'flex';
+                    sidebarLogo.src = settings.logo;
+                    sidebarLogo.alt = siteName;
+                }
+                if (sidebarLogoTagline) sidebarLogoTagline.textContent = siteTagline;
+            } else {
+                // Modo sem logo: mostrar ícone + nome + tagline
+                if (sidebarIconMode) sidebarIconMode.style.display = 'flex';
+                if (sidebarLogoMode) sidebarLogoMode.style.display = 'none';
+                if (sidebarIcon) {
+                    sidebarIcon.textContent = siteName.charAt(0).toUpperCase();
+                }
+                const sidebarBrandText = document.getElementById('sidebarBrandText');
+                const sidebarTagline = document.getElementById('sidebarTagline');
+                if (sidebarBrandText) sidebarBrandText.textContent = siteName;
+                if (sidebarTagline) sidebarTagline.textContent = siteTagline;
             }
 
             // Atualizar título da página
@@ -2339,19 +2374,41 @@
             const loginSubtitle = document.getElementById('loginSubtitle');
 
             if (settings.logo && loginLogoImg) {
+                // Com logo: logo grande acima, tagline abaixo
                 if (loginLogoIcon) loginLogoIcon.style.display = 'none';
                 loginLogoImg.src = settings.logo;
                 loginLogoImg.style.display = 'block';
-            } else if (loginLogoIcon) {
-                loginLogoIcon.style.display = 'flex';
-                loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
+                loginLogoImg.style.width = '180px';
+                loginLogoImg.style.height = 'auto';
+                loginLogoImg.style.maxHeight = '80px';
+                loginLogoImg.style.marginBottom = '1rem';
+                
+                if (loginTitle) loginTitle.style.display = 'none';
+                if (loginSubtitle) {
+                    loginSubtitle.style.display = 'block';
+                    loginSubtitle.textContent = siteTagline;
+                    loginSubtitle.style.fontSize = '1rem';
+                    loginSubtitle.style.color = 'var(--text-secondary)';
+                }
+            } else {
+                // Sem logo: ícone + nome + tagline
+                if (loginLogoIcon) {
+                    loginLogoIcon.style.display = 'flex';
+                    loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
+                }
                 if (loginLogoImg) loginLogoImg.style.display = 'none';
+                
+                if (loginTitle) {
+                    loginTitle.style.display = 'block';
+                    loginTitle.textContent = 'Bem-vindo de volta';
+                }
+                if (loginSubtitle) {
+                    loginSubtitle.style.display = 'block';
+                    loginSubtitle.textContent = 'Faça login para acessar o ' + siteName;
+                }
             }
-
-            if (loginTitle) loginTitle.textContent = `Bem-vindo de volta`;
-            if (loginSubtitle) loginSubtitle.textContent = `Faça login para acessar o ${siteName}`;
             
-            document.title = `Admin - ${siteName}`;
+            document.title = 'Admin - ' + siteName;
         }
 
         // Restaurar marca padrão
