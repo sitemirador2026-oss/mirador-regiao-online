@@ -900,9 +900,58 @@
             color: var(--text-muted);
         }
 
-        /* News Title Cell */
+        /* News Table Styles */
+        .news-table {
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .news-table th,
+        .news-table td {
+            padding: 1rem;
+            vertical-align: middle;
+        }
+
+        .news-table th:first-child,
+        .news-table td:first-child {
+            width: 100px;
+        }
+
+        .news-table th:nth-child(2),
+        .news-table td:nth-child(2) {
+            width: 70px;
+        }
+
+        .news-table th:nth-child(3) {
+            width: auto;
+        }
+
+        .news-table th:nth-child(4),
+        .news-table td:nth-child(4) {
+            width: 120px;
+        }
+
+        .news-table th:nth-child(5),
+        .news-table td:nth-child(5) {
+            width: 100px;
+        }
+
+        .news-table th:nth-child(6),
+        .news-table td:nth-child(6) {
+            width: 100px;
+            text-align: center;
+        }
+
+        .news-thumb {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+            display: block;
+        }
+
         .news-title-cell {
-            max-width: 300px;
+            min-width: 0;
         }
 
         .news-title {
@@ -911,12 +960,16 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         .news-meta {
             font-size: 0.75rem;
             color: var(--text-muted);
             margin-top: 0.25rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* ========================================
@@ -1291,7 +1344,22 @@
 
             .data-table th,
             .data-table td {
-                padding: 0.875rem 1rem;
+                padding: 0.875rem 0.5rem;
+            }
+
+            /* Responsive News Table */
+            .news-table th:nth-child(2),
+            .news-table td:nth-child(2) {
+                display: none;
+            }
+
+            .news-table th:first-child,
+            .news-table td:first-child {
+                width: 80px;
+            }
+
+            .news-title {
+                max-width: 150px;
             }
         }
 
@@ -1740,10 +1808,11 @@
                             </div>
                         </div>
                         <div class="table-container">
-                            <table class="data-table">
+                            <table class="data-table news-table">
                                 <thead>
                                     <tr>
                                         <th>Status</th>
+                                        <th>Capa</th>
                                         <th>Título</th>
                                         <th>Categoria</th>
                                         <th>Data</th>
@@ -2816,7 +2885,7 @@
                 if (news.length === 0) {
                     newsList.innerHTML = `
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <div class="empty-state">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -2835,19 +2904,15 @@
                     const date = new Date(n.date).toLocaleDateString('pt-BR');
                     const statusClass = n.status === 'draft' ? 'status-draft' : 'status-published';
                     const statusText = n.status === 'draft' ? 'Rascunho' : 'Publicado';
-                    const imageHtml = n.image ? `<img src="${n.image}" style="width: 80px; height: 50px; object-fit: cover; border-radius: var(--radius); margin-right: 0.75rem;">` : '';
+                    const imageHtml = n.image ? `<img src="${n.image}" class="news-thumb" alt="">` : '<div class="news-thumb" style="background: var(--bg-tertiary);"></div>';
 
                     const html = `
                         <tr>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                            <td>${imageHtml}</td>
                             <td class="news-title-cell">
-                                <div style="display: flex; align-items: center;">
-                                    ${imageHtml}
-                                    <div>
-                                        <div class="news-title">${n.title}</div>
-                                        <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
-                                    </div>
-                                </div>
+                                <div class="news-title" title="${n.title}">${n.title}</div>
+                                <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
                             </td>
                             <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
                             <td>${date}</td>
@@ -2876,7 +2941,7 @@
                 if (newsList) {
                     newsList.innerHTML = `
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <div class="empty-state">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
