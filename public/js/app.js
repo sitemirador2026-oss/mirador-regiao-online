@@ -216,8 +216,9 @@ function toggleMobileMenu() {
 
 // Event Listeners
 document.addEventListener('DOMContentLoaded', async function () {
-    // Aplicar cores do Firebase
+    // Aplicar cores e marca do Firebase
     await applyFirebaseColors();
+    await applyFirebaseBrand();
 
     // Inicializar dados
     await initializeData();

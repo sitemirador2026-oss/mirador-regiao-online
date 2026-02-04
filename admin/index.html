@@ -2322,8 +2322,8 @@
             }
         }
 
-        // Salvar cores
-        function saveColors() {
+        // Salvar cores no Firebase
+        async function saveColors() {
             const colors = {
                 Primary: document.getElementById('colorPrimary').value,
                 Secondary: document.getElementById('colorSecondary').value,
@@ -2334,10 +2334,18 @@
                 MutedForeground: document.getElementById('colorMutedForeground').value
             };
 
-            localStorage.setItem('siteColors', JSON.stringify(colors));
-            localStorage.setItem('publicSiteColors', JSON.stringify(colors));
-
-            showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.', 'success');
+            try {
+                // Salvar no Firebase Firestore
+                await db.collection('settings').doc('colors').set(colors);
+                
+                // Também salvar no localStorage para o admin
+                localStorage.setItem('siteColors', JSON.stringify(colors));
+                
+                showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar cores:', error);
+                showModal('Erro!', 'Não foi possível salvar as cores.', 'error');
+            }
         }
 
         // ========================================
@@ -2492,21 +2500,30 @@
             }
         }
 
-        // Salvar configurações de marca
-        function saveBrand() {
+        // Salvar configurações de marca no Firebase
+        async function saveBrand() {
             const brandSettings = {
                 siteName: document.getElementById('siteName').value || 'Mirador Online',
                 siteTagline: document.getElementById('siteTagline').value || 'Portal de Notícias',
-                logo: currentLogo
+                logo: currentLogo,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            localStorage.setItem('siteBrand', JSON.stringify(brandSettings));
-            localStorage.setItem('publicSiteBrand', JSON.stringify(brandSettings));
+            try {
+                // Salvar no Firebase Firestore
+                await db.collection('settings').doc('brand').set(brandSettings);
+                
+                // Também salvar no localStorage para o admin
+                localStorage.setItem('siteBrand', JSON.stringify(brandSettings));
 
-            // Aplicar imediatamente no admin
-            applyBrandToAdmin(brandSettings);
+                // Aplicar imediatamente no admin
+                applyBrandToAdmin(brandSettings);
 
-            showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.', 'success');
+                showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.', 'success');
+            } catch (error) {
+                console.error('Erro ao salvar identidade visual:', error);
+                showModal('Erro!', 'Não foi possível salvar a identidade visual.', 'error');
+            }
         }
 
         // Carregar configurações de marca

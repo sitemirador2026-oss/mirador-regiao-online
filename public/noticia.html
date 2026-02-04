@@ -24,6 +24,10 @@
             letter-spacing: -0.02em;
         }
     </style>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
@@ -56,52 +60,71 @@
         </div>
     </footer>
 
-    <!-- Brand Configuration Script -->
+    <!-- Firebase Config -->
+    <script src="js/firebase-config.js"></script>
+    
     <script>
-        // Load and apply brand settings
-        (function() {
-            function applyBrandSettings(settings) {
-                var siteName = settings.siteName || 'Mirador e Região Online';
-                
-                // Update title
-                var siteTitleEl = document.getElementById('siteTitle');
-                if (siteTitleEl) siteTitleEl.textContent = 'Notícia - ' + siteName;
-                
-                // Update logo in header
-                var logoImg = document.getElementById('siteLogoImg');
-                var logoText = document.getElementById('siteLogoText');
-                
-                if (settings.logo && logoImg) {
-                    logoImg.src = settings.logo;
-                    logoImg.alt = siteName;
-                    logoImg.style.display = 'block';
-                    if (logoText) logoText.style.display = 'none';
-                } else if (logoText) {
-                    if (logoImg) logoImg.style.display = 'none';
-                    logoText.style.display = 'block';
-                    logoText.textContent = siteName;
+        // Carregar configurações do Firebase
+        async function loadAndApplySettings() {
+            try {
+                // Carregar cores
+                const colorsDoc = await db.collection('settings').doc('colors').get();
+                if (colorsDoc.exists) {
+                    const colors = colorsDoc.data();
+                    const root = document.documentElement;
+                    if (colors.Primary) root.style.setProperty('--primary', colors.Primary);
+                    if (colors.Secondary) root.style.setProperty('--secondary', colors.Secondary);
+                    if (colors.Accent) root.style.setProperty('--accent', colors.Accent);
+                    if (colors.Background) root.style.setProperty('--background', colors.Background);
+                    if (colors.Foreground) root.style.setProperty('--foreground', colors.Foreground);
+                    if (colors.Muted) root.style.setProperty('--muted', colors.Muted);
+                    if (colors.MutedForeground) root.style.setProperty('--muted-foreground', colors.MutedForeground);
                 }
                 
-                // Update footer
-                var footerCopyright = document.getElementById('footerCopyright');
-                if (footerCopyright) footerCopyright.innerHTML = '&copy; ' + new Date().getFullYear() + ' ' + siteName + '. Todos os direitos reservados.';
+                // Carregar marca
+                const brandDoc = await db.collection('settings').doc('brand').get();
+                if (brandDoc.exists) {
+                    const brand = brandDoc.data();
+                    var siteName = brand.siteName || 'Mirador e Região Online';
+                    
+                    // Update title
+                    var siteTitleEl = document.getElementById('siteTitle');
+                    if (siteTitleEl) siteTitleEl.textContent = 'Notícia - ' + siteName;
+                    
+                    // Update logo in header
+                    var logoImg = document.getElementById('siteLogoImg');
+                    var logoText = document.getElementById('siteLogoText');
+                    
+                    if (brand.logo && logoImg) {
+                        logoImg.src = brand.logo;
+                        logoImg.alt = siteName;
+                        logoImg.style.display = 'block';
+                        if (logoText) logoText.style.display = 'none';
+                    } else if (logoText) {
+                        if (logoImg) logoImg.style.display = 'none';
+                        logoText.style.display = 'block';
+                        logoText.textContent = siteName;
+                    }
+                    
+                    // Update footer
+                    var footerCopyright = document.getElementById('footerCopyright');
+                    if (footerCopyright) {
+                        footerCopyright.innerHTML = '&copy; ' + new Date().getFullYear() + ' ' + siteName + '. Todos os direitos reservados.';
+                    }
+                    
+                    return siteName;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar configurações:', error);
             }
+            return 'Mirador e Região Online';
+        }
+        
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Carregar configurações do Firebase
+            const siteName = await loadAndApplySettings();
             
-            // Try to get from localStorage
-            var brandSettings = localStorage.getItem('publicSiteBrand');
-            if (brandSettings) {
-                try {
-                    var settings = JSON.parse(brandSettings);
-                    applyBrandSettings(settings);
-                } catch(e) {
-                    console.log('Error parsing brand settings');
-                }
-            }
-        })();
-    </script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
+            // Carregar notícia
             const newsId = parseInt(localStorage.getItem('currentNewsId'));
             const newsData = localStorage.getItem('news');
             const news = newsData ? JSON.parse(newsData) : [];
@@ -115,14 +138,6 @@
             }
 
             // Update page title with article title
-            var siteName = 'Mirador e Região Online';
-            var brandSettings = localStorage.getItem('publicSiteBrand');
-            if (brandSettings) {
-                try {
-                    var settings = JSON.parse(brandSettings);
-                    if (settings.siteName) siteName = settings.siteName;
-                } catch(e) {}
-            }
             document.title = article.title + ' - ' + siteName;
 
             container.innerHTML = `
