@@ -279,12 +279,31 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 100;
+    z-index: 1001;
     transition: opacity 0.2s;
 }
 
 .btn-side-menu-fixed:hover {
     opacity: 0.7;
+}
+
+/* Side Panel Backdrop - escurece o site */
+.side-panel-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.side-panel-backdrop.active {
+    opacity: 1;
+    visibility: visible;
 }
 
 .side-panel {

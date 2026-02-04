@@ -354,9 +354,12 @@ let sidePanelTimer = null;
 
 function openSidePanel() {
     const panel = document.getElementById('sidePanel');
+    const backdrop = document.getElementById('sidePanelBackdrop');
     
     if (panel) {
         panel.classList.add('active');
+        if (backdrop) backdrop.classList.add('active');
+        document.body.style.overflow = 'hidden';
         
         // Start auto-close timer (10 seconds)
         startSidePanelTimer();
@@ -365,9 +368,12 @@ function openSidePanel() {
 
 function closeSidePanel() {
     const panel = document.getElementById('sidePanel');
+    const backdrop = document.getElementById('sidePanelBackdrop');
     
     if (panel) {
         panel.classList.remove('active');
+        if (backdrop) backdrop.classList.remove('active');
+        document.body.style.overflow = '';
         
         // Clear timer
         clearSidePanelTimer();
@@ -437,6 +443,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Side Panel Events
     document.getElementById('btnSideMenu')?.addEventListener('click', openSidePanel);
     document.getElementById('sidePanelClose')?.addEventListener('click', closeSidePanel);
+    document.getElementById('sidePanelBackdrop')?.addEventListener('click', closeSidePanel);
     
     // Reset timer on interaction with side panel
     const sidePanel = document.getElementById('sidePanel');
