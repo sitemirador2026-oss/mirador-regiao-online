@@ -1628,6 +1628,14 @@
                             Notícias
                             <span class="nav-badge" id="newsCountBadge">0</span>
                         </a>
+                        <a href="#" class="nav-item" onclick="showPage('instagram', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="20" rx="5" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="4" stroke-width="2"/>
+                                <circle cx="18" cy="6" r="1" fill="currentColor"/>
+                            </svg>
+                            Instagram
+                        </a>
                         <a href="#" class="nav-item" onclick="showPage('importNews', this); return false;">
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
@@ -1987,6 +1995,116 @@
                             </svg>
                             <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Biblioteca de Mídia</h3>
                             <p style="color: var(--text-muted);">Funcionalidade em desenvolvimento.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Instagram Page -->
+                <div id="instagramPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Instagram</h1>
+                            <p class="page-subtitle">Gerencie stories e importe notícias do Instagram</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);">
+                        <button class="btn btn-tab active" id="tabStories" onclick="switchInstagramTab('stories')" style="background: transparent; border: none; border-bottom: 2px solid var(--primary); padding: 0.75rem 1.25rem; color: var(--primary); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            </svg>
+                            Stories
+                        </button>
+                        <button class="btn btn-tab" id="tabImport" onclick="switchInstagramTab('import')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Importar Notícia
+                        </button>
+                        <button class="btn btn-tab" id="tabArchive" onclick="switchInstagramTab('archive')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
+                            </svg>
+                            Arquivo
+                        </button>
+                    </div>
+
+                    <!-- Stories Tab -->
+                    <div id="instagramStoriesTab" class="instagram-tab-content">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                            <h2 class="section-title">Stories Ativos</h2>
+                            <button class="btn btn-primary" onclick="showCreateStoryModal()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Novo Story
+                            </button>
+                        </div>
+                        <div id="storiesList" style="padding: 1.5rem;">
+                            <!-- Stories serão carregados aqui -->
+                        </div>
+                    </div>
+
+                    <!-- Import News Tab -->
+                    <div id="instagramImportTab" class="instagram-tab-content" style="display: none;">
+                        <div style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+                            <h2 class="section-title" style="margin-bottom: 1.5rem;">Importar Notícia do Instagram</h2>
+                            <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
+                                <div style="margin-bottom: 1.5rem;">
+                                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Link do Post do Instagram <span style="color: var(--destructive);">*</span></label>
+                                    <input type="url" id="instagramNewsUrl" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);" placeholder="https://instagram.com/p/..." onpaste="extractInstagramNewsData(event)">
+                                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.375rem;">Cole o link do post e aguarde a extração automática da foto e legenda</p>
+                                </div>
+                                
+                                <!-- Loading -->
+                                <div id="instagramNewsLoading" style="display: none; text-align: center; padding: 1rem;">
+                                    <div style="width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.5rem;"></div>
+                                    <p style="font-size: 0.8125rem; color: var(--text-muted);">Extraindo informações...</p>
+                                </div>
+                                
+                                <!-- Preview -->
+                                <div id="instagramNewsPreview" style="display: none;">
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Título da Notícia</label>
+                                        <input type="text" id="instagramNewsTitle" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);">
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Conteúdo (Legenda)</label>
+                                        <textarea id="instagramNewsContent" rows="6" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary); resize: vertical;"></textarea>
+                                    </div>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Categoria</label>
+                                        <select id="instagramNewsCategory" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);">
+                                            <option value="mirador">Mirador</option>
+                                            <option value="regiao">Região</option>
+                                            <option value="brasil">Brasil</option>
+                                            <option value="policia">Polícia</option>
+                                            <option value="esportes">Esportes</option>
+                                            <option value="politica">Política</option>
+                                            <option value="geral" selected>Geral</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom: 1.5rem;">
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Imagem de Capa</label>
+                                        <img id="instagramNewsImage" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <input type="hidden" id="instagramNewsImageUrl">
+                                    </div>
+                                    <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                                        <button class="btn btn-secondary" onclick="clearInstagramNewsForm()">Limpar</button>
+                                        <button class="btn btn-primary" onclick="saveInstagramNews()">Publicar Notícia</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Archive Tab -->
+                    <div id="instagramArchiveTab" class="instagram-tab-content" style="display: none;">
+                        <h2 class="section-title" style="margin-bottom: 1.5rem;">Stories Arquivados</h2>
+                        <div id="storiesArchiveList" style="padding: 1.5rem;">
+                            <!-- Stories arquivados serão carregados aqui -->
                         </div>
                     </div>
                 </div>
@@ -3254,8 +3372,14 @@
                 'importNews': 'importNewsPage',
                 'categories': 'categoriesPage',
                 'media': 'mediaPage',
+                'instagram': 'instagramPage',
                 'users': 'dashboardPage'
             };
+            
+            // Carregar dados específicos da página
+            if (pageName === 'instagram') {
+                loadInstagramAdmin();
+            }
 
             const pageId = pageMap[pageName];
             if (pageId) {
@@ -4694,7 +4818,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-012';
+            const cssVersion = '2025-02-04-016';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
@@ -4703,7 +4827,768 @@
                 }
             }
         })();
+
+        // ===================== INSTAGRAM MANAGEMENT =====================
+        let currentEditingStoryId = null;
+        let extractedStoryImage = '';
+        let extractedStoryTitle = '';
+        let instagramNewsData = {};
+
+        function switchInstagramTab(tab) {
+            // Atualizar botões
+            document.querySelectorAll('.btn-tab').forEach(btn => {
+                btn.style.borderBottomColor = 'transparent';
+                btn.style.color = 'var(--text-muted)';
+                btn.classList.remove('active');
+            });
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.borderBottomColor = 'var(--primary)';
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.color = 'var(--primary)';
+            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
+            
+            // Mostrar conteúdo correto
+            document.querySelectorAll('.instagram-tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById('instagram' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').style.display = 'block';
+            
+            // Carregar dados específicos
+            if (tab === 'archive') {
+                loadStoriesArchive();
+            }
+        }
+
+        async function loadInstagramAdmin() {
+            await loadStoriesAdmin();
+            checkExpiredStories();
+        }
+
+        function cleanInstagramText(text) {
+            if (!text) return '';
+            
+            // Remove padrões comuns de metadados do Instagram
+            let cleaned = text
+                // Remove "X likes, Y comments - username on Date:"
+                .replace(/^\d+\s*likes?,?\s*\d*\s*comments?\s*-\s*[^\s:]+\s+on\s+[^:]+:/i, '')
+                // Remove "username on Date:"
+                .replace(/^[^\s:]+\s+on\s+[^:]+:/i, '')
+                // Remove aspas no início e fim
+                .replace(/^["']|["']$/g, '')
+                // Remove hashtags no final (opcional - mantém por enquanto)
+                // .replace(/#\w+/g, '')
+                // Remove múltiplos espaços
+                .replace(/\s+/g, ' ')
+                // Trim
+                .trim();
+            
+            return cleaned;
+        }
+
+        function generateTitleFromText(text, maxLength = 80) {
+            if (!text) return 'Notícia do Instagram';
+            
+            // Limpar o texto primeiro
+            let cleaned = cleanInstagramText(text);
+            
+            // Pegar as primeiras palavras até o limite de caracteres
+            if (cleaned.length <= maxLength) {
+                return cleaned;
+            }
+            
+            // Cortar no último espaço antes do limite
+            let truncated = cleaned.substring(0, maxLength);
+            let lastSpace = truncated.lastIndexOf(' ');
+            if (lastSpace > 0) {
+                truncated = truncated.substring(0, lastSpace);
+            }
+            
+            return truncated + '...';
+        }
+
+        async function extractInstagramNewsData(e) {
+            setTimeout(async () => {
+                const target = e.target || document.getElementById('instagramNewsUrl');
+                const url = target?.value?.trim() || '';
+                
+                if (!url || !url.includes('instagram.com')) return;
+                
+                const loading = document.getElementById('instagramNewsLoading');
+                const preview = document.getElementById('instagramNewsPreview');
+                
+                loading.style.display = 'block';
+                preview.style.display = 'none';
+                
+                try {
+                    const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.data) {
+                        const linkData = data.data;
+                        
+                        // Extrair imagem
+                        const imageUrl = linkData.image?.url || linkData.logo?.url || '';
+                        instagramNewsData.image = imageUrl;
+                        
+                        // Extrair e limpar o texto da legenda
+                        const rawDescription = linkData.description || '';
+                        const cleanedContent = cleanInstagramText(rawDescription);
+                        const title = generateTitleFromText(cleanedContent);
+                        
+                        instagramNewsData.title = title;
+                        instagramNewsData.content = cleanedContent;
+                        instagramNewsData.url = url;
+                        
+                        // Preencher formulário
+                        document.getElementById('instagramNewsTitle').value = title;
+                        document.getElementById('instagramNewsContent').value = cleanedContent;
+                        document.getElementById('instagramNewsImage').src = imageUrl;
+                        document.getElementById('instagramNewsImageUrl').value = imageUrl;
+                        
+                        loading.style.display = 'none';
+                        preview.style.display = 'block';
+                    } else {
+                        showModal('Erro', 'Não foi possível extrair os dados do post. Verifique o link.', 'error');
+                        loading.style.display = 'none';
+                    }
+                } catch (error) {
+                    console.error('[Admin] Erro ao extrair notícia do Instagram:', error);
+                    showModal('Erro', 'Erro ao extrair dados. Tente novamente.', 'error');
+                    loading.style.display = 'none';
+                }
+            }, 100);
+        }
+
+        async function saveInstagramNews() {
+            const title = document.getElementById('instagramNewsTitle').value.trim();
+            const content = document.getElementById('instagramNewsContent').value.trim();
+            const image = document.getElementById('instagramNewsImageUrl').value;
+            const category = document.getElementById('instagramNewsCategory').value;
+            const categoryName = document.querySelector(`#instagramNewsCategory option[value="${category}"]`).textContent;
+            
+            if (!title || !content) {
+                showModal('Atenção', 'Título e conteúdo são obrigatórios', 'warning');
+                return;
+            }
+            
+            const newsData = {
+                title,
+                excerpt: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+                content,
+                image: image || 'https://via.placeholder.com/800x400?text=Sem+Imagem',
+                category,
+                categoryName,
+                date: new Date().toISOString(),
+                status: 'published',
+                isImported: true,
+                sourceUrl: instagramNewsData.url,
+                source: 'Instagram',
+                views: 0,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            try {
+                await db.collection('news').add(newsData);
+                showModal('Sucesso!', 'Notícia importada e publicada com sucesso!', 'success');
+                clearInstagramNewsForm();
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar notícia:', error);
+                showModal('Erro', 'Não foi possível salvar a notícia: ' + error.message, 'error');
+            }
+        }
+
+        function clearInstagramNewsForm() {
+            document.getElementById('instagramNewsUrl').value = '';
+            document.getElementById('instagramNewsTitle').value = '';
+            document.getElementById('instagramNewsContent').value = '';
+            document.getElementById('instagramNewsImage').src = '';
+            document.getElementById('instagramNewsImageUrl').value = '';
+            document.getElementById('instagramNewsPreview').style.display = 'none';
+            instagramNewsData = {};
+        }
+
+        async function checkExpiredStories() {
+            try {
+                const now = new Date();
+                const snapshot = await db.collection('stories').get();
+                
+                snapshot.forEach(async (doc) => {
+                    const story = doc.data();
+                    const storyDate = new Date(story.date);
+                    const hoursDiff = (now - storyDate) / (1000 * 60 * 60);
+                    
+                    if (hoursDiff >= 24) {
+                        // Mover para arquivo
+                        await db.collection('storiesArchive').doc(doc.id).set({
+                            ...story,
+                            archivedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        // Deletar da coleção ativa
+                        await db.collection('stories').doc(doc.id).delete();
+                    }
+                });
+            } catch (error) {
+                console.error('[Admin] Erro ao verificar stories expirados:', error);
+            }
+        }
+
+        async function loadStoriesArchive() {
+            try {
+                const snapshot = await db.collection('storiesArchive').orderBy('archivedAt', 'desc').get();
+                const container = document.getElementById('storiesArchiveList');
+                if (!container) return;
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><p>Nenhum story arquivado</p></div>';
+                    return;
+                }
+                
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem;">';
+                snapshot.forEach(doc => {
+                    const story = doc.data();
+                    const archivedDate = story.archivedAt ? new Date(story.archivedAt.toDate()).toLocaleDateString('pt-BR') : 'N/A';
+                    html += `
+                        <div class="story-card" style="background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); opacity: 0.7;">
+                            <div style="aspect-ratio: 9/16; position: relative;">
+                                <img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <div style="padding: 1rem;">
+                                <h4 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.25rem;">${story.title}</h4>
+                                <p style="font-size: 0.8125rem; color: var(--text-muted);">Arquivado em: ${archivedDate}</p>
+                                <button class="btn btn-primary btn-sm" style="margin-top: 0.5rem; width: 100%;" onclick="restoreStory('${doc.id}')">Restaurar</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('[Admin] Erro ao carregar arquivo:', error);
+            }
+        }
+
+        async function restoreStory(id) {
+            try {
+                const doc = await db.collection('storiesArchive').doc(id).get();
+                if (doc.exists) {
+                    const story = doc.data();
+                    // Atualizar data para agora (renova 24h)
+                    story.date = new Date().toISOString();
+                    story.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+                    
+                    await db.collection('stories').doc(id).set(story);
+                    await db.collection('storiesArchive').doc(id).delete();
+                    
+                    showModal('Sucesso!', 'Story restaurado com sucesso!', 'success');
+                    loadStoriesArchive();
+                    loadStoriesAdmin();
+                }
+            } catch (error) {
+                console.error('[Admin] Erro ao restaurar story:', error);
+                showModal('Erro', 'Não foi possível restaurar o story.', 'error');
+            }
+        }
+
+        async function extractStoryData(e) {
+            // Esperar um pouco para o valor ser colado
+            setTimeout(async () => {
+                const target = e.target || document.getElementById('storyUrlInput');
+                const url = target?.value?.trim() || '';
+                console.log('[Admin] Extraindo dados do URL:', url);
+                
+                if (!url || !url.includes('instagram.com')) {
+                    console.log('[Admin] URL inválido ou não é Instagram');
+                    return;
+                }
+                
+                const loadingIndicator = document.getElementById('storyLoadingIndicator');
+                const previewContainer = document.getElementById('storyImagePreviewContainer');
+                const previewImg = document.getElementById('storyPreviewImg');
+                const titleInput = document.getElementById('storyTitleInput');
+                const imageInput = document.getElementById('storyImageInput');
+                
+                console.log('[Admin] Elementos encontrados:', { loadingIndicator, previewContainer, previewImg, titleInput, imageInput });
+                
+                loadingIndicator.style.display = 'block';
+                previewContainer.style.display = 'none';
+                
+                try {
+                    // Tentar extrair usando Microlink
+                    const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`);
+                    const data = await response.json();
+                    
+                    if (data.status === 'success' && data.data) {
+                        const linkData = data.data;
+                        
+                        // Extrair imagem
+                        const imageUrl = linkData.image?.url || linkData.logo?.url || '';
+                        console.log('[Admin] Imagem extraída:', imageUrl);
+                        if (imageUrl) {
+                            extractedStoryImage = imageUrl;
+                            if (imageInput) {
+                                imageInput.value = imageUrl;
+                                console.log('[Admin] Input atualizado:', imageInput.value);
+                            }
+                            if (previewImg) {
+                                previewImg.src = imageUrl;
+                                previewImg.style.display = 'block';
+                            }
+                            if (previewContainer) {
+                                previewContainer.style.display = 'none';
+                            }
+                        }
+                        
+                        // Extrair título
+                        const title = linkData.title || '';
+                        console.log('[Admin] Título extraído:', title);
+                        if (title && titleInput && !titleInput.value) {
+                            extractedStoryTitle = title;
+                            titleInput.value = title;
+                        }
+                        
+                        console.log('[Admin] Extração concluída:', { imageUrl, title, extractedStoryImage });
+                    } else {
+                        // Fallback: tentar extrair da URL do Instagram
+                        // Instagram geralmente tem meta tags que podem ser acessadas
+                        showModal('Atenção', 'Não foi possível extrair automaticamente. Você pode preencher manualmente.', 'info');
+                        previewContainer.style.display = 'block';
+                    }
+                } catch (error) {
+                    console.error('[Admin] Erro ao extrair dados do story:', error);
+                    previewContainer.style.display = 'block';
+                } finally {
+                    loadingIndicator.style.display = 'none';
+                }
+            }, 100);
+        }
+
+        async function loadStoriesAdmin() {
+            try {
+                // Verificar e mover stories expirados
+                await checkExpiredStories();
+                
+                const snapshot = await db.collection('stories').orderBy('date', 'desc').get();
+                const container = document.getElementById('storiesList');
+                if (!container) return;
+                
+                if (snapshot.empty) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="48" height="48">
+                                <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                            </svg>
+                            <p>Nenhum story ativo</p>
+                            <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.5rem;">Stories expiram automaticamente após 24 horas</p>
+                            <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showCreateStoryModal()">
+                                Criar story
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                let html = '<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem;">';
+                snapshot.forEach(doc => {
+                    const story = doc.data();
+                    const date = new Date(story.date);
+                    const hoursLeft = Math.max(0, 24 - Math.floor((new Date() - date) / (1000 * 60 * 60)));
+                    
+                    let previewHtml = '';
+                    if (story.type === 'text') {
+                        // Preview de story de texto
+                        previewHtml = `
+                            <div style="width: 100%; height: 100%; background: ${story.bgColor || '#E4405F'}; display: flex; align-items: center; justify-content: center; padding: 1rem;">
+                                <p style="color: white; font-size: 0.875rem; text-align: center; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">${story.text || story.title}</p>
+                            </div>
+                        `;
+                    } else if (story.isVideo) {
+                        // Preview de vídeo
+                        previewHtml = `
+                            <video src="${story.image}" style="width: 100%; height: 100%; object-fit: cover;"></video>
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); border-radius: 50%; padding: 0.5rem;">
+                                <svg width="24" height="24" fill="white" viewBox="0 0 24 24">
+                                    <polygon points="5,3 19,12 5,21" fill="white"/>
+                                </svg>
+                            </div>
+                        `;
+                    } else {
+                        // Preview de imagem
+                        previewHtml = `<img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">`;
+                    }
+                    
+                    html += `
+                        <div class="story-card" style="background: var(--bg-card); border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border);">
+                            <div style="aspect-ratio: 9/16; position: relative;">
+                                ${previewHtml}
+                                <div style="position: absolute; top: 0.5rem; right: 0.5rem; display: flex; gap: 0.25rem;">
+                                    <button class="action-btn" onclick="editStory('${doc.id}')" title="Editar">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteStory('${doc.id}')" title="Excluir">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
+                                <div style="position: absolute; bottom: 0; left: 0; right: 0; padding: 0.5rem; background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);">
+                                    <span style="color: white; font-size: 0.75rem; font-weight: 500;">${hoursLeft}h restantes</span>
+                                </div>
+                            </div>
+                            <div style="padding: 0.75rem;">
+                                <h4 style="font-size: 0.8125rem; font-weight: 600; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${story.title}</h4>
+                                <span style="font-size: 0.6875rem; color: var(--text-muted); text-transform: uppercase;">${story.type === 'text' ? 'Texto' : story.isVideo ? 'Vídeo' : 'Foto'}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+                
+            } catch (error) {
+                console.error('[Admin] Erro ao carregar stories:', error);
+            }
+        }
+
+        function toggleStoryType(type) {
+            const mediaSection = document.getElementById('storyMediaSection');
+            const textSection = document.getElementById('storyTextSection');
+            
+            if (type === 'media') {
+                mediaSection.style.display = 'block';
+                textSection.style.display = 'none';
+            } else {
+                mediaSection.style.display = 'none';
+                textSection.style.display = 'block';
+            }
+        }
+
+        function setStoryBgColor(color) {
+            document.getElementById('storyBgColor').value = color;
+        }
+
+        async function handleStoryFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (file.size > 50 * 1024 * 1024) {
+                showModal('Erro', 'Arquivo muito grande. Máximo 50MB.', 'error');
+                return;
+            }
+            
+            const previewDiv = document.getElementById('storyFilePreview');
+            const previewImg = document.getElementById('storyFilePreviewImg');
+            const previewVideo = document.getElementById('storyFilePreviewVideo');
+            const progressDiv = document.getElementById('storyUploadProgress');
+            const progressBar = document.getElementById('storyUploadProgressBar');
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (file.type.startsWith('video/')) {
+                    previewImg.style.display = 'none';
+                    previewVideo.style.display = 'block';
+                    previewVideo.src = e.target.result;
+                } else {
+                    previewVideo.style.display = 'none';
+                    previewImg.style.display = 'block';
+                    previewImg.src = e.target.result;
+                }
+                previewDiv.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+            
+            progressDiv.style.display = 'block';
+            
+            try {
+                const storageRef = firebase.storage().ref();
+                const fileRef = storageRef.child('stories/' + Date.now() + '_' + file.name);
+                
+                const uploadTask = fileRef.put(file);
+                
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error('[Admin] Erro no upload:', error);
+                        showModal('Erro', 'Erro ao fazer upload do arquivo.', 'error');
+                        progressDiv.style.display = 'none';
+                    },
+                    async () => {
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        document.getElementById('storyMediaUrl').value = downloadURL;
+                        extractedStoryImage = downloadURL;
+                        progressDiv.style.display = 'none';
+                    }
+                );
+            } catch (error) {
+                console.error('[Admin] Erro no upload:', error);
+                showModal('Erro', 'Erro ao fazer upload: ' + error.message, 'error');
+                progressDiv.style.display = 'none';
+            }
+        }
+
+        function showCreateStoryModal() {
+            console.log('[Admin] Abrindo modal de story');
+            currentEditingStoryId = null;
+            extractedStoryImage = '';
+            extractedStoryTitle = '';
+            
+            document.getElementById('storyFormTitle').textContent = 'Novo Story';
+            document.getElementById('storyTitleInput').value = '';
+            document.getElementById('storyTextContent').value = '';
+            document.getElementById('storyBgColor').value = '#E4405F';
+            document.getElementById('storyMediaUrl').value = '';
+            document.getElementById('storyFileInput').value = '';
+            
+            document.getElementById('storyFilePreview').style.display = 'none';
+            document.getElementById('storyFilePreviewImg').src = '';
+            document.getElementById('storyFilePreviewVideo').src = '';
+            document.getElementById('storyUploadProgress').style.display = 'none';
+            
+            document.querySelector('input[name="storyType"][value="media"]').checked = true;
+            toggleStoryType('media');
+            
+            document.getElementById('storyModalOverlay').classList.add('active');
+        }
+
+        function closeStoryModal() {
+            console.log('[Admin] Fechando modal');
+            const modal = document.getElementById('storyModalOverlay');
+            if (modal) {
+                modal.classList.remove('active');
+            }
+        }
+
+        function previewStoryImage(url) {
+            const preview = document.getElementById('storyPreviewImg');
+            if (url) {
+                preview.src = url;
+                preview.style.display = 'block';
+                preview.onerror = function() {
+                    preview.style.display = 'none';
+                };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        async function saveStory() {
+            console.log('[Admin] Iniciando saveStory...');
+            
+            const storyType = document.querySelector('input[name="storyType"]:checked')?.value || 'media';
+            const title = document.getElementById('storyTitleInput')?.value?.trim() || 'Story';
+            
+            let storyData = {
+                title,
+                type: storyType,
+                date: new Date().toISOString(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            
+            if (storyType === 'media') {
+                // Story com foto ou vídeo
+                const mediaUrl = document.getElementById('storyMediaUrl')?.value || extractedStoryImage;
+                
+                if (!mediaUrl) {
+                    showModal('Atenção', 'Faça upload de uma foto ou vídeo', 'warning');
+                    return;
+                }
+                
+                storyData.image = mediaUrl;
+                storyData.isVideo = mediaUrl.includes('.mp4') || mediaUrl.includes('.mov') || mediaUrl.includes('video');
+            } else {
+                // Story de texto
+                const textContent = document.getElementById('storyTextContent')?.value?.trim();
+                const bgColor = document.getElementById('storyBgColor')?.value || '#E4405F';
+                
+                if (!textContent) {
+                    showModal('Atenção', 'Digite o texto do story', 'warning');
+                    return;
+                }
+                
+                storyData.text = textContent;
+                storyData.bgColor = bgColor;
+                storyData.image = null; // Story de texto não tem imagem
+            }
+            
+            console.log('[Admin] Salvando story:', storyData);
+            
+            try {
+                if (currentEditingStoryId) {
+                    await db.collection('stories').doc(currentEditingStoryId).update(storyData);
+                    showModal('Sucesso!', 'Story atualizado com sucesso!', 'success');
+                } else {
+                    await db.collection('stories').add(storyData);
+                    showModal('Sucesso!', 'Story publicado com sucesso!', 'success');
+                }
+                closeStoryModal();
+                loadStoriesAdmin();
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar story:', error);
+                showModal('Erro!', 'Não foi possível salvar o story. Erro: ' + error.message, 'error');
+            }
+        }
+
+        async function editStory(id) {
+            try {
+                const doc = await db.collection('stories').doc(id).get();
+                if (doc.exists) {
+                    const story = doc.data();
+                    currentEditingStoryId = id;
+                    extractedStoryImage = story.image || '';
+                    extractedStoryTitle = story.title || '';
+                    
+                    document.getElementById('storyFormTitle').textContent = 'Editar Story';
+                    document.getElementById('storyTitleInput').value = story.title || '';
+                    
+                    // Configurar tipo de story
+                    const storyType = story.type || 'media';
+                    document.querySelector(`input[name="storyType"][value="${storyType}"]`).checked = true;
+                    toggleStoryType(storyType);
+                    
+                    if (storyType === 'text') {
+                        // Story de texto
+                        document.getElementById('storyTextContent').value = story.text || '';
+                        document.getElementById('storyBgColor').value = story.bgColor || '#E4405F';
+                    } else {
+                        // Story de mídia
+                        if (story.image) {
+                            document.getElementById('storyMediaUrl').value = story.image;
+                            const previewDiv = document.getElementById('storyFilePreview');
+                            const previewImg = document.getElementById('storyFilePreviewImg');
+                            const previewVideo = document.getElementById('storyFilePreviewVideo');
+                            
+                            previewDiv.style.display = 'block';
+                            if (story.isVideo) {
+                                previewImg.style.display = 'none';
+                                previewVideo.style.display = 'block';
+                                previewVideo.src = story.image;
+                            } else {
+                                previewVideo.style.display = 'none';
+                                previewImg.style.display = 'block';
+                                previewImg.src = story.image;
+                            }
+                        }
+                    }
+                    
+                    document.getElementById('storyModalOverlay').classList.add('active');
+                }
+            } catch (error) {
+                console.error('[Admin] Erro ao carregar story:', error);
+            }
+        }
+
+        async function deleteStory(id) {
+            if (!confirm('Tem certeza que deseja excluir este story?')) return;
+            
+            try {
+                await db.collection('stories').doc(id).delete();
+                showModal('Sucesso!', 'Story excluído com sucesso!', 'success');
+                loadStoriesAdmin();
+            } catch (error) {
+                console.error('[Admin] Erro ao excluir story:', error);
+                showModal('Erro!', 'Não foi possível excluir o story.', 'error');
+            }
+        }
     </script>
+    <!-- Story Modal -->
+    <div class="modal-overlay" id="storyModalOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 3000; align-items: center; justify-content: center;">
+        <div style="background: var(--bg-card); border-radius: var(--radius-lg); width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+            <div style="padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+                <h3 id="storyFormTitle" style="font-size: 1.25rem; font-weight: 600;">Novo Story</h3>
+                <button onclick="closeStoryModal()" style="background: none; border: none; cursor: pointer; padding: 0.5rem;">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+            <div style="padding: 1.5rem;">
+                <!-- Tipo de Story -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Tipo de Story</label>
+                    <div style="display: flex; gap: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="storyType" value="media" checked onchange="toggleStoryType('media')">
+                            <span>Foto/Vídeo</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="radio" name="storyType" value="text" onchange="toggleStoryType('text')">
+                            <span>Texto</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Upload de Mídia -->
+                <div id="storyMediaSection">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Upload Foto/Vídeo <span style="color: var(--destructive);">*</span></label>
+                        <div id="storyUploadArea" style="background: var(--bg-primary); border: 2px dashed var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; cursor: pointer;" onclick="document.getElementById('storyFileInput').click()">
+                            <input type="file" id="storyFileInput" accept="image/*,video/*" style="display: none;" onchange="handleStoryFileUpload(event)">
+                            <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem; opacity: 0.5;">
+                                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke-width="2"/>
+                                <polyline points="17 8 12 3 7 8" stroke-width="2"/>
+                                <line x1="12" y1="3" x2="12" y2="15" stroke-width="2"/>
+                            </svg>
+                            <p style="font-size: 0.875rem; color: var(--text-muted);">Clique para fazer upload</p>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, GIF, MP4, MOV (máx. 50MB)</p>
+                        </div>
+                        <div id="storyFilePreview" style="display: none; margin-top: 0.75rem;">
+                            <img id="storyFilePreviewImg" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border);">
+                            <video id="storyFilePreviewVideo" style="width: 100%; max-height: 300px; border-radius: var(--radius); border: 1px solid var(--border);" controls style="display: none;"></video>
+                            <input type="hidden" id="storyMediaUrl">
+                        </div>
+                        <div id="storyUploadProgress" style="display: none; margin-top: 0.5rem;">
+                            <div style="height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;">
+                                <div id="storyUploadProgressBar" style="height: 100%; width: 0%; background: var(--primary); transition: width 0.3s;"></div>
+                            </div>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; text-align: center;">Enviando...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Story de Texto -->
+                <div id="storyTextSection" style="display: none;">
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Texto do Story <span style="color: var(--destructive);">*</span></label>
+                        <textarea id="storyTextContent" rows="4" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary); resize: vertical;" placeholder="Digite o texto do story..."></textarea>
+                    </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Cor de Fundo</label>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button onclick="setStoryBgColor('#E4405F')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); cursor: pointer;"></button>
+                            <button onclick="setStoryBgColor('#833AB4')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: #833AB4; cursor: pointer;"></button>
+                            <button onclick="setStoryBgColor('#405DE6')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: #405DE6; cursor: pointer;"></button>
+                            <button onclick="setStoryBgColor('#FD1D1D')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: #FD1D1D; cursor: pointer;"></button>
+                            <button onclick="setStoryBgColor('#F56040')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: #F56040; cursor: pointer;"></button>
+                            <button onclick="setStoryBgColor('#000000')" style="width: 40px; height: 40px; border-radius: 50%; border: 2px solid white; background: #000000; cursor: pointer;"></button>
+                        </div>
+                        <input type="hidden" id="storyBgColor" value="#E4405F">
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Título <span style="color: var(--text-muted); font-weight: 400;">(opcional)</span></label>
+                    <input type="text" id="storyTitleInput" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);" placeholder="Ex: Lançamento do novo projeto">
+                </div>
+                
+                <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
+                    <button class="btn btn-secondary" onclick="closeStoryModal()">Cancelar</button>
+                    <button class="btn btn-primary" onclick="saveStory()">Publicar Story</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        #storyModalOverlay.active { display: flex !important; }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
 </body>
 
 </html>

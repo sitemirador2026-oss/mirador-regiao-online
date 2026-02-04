@@ -485,6 +485,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     // Carregar e aplicar configurações de links do rodapé
     loadFooterLinks();
     
+    // Carregar stories
+    loadStories();
+    
     console.log('[App] v2.5 - Pronto!');
 });
 
@@ -545,6 +548,213 @@ function applyFooterLinks(links) {
         }
     }
 }
+
+// Stories functionality
+let storiesData = [];
+let currentStoryIndex = 0;
+let storyProgressInterval = null;
+let storyAutoAdvanceTimeout = null;
+const STORY_DURATION = 5000; // 5 seconds per story
+
+async function loadStories() {
+    try {
+        const snapshot = await db.collection('stories').orderBy('date', 'desc').limit(20).get();
+        storiesData = [];
+        snapshot.forEach(doc => {
+            storiesData.push({ id: doc.id, ...doc.data() });
+        });
+        renderStories();
+    } catch (error) {
+        console.log('[App] Erro ao carregar stories:', error);
+    }
+}
+
+function renderStories() {
+    const container = document.getElementById('storiesContainer');
+    if (!container) return;
+    
+    if (storiesData.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+    
+    container.innerHTML = storiesData.map((story, index) => {
+        let avatarContent = '';
+        
+        if (story.type === 'text') {
+            // Story de texto - mostrar círculo com gradiente
+            avatarContent = `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${story.bgColor || 'linear-gradient(45deg, #f09433, #e6683c, #dc2743)'}; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">T</div>`;
+        } else if (story.isVideo) {
+            // Story de vídeo - mostrar preview com ícone de play
+            avatarContent = `
+                <img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                    <svg width="12" height="12" fill="white" viewBox="0 0 24 24"><polygon points="5,3 19,12 5,21"/></svg>
+                </div>
+            `;
+        } else {
+            // Story de imagem
+            avatarContent = `<img src="${story.image}" alt="${story.title}">`;
+        }
+        
+        return `
+            <div class="story-item" onclick="openStory(${index})">
+                <div class="story-avatar" style="position: relative;">
+                    ${avatarContent}
+                </div>
+                <div class="story-item-title">${story.title}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function openStory(index) {
+    currentStoryIndex = index;
+    const modal = document.getElementById('storyModal');
+    if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        showCurrentStory();
+    }
+}
+
+function closeStoryModal() {
+    const modal = document.getElementById('storyModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        clearStoryTimers();
+    }
+}
+
+function showCurrentStory() {
+    clearStoryTimers();
+    
+    const story = storiesData[currentStoryIndex];
+    if (!story) return;
+    
+    const storyContent = document.querySelector('.story-content');
+    
+    // Limpar conteúdo anterior
+    storyContent.innerHTML = '';
+    
+    // Renderizar baseado no tipo
+    if (story.type === 'text') {
+        // Story de texto
+        storyContent.innerHTML = `
+            <div style="width: 100%; height: 100%; background: ${story.bgColor || 'linear-gradient(45deg, #f09433, #e6683c, #dc2743)'}; display: flex; align-items: center; justify-content: center; padding: 2rem;">
+                <p style="color: white; font-size: 1.5rem; font-weight: 600; text-align: center; line-height: 1.4;">${story.text || story.title}</p>
+            </div>
+        `;
+    } else if (story.isVideo) {
+        // Story de vídeo
+        storyContent.innerHTML = `
+            <video src="${story.image}" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline></video>
+        `;
+    } else {
+        // Story de imagem
+        storyContent.innerHTML = `
+            <img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">
+            ${story.title ? `<div class="story-caption">${story.title}</div>` : ''}
+        `;
+    }
+    
+    document.getElementById('storyTime').textContent = formatStoryTime(story.date);
+    
+    // Esconder botão "Ver no Instagram" se não tiver link
+    const storyLink = document.getElementById('storyLink');
+    if (storyLink) {
+        if (story.instagramUrl) {
+            storyLink.href = story.instagramUrl;
+            storyLink.style.display = 'flex';
+        } else {
+            storyLink.style.display = 'none';
+        }
+    }
+    
+    // Update navigation visibility
+    const prevBtn = document.getElementById('storyPrev');
+    const nextBtn = document.getElementById('storyNext');
+    if (prevBtn) prevBtn.style.visibility = currentStoryIndex > 0 ? 'visible' : 'hidden';
+    if (nextBtn) nextBtn.style.visibility = currentStoryIndex < storiesData.length - 1 ? 'visible' : 'hidden';
+    
+    // Start progress
+    startStoryProgress();
+}
+
+function startStoryProgress() {
+    const progressBar = document.getElementById('storyProgressBar');
+    if (!progressBar) return;
+    
+    progressBar.style.width = '0%';
+    progressBar.style.transition = 'none';
+    
+    // Force reflow
+    void progressBar.offsetWidth;
+    
+    progressBar.style.transition = `width ${STORY_DURATION}ms linear`;
+    progressBar.style.width = '100%';
+    
+    storyAutoAdvanceTimeout = setTimeout(() => {
+        nextStory();
+    }, STORY_DURATION);
+}
+
+function clearStoryTimers() {
+    if (storyProgressInterval) {
+        clearInterval(storyProgressInterval);
+        storyProgressInterval = null;
+    }
+    if (storyAutoAdvanceTimeout) {
+        clearTimeout(storyAutoAdvanceTimeout);
+        storyAutoAdvanceTimeout = null;
+    }
+}
+
+function nextStory() {
+    if (currentStoryIndex < storiesData.length - 1) {
+        currentStoryIndex++;
+        showCurrentStory();
+    } else {
+        closeStoryModal();
+    }
+}
+
+function prevStory() {
+    if (currentStoryIndex > 0) {
+        currentStoryIndex--;
+        showCurrentStory();
+    }
+}
+
+function formatStoryTime(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now - date) / 1000);
+    
+    if (diff < 60) return 'Agora';
+    if (diff < 3600) return `${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} h`;
+    return `${Math.floor(diff / 86400)} d`;
+}
+
+// Story event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('storyModalClose')?.addEventListener('click', closeStoryModal);
+    document.getElementById('storyModalBackdrop')?.addEventListener('click', closeStoryModal);
+    document.getElementById('storyNext')?.addEventListener('click', nextStory);
+    document.getElementById('storyPrev')?.addEventListener('click', prevStory);
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('storyModal');
+        if (!modal?.classList.contains('active')) return;
+        
+        if (e.key === 'Escape') closeStoryModal();
+        if (e.key === 'ArrowRight') nextStory();
+        if (e.key === 'ArrowLeft') prevStory();
+    });
+});
 
 console.log('[App] v2.5 - Script finalizado');
 

@@ -7,7 +7,7 @@
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=26">
+    <link rel="stylesheet" href="css/styles.css?v=29">
     
     <style>
         /* Logo styles for public site */
@@ -157,15 +157,69 @@
 
     <!-- Main Content -->
     <main class="main">
-        <!-- Hero Section -->
-        <section class="hero-section">
+        <!-- Stories Section -->
+        <section class="stories-section">
             <div class="container">
-                <h1 class="section-title">Destaques</h1>
-                <div id="featuredNews" class="featured-grid">
-                    <!-- Featured news will be loaded here -->
+                <div class="stories-scroll" id="storiesContainer">
+                    <!-- Stories will be loaded here -->
                 </div>
             </div>
         </section>
+
+        <!-- Story Viewer Modal -->
+        <div class="story-modal" id="storyModal">
+            <div class="story-modal-backdrop" id="storyModalBackdrop"></div>
+            <button class="story-modal-close" id="storyModalClose" aria-label="Fechar">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <div class="story-viewer">
+                <!-- Progress Bar -->
+                <div class="story-progress-container">
+                    <div class="story-progress-bar" id="storyProgressBar"></div>
+                </div>
+                
+                <!-- Story Header -->
+                <div class="story-header">
+                    <div class="story-author">
+                        <img id="storyAuthorAvatar" src="" alt="">
+                        <span id="storyAuthorName">Mirador Online</span>
+                        <span class="story-time" id="storyTime"></span>
+                    </div>
+                </div>
+                
+                <!-- Story Content -->
+                <div class="story-content">
+                    <img id="storyImage" src="" alt="">
+                    <div class="story-caption" id="storyCaption"></div>
+                </div>
+                
+                <!-- Story Actions -->
+                <div class="story-actions">
+                    <a id="storyLink" href="#" target="_blank" class="story-btn-primary">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
+                        </svg>
+                        Ver no Instagram
+                    </a>
+                </div>
+                
+                <!-- Navigation -->
+                <button class="story-nav story-nav-prev" id="storyPrev" aria-label="Anterior">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </button>
+                <button class="story-nav story-nav-next" id="storyNext" aria-label="Próximo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </button>
+            </div>
+        </div>
 
         <!-- Latest News -->
         <section class="news-section">
@@ -369,7 +423,7 @@
     
     <script src="js/firebase-config.js?v=16"></script>
     <script src="js/firebase-db.js?v=16"></script>
-    <script src="js/app.js?v=26"></script>
+    <script src="js/app.js?v=28"></script>
 </body>
 
 </html>
