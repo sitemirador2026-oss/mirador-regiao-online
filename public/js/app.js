@@ -99,9 +99,12 @@ function createNewsCard(news) {
         ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
         : '';
     const excerpt = news.excerpt || '';
+    const isImported = news.isImported || news.externalUrl;
+    
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
             <div class="news-card-image-wrapper">
+                ${isImported ? '<span class="news-card-imported-badge">Importado</span>' : ''}
                 <img src="${news.image}" alt="${news.title}" class="news-card-image">
                 <div class="news-card-gradient"></div>
                 <div class="news-card-overlay">
@@ -118,7 +121,7 @@ function createNewsCard(news) {
                         ${formatDateTime(news.date)}
                     </span>
                 </div>
-                ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="${sourceDomain}"></div>` : ''}
+                ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="Fonte: ${sourceDomain}"><span class="news-card-source-name">${sourceDomain}</span></div>` : ''}
             </div>
         </article>
     `;

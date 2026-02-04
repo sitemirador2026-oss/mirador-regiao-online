@@ -504,6 +504,29 @@ body {
     border: 1px solid var(--border);
 }
 
+.news-card-source-name {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.news-card-imported-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
 /* Footer */
 .footer {
     margin-top: auto;
