@@ -1922,7 +1922,167 @@
                         </div>
                     </div>
 
-                    <div class="content-section" style="max-width: 900px; margin-top: 1.5rem;">
+                    <!-- PERSONALIZAÇÃO DE CORES -->
+                    <style>
+                        .color-settings-grid {
+                            display: grid;
+                            grid-template-columns: 1fr 380px;
+                            gap: 1.5rem;
+                        }
+                        @media (max-width: 1200px) {
+                            .color-settings-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
+                        .color-picker-card {
+                            background: var(--bg-card);
+                            border-radius: var(--radius-lg);
+                            border: 1px solid var(--border);
+                            padding: 1.5rem;
+                        }
+                        .color-group {
+                            margin-bottom: 1.5rem;
+                        }
+                        .color-group:last-child {
+                            margin-bottom: 0;
+                        }
+                        .color-group-title {
+                            font-size: 0.75rem;
+                            font-weight: 600;
+                            text-transform: uppercase;
+                            letter-spacing: 0.05em;
+                            color: var(--text-muted);
+                            margin-bottom: 0.75rem;
+                            padding-bottom: 0.5rem;
+                            border-bottom: 1px solid var(--border-light);
+                        }
+                        .color-items {
+                            display: grid;
+                            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+                            gap: 0.75rem;
+                        }
+                        .color-item {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.75rem;
+                            padding: 0.5rem;
+                            border-radius: var(--radius);
+                            transition: background 0.2s;
+                        }
+                        .color-item:hover {
+                            background: var(--bg-primary);
+                        }
+                        .color-item input[type="color"] {
+                            width: 36px;
+                            height: 36px;
+                            border: 2px solid var(--border);
+                            border-radius: var(--radius);
+                            cursor: pointer;
+                            padding: 0;
+                            background: none;
+                        }
+                        .color-item input[type="color"]::-webkit-color-swatch-wrapper {
+                            padding: 0;
+                        }
+                        .color-item input[type="color"]::-webkit-color-swatch {
+                            border: none;
+                            border-radius: 4px;
+                        }
+                        .color-item-info {
+                            flex: 1;
+                            min-width: 0;
+                        }
+                        .color-item-label {
+                            font-size: 0.8125rem;
+                            font-weight: 500;
+                            color: var(--text-primary);
+                            margin-bottom: 0.125rem;
+                        }
+                        .color-item-value {
+                            font-size: 0.6875rem;
+                            font-family: monospace;
+                            color: var(--text-muted);
+                            text-transform: uppercase;
+                        }
+                        .preview-card {
+                            background: var(--bg-card);
+                            border-radius: var(--radius-lg);
+                            border: 1px solid var(--border);
+                            overflow: hidden;
+                            position: sticky;
+                            top: 90px;
+                        }
+                        .preview-header {
+                            padding: 1rem 1.25rem;
+                            background: var(--bg-primary);
+                            border-bottom: 1px solid var(--border);
+                        }
+                        .preview-title {
+                            font-size: 0.875rem;
+                            font-weight: 600;
+                            color: var(--text-primary);
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        }
+                        .preview-content {
+                            padding: 0;
+                        }
+                        .site-mockup {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                        }
+                        .mockup-header {
+                            padding: 1rem 1.25rem;
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            border-bottom: 1px solid var(--border);
+                        }
+                        .mockup-logo {
+                            font-weight: 700;
+                            font-size: 1.125rem;
+                        }
+                        .mockup-nav {
+                            display: flex;
+                            gap: 1rem;
+                            font-size: 0.8125rem;
+                        }
+                        .mockup-nav span {
+                            cursor: pointer;
+                        }
+                        .mockup-body {
+                            padding: 1.25rem;
+                        }
+                        .mockup-section-title {
+                            font-size: 1.25rem;
+                            font-weight: 700;
+                            margin-bottom: 1rem;
+                        }
+                        .mockup-card {
+                            padding: 1rem;
+                            border-radius: var(--radius);
+                            margin-bottom: 0.75rem;
+                        }
+                        .mockup-card-title {
+                            font-weight: 600;
+                            margin-bottom: 0.375rem;
+                            font-size: 0.9375rem;
+                        }
+                        .mockup-card-text {
+                            font-size: 0.8125rem;
+                            line-height: 1.5;
+                        }
+                        .mockup-button {
+                            display: inline-block;
+                            padding: 0.5rem 1rem;
+                            border-radius: var(--radius);
+                            font-size: 0.8125rem;
+                            font-weight: 500;
+                            margin-top: 0.5rem;
+                        }
+                    </style>
+
+                    <div class="content-section" style="max-width: 1200px; margin-top: 1.5rem;">
                         <div class="section-header">
                             <h2 class="section-title">🎨 Personalização de Cores</h2>
                             <div class="section-actions">
@@ -1936,113 +2096,122 @@
                             </div>
                         </div>
 
-                        <div style="padding: 2rem;">
-                            <!-- Cores Principais -->
-                            <div style="margin-bottom: 2.5rem;">
-                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Cores Principais
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor Primária (Botões, Links)</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorPrimary" value="#2563eb" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorPrimaryText" value="#2563eb" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
+                        <div style="padding: 1.5rem;">
+                            <div class="color-settings-grid">
+                                <!-- LADO ESQUERDO: Seletores de Cor -->
+                                <div class="color-picker-card">
+                                    <!-- Cores Principais -->
+                                    <div class="color-group">
+                                        <div class="color-group-title">Cores Principais</div>
+                                        <div class="color-items">
+                                            <div class="color-item">
+                                                <input type="color" id="colorPrimary" value="#2563eb">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Primária</div>
+                                                    <div class="color-item-value" id="colorPrimaryValue">#2563EB</div>
+                                                </div>
+                                            </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorSecondary" value="#64748b">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Secundária</div>
+                                                    <div class="color-item-value" id="colorSecondaryValue">#64748B</div>
+                                                </div>
+                                            </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorAccent" value="#f8fafc">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Destaque</div>
+                                                    <div class="color-item-value" id="colorAccentValue">#F8FAFC</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor Secundária</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorSecondary" value="#64748b" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorSecondaryText" value="#64748b" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
+                                    <!-- Cores de Fundo -->
+                                    <div class="color-group">
+                                        <div class="color-group-title">Cores de Fundo</div>
+                                        <div class="color-items">
+                                            <div class="color-item">
+                                                <input type="color" id="colorBackground" value="#ffffff">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Página</div>
+                                                    <div class="color-item-value" id="colorBackgroundValue">#FFFFFF</div>
+                                                </div>
+                                            </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorMuted" value="#f1f5f9">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Cards</div>
+                                                    <div class="color-item-value" id="colorMutedValue">#F1F5F9</div>
+                                                </div>
+                                            </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorHeader" value="#ffffff">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Cabeçalho</div>
+                                                    <div class="color-item-value" id="colorHeaderValue">#FFFFFF</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor de Destaque</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorAccent" value="#f8fafc" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorAccentText" value="#f8fafc" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Cores de Fundo -->
-                            <div style="margin-bottom: 2.5rem;">
-                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Cores de Fundo
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo Principal</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorBackground" value="#ffffff" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorBackgroundText" value="#ffffff" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
-                                        </div>
-                                    </div>
-
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo Secundário (Cards)</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorMuted" value="#f1f5f9" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorMutedText" value="#f1f5f9" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
-                                        </div>
-                                    </div>
-
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo do Cabeçalho (Header)</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorHeader" value="#ffffff" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorHeaderText" value="#ffffff" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Cores de Texto -->
-                            <div style="margin-bottom: 2.5rem;">
-                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
-                                    Cores de Texto
-                                </h3>
-                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Texto Principal</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorForeground" value="#0f172a" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorForegroundText" value="#0f172a" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
-                                        </div>
-                                    </div>
-
-                                    <div class="color-control">
-                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Texto Secundário</label>
-                                        <div style="display: flex; gap: 0.75rem;">
-                                            <input type="color" id="colorMutedForeground" value="#64748b" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
-                                            <input type="text" id="colorMutedForegroundText" value="#64748b" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
+                                    <!-- Cores de Texto -->
+                                    <div class="color-group">
+                                        <div class="color-group-title">Cores de Texto</div>
+                                        <div class="color-items">
+                                            <div class="color-item">
+                                                <input type="color" id="colorForeground" value="#0f172a">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Principal</div>
+                                                    <div class="color-item-value" id="colorForegroundValue">#0F172A</div>
+                                                </div>
+                                            </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorMutedForeground" value="#64748b">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Secundário</div>
+                                                    <div class="color-item-value" id="colorMutedForegroundValue">#64748B</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <!-- Preview -->
-                            <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border: 1px solid var(--border);">
-                                <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
-                                    👁️ Pré-visualização
-                                </h3>
-                                <div id="colorPreview" style="padding: 1.5rem; background: white; border-radius: var(--radius); border: 1px solid var(--border);">
-                                    <h4 style="margin-bottom: 0.75rem; font-size: 1.125rem; font-weight: 600;">Exemplo de Título</h4>
-                                    <p style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9375rem;">Este é um exemplo de texto secundário para você visualizar as cores.</p>
-                                    <button style="padding: 0.625rem 1.25rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-weight: 500; font-size: 0.875rem; cursor: pointer;">
-                                        Botão de Exemplo
-                                    </button>
+                                <!-- LADO DIREITO: Preview em Tempo Real -->
+                                <div class="preview-card">
+                                    <div class="preview-header">
+                                        <div class="preview-title">
+                                            👁️ Preview ao vivo
+                                        </div>
+                                    </div>
+                                    <div class="preview-content">
+                                        <div class="site-mockup" id="livePreview">
+                                            <div class="mockup-header" id="previewHeader">
+                                                <div class="mockup-logo" id="previewLogo">Mirador Online</div>
+                                                <div class="mockup-nav" id="previewNav">
+                                                    <span>Início</span>
+                                                    <span>Notícias</span>
+                                                    <span>Sobre</span>
+                                                </div>
+                                            </div>
+                                            <div class="mockup-body" id="previewBody">
+                                                <div class="mockup-section-title" id="previewTitle">Destaques</div>
+                                                <div class="mockup-card" id="previewCard">
+                                                    <div class="mockup-card-title" id="previewCardTitle">Título da Notícia</div>
+                                                    <div class="mockup-card-text" id="previewCardText">Este é um exemplo de como o texto ficará no site com as cores selecionadas.</div>
+                                                    <div class="mockup-button" id="previewButton">Ler mais</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
                             <!-- Info -->
                             <div style="margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--info-light); border-radius: var(--radius); border-left: 3px solid var(--info);">
                                 <p style="color: var(--primary-dark); font-size: 0.875rem; line-height: 1.5;">
-                                    <strong>💡 Dica:</strong> As cores serão aplicadas automaticamente ao site público. Clique em "Salvar Alterações" para confirmar as mudanças.
+                                    <strong>💡 Dica:</strong> As alterações são mostradas em tempo real no preview ao lado. Clique em "Salvar Alterações" para aplicar no site público.
                                 </p>
                             </div>
                         </div>
@@ -2298,35 +2467,58 @@
                 const colors = JSON.parse(savedColors);
                 Object.keys(colors).forEach(key => {
                     const colorInput = document.getElementById(`color${key}`);
-                    const textInput = document.getElementById(`color${key}Text`);
-                    if (colorInput && textInput) {
+                    if (colorInput) {
                         colorInput.value = colors[key];
-                        textInput.value = colors[key].toUpperCase();
                     }
                 });
                 updatePreview();
             }
         }
 
-        // Atualizar preview
+        // Atualizar preview em tempo real
         function updatePreview() {
-            const preview = document.getElementById('colorPreview');
             const primary = document.getElementById('colorPrimary').value;
+            const secondary = document.getElementById('colorSecondary').value;
+            const accent = document.getElementById('colorAccent').value;
             const background = document.getElementById('colorBackground').value;
+            const muted = document.getElementById('colorMuted').value;
             const foreground = document.getElementById('colorForeground').value;
             const mutedForeground = document.getElementById('colorMutedForeground').value;
+            const header = document.getElementById('colorHeader').value;
 
-            if (preview) {
-                preview.style.background = background;
-                
-                const title = preview.querySelector('h4');
-                if (title) title.style.color = foreground;
+            // Atualizar valores dos textos
+            document.getElementById('colorPrimaryValue').textContent = primary.toUpperCase();
+            document.getElementById('colorSecondaryValue').textContent = secondary.toUpperCase();
+            document.getElementById('colorAccentValue').textContent = accent.toUpperCase();
+            document.getElementById('colorBackgroundValue').textContent = background.toUpperCase();
+            document.getElementById('colorMutedValue').textContent = muted.toUpperCase();
+            document.getElementById('colorForegroundValue').textContent = foreground.toUpperCase();
+            document.getElementById('colorMutedForegroundValue').textContent = mutedForeground.toUpperCase();
+            document.getElementById('colorHeaderValue').textContent = header.toUpperCase();
 
-                const text = preview.querySelector('p');
-                if (text) text.style.color = mutedForeground;
+            // Atualizar preview ao vivo
+            const previewHeader = document.getElementById('previewHeader');
+            const previewLogo = document.getElementById('previewLogo');
+            const previewNav = document.getElementById('previewNav');
+            const previewBody = document.getElementById('previewBody');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewCard = document.getElementById('previewCard');
+            const previewCardTitle = document.getElementById('previewCardTitle');
+            const previewCardText = document.getElementById('previewCardText');
+            const previewButton = document.getElementById('previewButton');
 
-                const button = preview.querySelector('button');
-                if (button) button.style.background = primary;
+            if (previewHeader) previewHeader.style.background = header;
+            if (previewHeader) previewHeader.style.borderColor = accent;
+            if (previewLogo) previewLogo.style.color = primary;
+            if (previewNav) previewNav.style.color = secondary;
+            if (previewBody) previewBody.style.background = background;
+            if (previewTitle) previewTitle.style.color = foreground;
+            if (previewCard) previewCard.style.background = muted;
+            if (previewCardTitle) previewCardTitle.style.color = foreground;
+            if (previewCardText) previewCardText.style.color = mutedForeground;
+            if (previewButton) {
+                previewButton.style.background = primary;
+                previewButton.style.color = '#ffffff';
             }
         }
 
@@ -2696,15 +2888,14 @@
                 Background: '#ffffff',
                 Muted: '#f1f5f9',
                 Foreground: '#0f172a',
-                MutedForeground: '#64748b'
+                MutedForeground: '#64748b',
+                Header: '#ffffff'
             };
 
             Object.keys(defaultColors).forEach(key => {
                 const colorInput = document.getElementById(`color${key}`);
-                const textInput = document.getElementById(`color${key}Text`);
-                if (colorInput && textInput) {
+                if (colorInput) {
                     colorInput.value = defaultColors[key];
-                    textInput.value = defaultColors[key].toUpperCase();
                 }
             });
 
@@ -2724,15 +2915,15 @@
 
             colorInputs.forEach(name => {
                 const colorInput = document.getElementById(`color${name}`);
-                const textInput = document.getElementById(`color${name}Text`);
-
-                if (colorInput && textInput) {
+                if (colorInput) {
                     colorInput.addEventListener('input', function () {
-                        textInput.value = this.value.toUpperCase();
                         updatePreview();
                     });
                 }
             });
+            
+            // Inicializar preview
+            updatePreview();
         });
 
         // ========================================
