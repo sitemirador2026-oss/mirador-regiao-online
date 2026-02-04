@@ -1990,6 +1990,14 @@
                                             <input type="text" id="colorMutedText" value="#f1f5f9" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
+
+                                    <div class="color-control">
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo do Cabeçalho (Header)</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorHeader" value="#ffffff" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorHeaderText" value="#ffffff" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -2331,7 +2339,8 @@
                 Background: document.getElementById('colorBackground').value,
                 Muted: document.getElementById('colorMuted').value,
                 Foreground: document.getElementById('colorForeground').value,
-                MutedForeground: document.getElementById('colorMutedForeground').value
+                MutedForeground: document.getElementById('colorMutedForeground').value,
+                Header: document.getElementById('colorHeader').value
             };
 
             console.log('[Admin] Salvando cores:', colors);
@@ -2710,7 +2719,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const colorInputs = [
                 'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground'
+                'Muted', 'Foreground', 'MutedForeground', 'Header'
             ];
 
             colorInputs.forEach(name => {

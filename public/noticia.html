@@ -10,8 +10,8 @@
     <style>
         /* Logo styles for public site */
         .site-logo {
-            max-height: 40px;
-            max-width: 200px;
+            max-height: 55px;
+            max-width: 280px;
             object-fit: contain;
         }
         
@@ -61,7 +61,7 @@
     </footer>
 
     <!-- Firebase Config -->
-    <script src="js/firebase-config.js"></script>
+    <script src="js/firebase-config.js?v=5"></script>
     
     <script>
         // Carregar configurações do Firebase
@@ -79,6 +79,7 @@
                     if (colors.Foreground) root.style.setProperty('--foreground', colors.Foreground);
                     if (colors.Muted) root.style.setProperty('--muted', colors.Muted);
                     if (colors.MutedForeground) root.style.setProperty('--muted-foreground', colors.MutedForeground);
+                    if (colors.Header) root.style.setProperty('--header-bg', colors.Header);
                 }
                 
                 // Carregar marca

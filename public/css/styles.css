@@ -16,6 +16,7 @@
     --accent: #f8fafc;
     --border: #e2e8f0;
     --destructive: #ef4444;
+    --header-bg: rgba(255, 255, 255, 0.95);
     
     /* Espaçamentos */
     --container-max: 1200px;
@@ -47,7 +48,7 @@ body {
     position: sticky;
     top: 0;
     z-index: 50;
-    background: rgba(255, 255, 255, 0.95);
+    background: var(--header-bg, rgba(255, 255, 255, 0.95));
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border);
 }
