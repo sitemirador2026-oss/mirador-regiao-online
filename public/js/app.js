@@ -142,7 +142,7 @@ async function renderNews() {
         }
         
         // Últimas notícias
-        const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+        const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date));
         const latestContainer = document.getElementById('latestNews');
         if (latestContainer) {
             latestContainer.innerHTML = latest.length > 0
