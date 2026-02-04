@@ -20,7 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
     <style>
-        /* CSS Version: 2025-02-04-005 - FORCE RELOAD */
+        /* CSS Version: 2025-02-04-006 - REMOVE STATUS COL */
         :root {
             /* Cores Principais - Paleta sofisticada */
             --primary: #1e40af;
@@ -916,31 +916,34 @@
         }
 
         .news-table colgroup col:first-child {
-            width: 100px;
+            width: 60px;
         }
 
         .news-table colgroup col:nth-child(2) {
-            width: 70px;
-        }
-
-        .news-table colgroup col:nth-child(3) {
             width: auto;
         }
 
-        .news-table colgroup col:nth-child(4) {
+        .news-table colgroup col:nth-child(3) {
             width: 100px;
         }
 
-        .news-table colgroup col:nth-child(5) {
+        .news-table colgroup col:nth-child(4) {
             width: 90px;
         }
 
-        .news-table colgroup col:nth-child(6) {
+        .news-table colgroup col:nth-child(5) {
             width: 80px;
         }
 
-        .news-table td:nth-child(6) {
+        .news-table td:nth-child(5) {
             text-align: center;
+        }
+
+        .news-thumb-container {
+            position: relative;
+            width: 50px;
+            height: 35px;
+            display: inline-block;
         }
 
         .news-thumb {
@@ -949,6 +952,31 @@
             object-fit: cover;
             border-radius: 4px;
             display: block;
+        }
+
+        .news-thumb-placeholder {
+            width: 50px;
+            height: 35px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+        }
+
+        .status-indicator {
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+
+        .status-indicator.published {
+            background: #22c55e;
+        }
+
+        .status-indicator.draft {
+            background: #eab308;
         }
 
         .news-title-cell {
@@ -1352,20 +1380,8 @@
             }
 
             /* Responsive News Table */
-            .news-table colgroup col:nth-child(2),
-            .news-table th:nth-child(2),
-            .news-table td:nth-child(2) {
-                display: none;
-            }
-
-            .news-table colgroup col:first-child,
-            .news-table th:first-child,
-            .news-table td:first-child {
-                width: 80px;
-            }
-
             .news-title {
-                max-width: 120px;
+                max-width: 150px;
             }
         }
 
@@ -1821,11 +1837,9 @@
                                     <col>
                                     <col>
                                     <col>
-                                    <col>
                                 </colgroup>
                                 <thead>
                                     <tr>
-                                        <th>Status</th>
                                         <th>Capa</th>
                                         <th>Título</th>
                                         <th>Categoria</th>
@@ -2899,7 +2913,7 @@
                 if (news.length === 0) {
                     newsList.innerHTML = `
                         <tr>
-                            <td colspan="6">
+                            <td colspan="5">
                                 <div class="empty-state">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -2916,16 +2930,25 @@
 
                 news.forEach(n => {
                     const date = new Date(n.date).toLocaleDateString('pt-BR');
-                    const statusClass = n.status === 'draft' ? 'status-draft' : 'status-published';
-                    const statusText = n.status === 'draft' ? 'Rascunho' : 'Publicado';
-                    const imageHtml = n.image ? `<img src="${n.image}" class="news-thumb" alt="">` : '<div class="news-thumb" style="background: var(--bg-tertiary);"></div>';
+                    const indicatorClass = n.status === 'draft' ? 'draft' : 'published';
+                    const indicatorTitle = n.status === 'draft' ? 'Rascunho' : 'Publicado';
                     
                     // Escape quotes for HTML attributes
                     const escapedTitle = (n.title || '').replace(/"/g, '&quot;');
+                    
+                    // Imagem com indicador de status
+                    const imageHtml = n.image 
+                        ? `<div class="news-thumb-container" title="${indicatorTitle}">
+                             <span class="status-indicator ${indicatorClass}"></span>
+                             <img src="${n.image}" class="news-thumb" alt="">
+                           </div>`
+                        : `<div class="news-thumb-container" title="${indicatorTitle}">
+                             <span class="status-indicator ${indicatorClass}"></span>
+                             <div class="news-thumb-placeholder"></div>
+                           </div>`;
 
                     const html = `
                         <tr>
-                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
                             <td>${imageHtml}</td>
                             <td class="news-title-cell">
                                 <div class="news-title" title="${escapedTitle}">${n.title}</div>
@@ -2958,7 +2981,7 @@
                 if (newsList) {
                     newsList.innerHTML = `
                         <tr>
-                            <td colspan="6">
+                            <td colspan="5">
                                 <div class="empty-state">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
@@ -3751,7 +3774,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-005';
+            const cssVersion = '2025-02-04-006';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
