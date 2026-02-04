@@ -1324,6 +1324,134 @@
         .sidebar-overlay.active {
             display: block;
         }
+
+        /* ========================================
+           NOTIFICATION MODAL
+           ======================================== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .modal-container {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            max-width: 400px;
+            width: 90%;
+            overflow: hidden;
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 1.5rem 1.5rem 0.75rem;
+            text-align: center;
+        }
+
+        .modal-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+
+        .modal-icon.success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .modal-icon.error {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .modal-icon.info {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .modal-icon svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .modal-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-message {
+            font-size: 0.9375rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .modal-footer {
+            padding: 1rem 1.5rem 1.5rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 0.625rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            min-width: 100px;
+        }
+
+        .modal-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .modal-btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .modal-btn-secondary:hover {
+            background: var(--border);
+        }
     </style>
 </head>
 
@@ -1574,7 +1702,7 @@
                                         </svg>
                                         Filtrar
                                     </button>
-                                    <button class="btn btn-primary btn-sm" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                    <button class="btn btn-primary btn-sm" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                         </svg>
@@ -1605,13 +1733,13 @@
                             <!-- Quick Actions -->
                             <div class="action-card">
                                 <h3 class="action-card-title">Ações Rápidas</h3>
-                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                     </svg>
                                     Escrever nova notícia
                                 </button>
-                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
@@ -1624,7 +1752,7 @@
                                     </svg>
                                     Personalizar aparência
                                 </button>
-                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                <button class="quick-btn" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
@@ -1916,6 +2044,24 @@
         </div>
     </div>
 
+    <!-- Notification Modal -->
+    <div class="modal-overlay" id="notificationModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-icon" id="modalIcon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <h3 class="modal-title" id="modalTitle">Sucesso!</h3>
+                <p class="modal-message" id="modalMessage">Operação realizada com sucesso.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Configuração do Firebase
         const firebaseConfig = {
@@ -2065,7 +2211,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                     </svg>
                                     <p>Nenhuma notícia encontrada</p>
-                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="showModal('Em breve!', 'Esta funcionalidade está em desenvolvimento.', 'info')">
                                         Criar primeira notícia
                                     </button>
                                 </div>
@@ -2090,7 +2236,7 @@
                             <td>${date}</td>
                             <td>
                                 <div class="actions-cell">
-                                    <button class="action-btn" onclick="alert('Editar: ${n.id}')" title="Editar">
+                                    <button class="action-btn" onclick="showModal('Em breve!', 'Edição de notícias em desenvolvimento.', 'info')" title="Editar">
                                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
@@ -2129,11 +2275,11 @@
 
             try {
                 await db.collection('news').doc(id).delete();
-                alert('✅ Notícia excluída com sucesso!');
+                showModal('Sucesso!', 'Notícia excluída com sucesso!', 'success');
                 loadDashboard();
             } catch (error) {
                 console.error('Erro ao excluir notícia:', error);
-                alert('❌ Erro ao excluir notícia!');
+                showModal('Erro!', 'Não foi possível excluir a notícia.', 'error');
             }
         }
 
@@ -2191,7 +2337,7 @@
             localStorage.setItem('siteColors', JSON.stringify(colors));
             localStorage.setItem('publicSiteColors', JSON.stringify(colors));
 
-            alert('✅ Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.');
+            showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.', 'success');
         }
 
         // ========================================
@@ -2254,13 +2400,13 @@
             // Validar tipo de arquivo
             const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
             if (!validTypes.includes(file.type)) {
-                alert('❌ Formato de arquivo não suportado. Use PNG, JPG, SVG ou WebP.');
+                showModal('Formato inválido!', 'Use PNG, JPG, SVG ou WebP.', 'error');
                 return;
             }
 
             // Validar tamanho (2MB)
             if (file.size > 2 * 1024 * 1024) {
-                alert('❌ Arquivo muito grande. Máximo 2MB.');
+                showModal('Arquivo muito grande!', 'O tamanho máximo permitido é 2MB.', 'error');
                 return;
             }
 
@@ -2360,7 +2506,7 @@
             // Aplicar imediatamente no admin
             applyBrandToAdmin(brandSettings);
 
-            alert('✅ Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.');
+            showModal('Sucesso!', 'Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.', 'success');
         }
 
         // Carregar configurações de marca
@@ -2500,7 +2646,7 @@
             localStorage.removeItem('siteBrand');
             localStorage.removeItem('publicSiteBrand');
 
-            alert('✅ Identidade visual restaurada para o padrão!');
+            showModal('Restaurado!', 'Identidade visual restaurada para o padrão.', 'info');
         }
 
         // Restaurar cores padrão
@@ -2530,7 +2676,7 @@
             localStorage.removeItem('siteColors');
             localStorage.removeItem('publicSiteColors');
 
-            alert('✅ Cores restauradas para o padrão!');
+            showModal('Restaurado!', 'Cores restauradas para o padrão.', 'info');
         }
 
         // Sincronizar color pickers
@@ -2552,6 +2698,52 @@
                 }
             });
         });
+
+        // ========================================
+        // NOTIFICATION MODAL FUNCTIONS
+        // ========================================
+        function showModal(title, message, type = 'success') {
+            const modal = document.getElementById('notificationModal');
+            const iconEl = document.getElementById('modalIcon');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+            
+            // Configurar ícone baseado no tipo
+            const icons = {
+                success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
+                error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
+                info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+            };
+            
+            iconEl.className = 'modal-icon ' + type;
+            iconEl.innerHTML = icons[type] || icons.success;
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            modal.classList.add('active');
+            
+            // Fechar ao clicar fora
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            };
+            
+            // Fechar com ESC
+            document.addEventListener('keydown', handleEscKey);
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('notificationModal');
+            modal.classList.remove('active');
+            document.removeEventListener('keydown', handleEscKey);
+        }
+        
+        function handleEscKey(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        }
 
         // Verificar estado de autenticação
         // Carregar configurações de marca na inicialização
