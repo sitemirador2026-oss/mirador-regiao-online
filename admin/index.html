@@ -987,6 +987,13 @@
             margin-bottom: 2rem;
         }
 
+        .logo-upload-wrapper {
+            display: flex;
+            align-items: stretch;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
         .logo-upload-area {
             border: 2px dashed var(--border);
             border-radius: var(--radius);
@@ -995,7 +1002,13 @@
             background: var(--bg-primary);
             transition: var(--transition);
             cursor: pointer;
-            max-width: 400px;
+            min-width: 200px;
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 120px;
         }
 
         .logo-upload-area:hover {
@@ -1033,11 +1046,42 @@
             color: var(--text-secondary);
         }
 
+        .logo-upload-change {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-upload-change svg {
+            width: 24px;
+            height: 24px;
+            color: var(--success);
+        }
+
+        .logo-upload-change-text {
+            font-size: 0.875rem;
+            color: var(--success);
+            font-weight: 500;
+        }
+
+        .logo-upload-change-hint {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
         .logo-preview-container {
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: flex-start;
             gap: 1rem;
+            flex: 1;
+        }
+
+        .logo-preview-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .logo-preview {
@@ -1051,6 +1095,11 @@
             background: var(--bg-sidebar);
             padding: 0.75rem 1rem;
             border-radius: var(--radius);
+            min-width: 150px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .logo-preview-light {
@@ -1058,33 +1107,23 @@
             padding: 0.75rem 1rem;
             border-radius: var(--radius);
             border: 1px solid var(--border);
+            min-width: 150px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .logo-preview-label {
             font-size: 0.6875rem;
             color: var(--text-muted);
             text-align: center;
-            margin-top: 0.375rem;
         }
 
-        .logo-remove-btn {
-            padding: 0.5rem 1rem;
-            background: var(--danger-light);
-            color: var(--danger);
-            border: 1px solid var(--danger);
-            border-radius: var(--radius);
-            font-size: 0.875rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo-remove-btn:hover {
-            background: var(--danger);
-            color: white;
+        .logo-preview-box img {
+            max-width: 135px;
+            max-height: 60px;
+            object-fit: contain;
         }
 
         .brand-input-group {
@@ -1666,38 +1705,41 @@
                                     Logomarca do Site
                                 </h3>
                                 
-                                <div class="logo-upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
-                                    <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
-                                    <div id="uploadPlaceholder">
-                                        <svg class="logo-upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        <div class="logo-upload-text">Clique ou arraste uma imagem aqui</div>
-                                        <div class="logo-upload-hint">PNG, JPG ou SVG (máx. 2MB)</div>
+                                <div class="logo-upload-wrapper">
+                                    <!-- Upload Area -->
+                                    <div class="logo-upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+                                        <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                                        <div id="uploadPlaceholder">
+                                            <svg class="logo-upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            <div class="logo-upload-text">Clique ou arraste uma imagem aqui</div>
+                                            <div class="logo-upload-hint">PNG, JPG ou SVG (máx. 2MB)</div>
+                                        </div>
+                                        <div id="uploadChangePlaceholder" class="logo-upload-change" style="display: none;">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                            <div class="logo-upload-change-text">Alterar Logo</div>
+                                            <div class="logo-upload-change-hint">Clique para trocar</div>
+                                        </div>
                                     </div>
+                                    
+                                    <!-- Preview Container -->
                                     <div id="logoPreviewContainer" class="logo-preview-container" style="display: none;">
-                                        <div>
+                                        <div class="logo-preview-box">
                                             <div class="logo-preview-dark">
-                                                <img id="logoPreviewDark" class="sidebar-brand-text-logo" src="" alt="Logo Preview">
+                                                <img id="logoPreviewDark" src="" alt="Logo Preview">
                                             </div>
                                             <div class="logo-preview-label">Fundo Escuro (Sidebar)</div>
                                         </div>
-                                        <div>
+                                        <div class="logo-preview-box">
                                             <div class="logo-preview-light">
-                                                <img id="logoPreviewLight" class="sidebar-brand-text-logo" src="" alt="Logo Preview">
+                                                <img id="logoPreviewLight" src="" alt="Logo Preview">
                                             </div>
                                             <div class="logo-preview-label">Fundo Claro (Site)</div>
                                         </div>
                                     </div>
-                                </div>
-                                
-                                <div id="logoActions" style="display: none; margin-top: 1rem; text-align: center;">
-                                    <button class="logo-remove-btn" onclick="removeLogo(event)">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                        Remover Logo
-                                    </button>
                                 </div>
                             </div>
 
@@ -2235,35 +2277,34 @@
         function updateLogoPreview(logoData) {
             const uploadArea = document.getElementById('logoUploadArea');
             const placeholder = document.getElementById('uploadPlaceholder');
+            const changePlaceholder = document.getElementById('uploadChangePlaceholder');
             const previewContainer = document.getElementById('logoPreviewContainer');
-            const logoActions = document.getElementById('logoActions');
             const previewDark = document.getElementById('logoPreviewDark');
             const previewLight = document.getElementById('logoPreviewLight');
 
             uploadArea.classList.add('has-image');
             placeholder.style.display = 'none';
+            changePlaceholder.style.display = 'flex';
             previewContainer.style.display = 'flex';
-            logoActions.style.display = 'block';
 
             previewDark.src = logoData;
             previewLight.src = logoData;
         }
 
-        // Remover logo
-        function removeLogo(e) {
-            e.stopPropagation();
+        // Remover logo (via duplo clique ou tecla delete)
+        function removeLogo() {
             currentLogo = null;
             
             const uploadArea = document.getElementById('logoUploadArea');
             const placeholder = document.getElementById('uploadPlaceholder');
+            const changePlaceholder = document.getElementById('uploadChangePlaceholder');
             const previewContainer = document.getElementById('logoPreviewContainer');
-            const logoActions = document.getElementById('logoActions');
             const logoInput = document.getElementById('logoInput');
 
             uploadArea.classList.remove('has-image');
             placeholder.style.display = 'block';
+            changePlaceholder.style.display = 'none';
             previewContainer.style.display = 'none';
-            logoActions.style.display = 'none';
             logoInput.value = '';
 
             updateBrandPreview();
@@ -2437,13 +2478,13 @@
             // Limpar preview
             const uploadArea = document.getElementById('logoUploadArea');
             const placeholder = document.getElementById('uploadPlaceholder');
+            const changePlaceholder = document.getElementById('uploadChangePlaceholder');
             const previewContainer = document.getElementById('logoPreviewContainer');
-            const logoActions = document.getElementById('logoActions');
 
             uploadArea.classList.remove('has-image');
             placeholder.style.display = 'block';
+            changePlaceholder.style.display = 'none';
             previewContainer.style.display = 'none';
-            logoActions.style.display = 'none';
             document.getElementById('logoInput').value = '';
 
             // Aplicar padrão
