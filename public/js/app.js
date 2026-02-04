@@ -278,7 +278,8 @@ async function renderNews() {
             { id: 'policia', containerId: 'categoryPolicia' },
             { id: 'regiao', containerId: 'categoryRegiao' },
             { id: 'mirador', containerId: 'categoryMirador' },
-            { id: 'brasil', containerId: 'categoryBrasil' }
+            { id: 'brasil', containerId: 'categoryBrasil' },
+            { id: 'instagram', containerId: 'categoryInstagram' }
         ];
         
         categories.forEach(cat => {
@@ -487,6 +488,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Carregar stories
     loadStories();
+    
+    // Carregar notícias do Instagram
+    loadInstagramNews();
     
     console.log('[App] v2.5 - Pronto!');
 });
@@ -755,6 +759,62 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'ArrowLeft') prevStory();
     });
 });
+
+// Instagram News functionality
+async function loadInstagramNews() {
+    try {
+        const snapshot = await db.collection('news')
+            .where('source', '==', 'Instagram')
+            .where('status', '==', 'published')
+            .orderBy('date', 'desc')
+            .limit(6)
+            .get();
+        
+        const container = document.getElementById('instagramNewsGrid');
+        if (!container) return;
+        
+        if (snapshot.empty) {
+            container.innerHTML = '';
+            return;
+        }
+        
+        const news = [];
+        snapshot.forEach(doc => {
+            news.push({ id: doc.id, ...doc.data() });
+        });
+        
+        container.innerHTML = news.map(createInstagramCard).join('');
+        
+    } catch (error) {
+        console.error('[App] Erro ao carregar notícias do Instagram:', error);
+    }
+}
+
+function createInstagramCard(news) {
+    const dateObj = new Date(news.date);
+    const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    
+    return `
+        <article class="instagram-card" onclick="viewNews('${news.id}')">
+            <div class="instagram-card-image-wrapper">
+                <img src="${news.image}" alt="${news.title}" loading="lazy">
+            </div>
+            <div class="instagram-card-footer">
+                <h3 class="instagram-card-title">${news.title}</h3>
+                <div class="instagram-card-meta">
+                    <span class="instagram-card-category">Instagram</span>
+                    <div class="instagram-card-logo">
+                        <svg viewBox="0 0 24 24" fill="#E4405F">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
+                        </svg>
+                        <span>${timeStr} • ${dateStr}</span>
+                    </div>
+                </div>
+            </div>
+        </article>
+    `;
+}
 
 console.log('[App] v2.5 - Script finalizado');
 

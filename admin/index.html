@@ -2077,18 +2077,19 @@
                                     <div style="margin-bottom: 1.5rem;">
                                         <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Categoria</label>
                                         <select id="instagramNewsCategory" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);">
+                                            <option value="instagram" selected>📷 Instagram</option>
                                             <option value="mirador">Mirador</option>
                                             <option value="regiao">Região</option>
                                             <option value="brasil">Brasil</option>
                                             <option value="policia">Polícia</option>
                                             <option value="esportes">Esportes</option>
                                             <option value="politica">Política</option>
-                                            <option value="geral" selected>Geral</option>
+                                            <option value="geral">Geral</option>
                                         </select>
                                     </div>
                                     <div style="margin-bottom: 1.5rem;">
                                         <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Imagem de Capa</label>
-                                        <img id="instagramNewsImage" style="width: 100%; max-height: 300px; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <img id="instagramNewsImage" style="width: 100%; max-height: 400px; object-fit: contain; background: #f0f0f0; border-radius: var(--radius); border: 1px solid var(--border);">
                                         <input type="hidden" id="instagramNewsImageUrl">
                                     </div>
                                     <div style="display: flex; gap: 0.75rem; justify-content: flex-end;">
@@ -4818,7 +4819,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-016';
+            const cssVersion = '2025-02-04-018';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);

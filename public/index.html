@@ -7,7 +7,7 @@
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=29">
+    <link rel="stylesheet" href="css/styles.css?v=34">
     
     <style>
         /* Logo styles for public site */
@@ -48,23 +48,16 @@
                     <span id="siteLogoText" class="logo-text">Mirador e Região Online</span>
                 </a>
 
-                <nav class="nav-desktop">
-                    <a href="#" data-category="mirador">Mirador</a>
-                    <a href="#" data-category="regiao">Região</a>
-                    <a href="#" data-category="brasil">Brasil</a>
-                    <a href="#" data-category="policia">Polícia</a>
-                    <a href="#" data-category="esportes">Esportes</a>
-                    <a href="#" data-category="politica">Política</a>
-                </nav>
 
-                <div class="header-actions">
-                    <button class="btn-search" aria-label="Buscar">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
+
+                <div class="header-actions" style="position: absolute; right: 4rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0.5rem;">
+                    <div class="header-search" style="display: flex; align-items: center; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 0.25rem 0.75rem;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="flex-shrink: 0;">
                             <circle cx="11" cy="11" r="8"></circle>
                             <path d="m21 21-4.3-4.3"></path>
                         </svg>
-                    </button>
+                        <input type="text" placeholder="Buscar..." style="background: transparent; border: none; color: white; padding: 0.25rem 0.5rem; font-size: 0.875rem; width: 120px; outline: none;">
+                    </div>
                     <button class="btn-menu-mobile" aria-label="Menu">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2">
@@ -106,6 +99,12 @@
             <a href="#" data-category="policia">Polícia</a>
             <a href="#" data-category="esportes">Esportes</a>
             <a href="#" data-category="politica">Política</a>
+            <a href="#" data-category="instagram" style="color: #E4405F; font-weight: 600;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;">
+                    <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
+                </svg>
+                Instagram
+            </a>
         </nav>
     </div>
 
@@ -148,9 +147,9 @@
                 <span class="side-panel-dot" style="background: #dc2626;"></span>
                 Política
             </a>
-            <a href="#" class="side-panel-link" data-category="geral">
-                <span class="side-panel-dot" style="background: #6b7280;"></span>
-                Geral
+            <a href="#" class="side-panel-link" data-category="instagram">
+                <span class="side-panel-dot" style="background: #E4405F;"></span>
+                📷 Instagram
             </a>
         </nav>
     </aside>
@@ -220,6 +219,19 @@
                 </button>
             </div>
         </div>
+
+        <!-- Instagram News Section -->
+        <section class="news-section instagram-news-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2 class="section-title">Instagram</h2>
+                    <a href="#" class="view-all" onclick="filterByCategory('instagram'); return false;">Ver todas →</a>
+                </div>
+                <div id="instagramNewsGrid" class="instagram-news-grid">
+                    <!-- Instagram news will be loaded here -->
+                </div>
+            </div>
+        </section>
 
         <!-- Latest News -->
         <section class="news-section">
@@ -327,6 +339,7 @@
                         <li><a href="#" data-category="policia">Polícia</a></li>
                         <li><a href="#" data-category="esportes">Esportes</a></li>
                         <li><a href="#" data-category="politica">Política</a></li>
+                        <li><a href="#" data-category="instagram" style="color: #E4405F;">📷 Instagram</a></li>
                     </ul>
                 </div>
 
@@ -423,7 +436,7 @@
     
     <script src="js/firebase-config.js?v=16"></script>
     <script src="js/firebase-db.js?v=16"></script>
-    <script src="js/app.js?v=28"></script>
+    <script src="js/app.js?v=31"></script>
 </body>
 
 </html>
