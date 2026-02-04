@@ -98,6 +98,7 @@ function createNewsCard(news) {
     const sourceLogo = sourceDomain
         ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
         : '';
+    const excerpt = news.excerpt || '';
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
             <div class="news-card-image-wrapper">
@@ -105,13 +106,17 @@ function createNewsCard(news) {
                 <div class="news-card-gradient"></div>
                 <div class="news-card-overlay">
                     <h3 class="news-card-title">${news.title}</h3>
+                    ${excerpt ? `<p class="news-card-excerpt">${excerpt}</p>` : ''}
                 </div>
             </div>
             <div class="news-card-footer">
                 <div class="news-card-meta">
                     <span class="news-card-category-text">${categoryLabel}</span>
                     <span class="news-card-meta-divider">•</span>
-                    <span class="news-card-date">${formatDateTime(news.date)}</span>
+                    <span class="news-card-time">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        ${formatDateTime(news.date)}
+                    </span>
                 </div>
                 ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="${sourceDomain}"></div>` : ''}
             </div>

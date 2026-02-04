@@ -88,24 +88,25 @@
         }
 
         /* ========================================
-           LOGIN STYLES
+           LOGIN STYLES - DISCRETO E MODERNO
            ======================================== */
         .login-container {
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--primary-dark) 100%);
+            background: var(--bg-primary);
             padding: 1.5rem;
         }
 
         .login-box {
             background: var(--bg-card);
             padding: 2.5rem;
-            border-radius: var(--radius-xl);
+            border-radius: var(--radius-lg);
             width: 100%;
-            max-width: 420px;
-            box-shadow: var(--shadow-lg);
+            max-width: 400px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
         }
 
         .login-logo {
@@ -114,32 +115,37 @@
         }
 
         .login-logo-icon {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            border-radius: var(--radius-lg);
+            width: 48px;
+            height: 48px;
+            background: var(--bg-sidebar);
+            border-radius: var(--radius);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1.5rem;
+            margin: 0 auto 1rem;
             font-family: 'Playfair Display', serif;
-            font-size: 1.75rem;
+            font-size: 1.25rem;
             font-weight: 700;
             color: white;
-            box-shadow: var(--shadow-md);
+        }
+
+        .login-logo-img {
+            max-width: 160px;
+            max-height: 60px;
+            object-fit: contain;
+            margin-bottom: 1rem;
         }
 
         .login-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.75rem;
-            font-weight: 700;
+            font-size: 1.25rem;
+            font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.375rem;
         }
 
         .login-subtitle {
             color: var(--text-secondary);
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
         }
 
         .form-group {
@@ -1550,22 +1556,24 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-logo">
-                <div class="login-logo-icon" id="loginLogoIcon">M</div>
-                <img id="loginLogoImg" class="login-logo-icon" src="" alt="" style="display: none; padding: 0; object-fit: contain;">
-                <h1 class="login-title" id="loginTitle">Bem-vindo de volta</h1>
-                <p class="login-subtitle" id="loginSubtitle">Faça login para acessar o painel administrativo</p>
+                <div id="loginLogoWrapper">
+                    <div class="login-logo-icon" id="loginLogoIcon">M</div>
+                    <img id="loginLogoImg" class="login-logo-img" src="" alt="" style="display: none;">
+                </div>
+                <h1 class="login-title" id="loginTitle">Painel Administrativo</h1>
+                <p class="login-subtitle" id="loginSubtitle">Entre com suas credenciais</p>
             </div>
-            <div class="login-error" id="loginError">Email ou senha incorretos</div>
+            <div class="login-error" id="loginError" style="display: none;">Email ou senha incorretos</div>
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" class="form-input" placeholder="admin@mirador.com" required>
+                    <input type="email" id="email" class="form-input" placeholder="seu@email.com" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Senha</label>
-                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                    <input type="password" id="password" class="form-input" placeholder="Sua senha" required>
                 </div>
-                <button type="submit" class="btn-login">Entrar no Painel</button>
+                <button type="submit" class="btn-login">Entrar</button>
             </form>
             <a href="../public/index.html" class="link-site">&larr; Voltar para o site</a>
         </div>
@@ -3278,9 +3286,38 @@
         let currentLogo = null;
 
         // Inicializar configurações de marca ao carregar
+        // DOMContentLoaded unificado
         document.addEventListener('DOMContentLoaded', function() {
-            loadBrandSettings();
-            setupLogoDragAndDrop();
+            // Carregar configurações de marca
+            try {
+                var savedBrand = localStorage.getItem('siteBrand');
+                if (savedBrand) {
+                    var settings = JSON.parse(savedBrand);
+                    applyBrandToLogin(settings);
+                }
+            } catch(e) {
+                console.log('Error loading brand settings:', e);
+            }
+            
+            // Configurar upload de logo na página de configurações
+            if (document.getElementById('logoUploadArea')) {
+                loadBrandSettings();
+                setupLogoDragAndDrop();
+            }
+            
+            // Configurar inputs de cor
+            const colorInputs = [
+                'Primary', 'Secondary', 'Accent', 'Background',
+                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'Card', 'FooterText'
+            ];
+            colorInputs.forEach(name => {
+                const colorInput = document.getElementById(`color${name}`);
+                if (colorInput) {
+                    colorInput.addEventListener('input', function () {
+                        updatePreview();
+                    });
+                }
+            });
         });
 
         // Configurar drag and drop para logo
@@ -3512,50 +3549,38 @@
 
         // Aplicar marca na página de login
         function applyBrandToLogin(settings) {
-            const siteName = settings.siteName || 'Mirador Online';
-            const siteTagline = settings.siteTagline || 'Portal de Notícias';
+            if (!settings) return;
             
-            const loginLogoIcon = document.getElementById('loginLogoIcon');
-            const loginLogoImg = document.getElementById('loginLogoImg');
-            const loginTitle = document.getElementById('loginTitle');
-            const loginSubtitle = document.getElementById('loginSubtitle');
+            var siteName = settings.siteName || 'Mirador Online';
+            var siteTagline = settings.siteTagline || 'Portal de Notícias';
+            
+            var loginLogoIcon = document.getElementById('loginLogoIcon');
+            var loginLogoImg = document.getElementById('loginLogoImg');
+            var loginTitle = document.getElementById('loginTitle');
+            var loginSubtitle = document.getElementById('loginSubtitle');
 
-            if (settings.logo && loginLogoImg) {
-                // Com logo: logo grande acima, tagline abaixo
-                if (loginLogoIcon) loginLogoIcon.style.display = 'none';
-                loginLogoImg.src = settings.logo;
-                loginLogoImg.style.display = 'block';
-                loginLogoImg.style.width = '180px';
-                loginLogoImg.style.height = 'auto';
-                loginLogoImg.style.maxHeight = '80px';
-                loginLogoImg.style.marginBottom = '1rem';
+            try {
+                if (settings.logo && loginLogoImg) {
+                    // Com logo: mostra logo
+                    if (loginLogoIcon) loginLogoIcon.style.display = 'none';
+                    loginLogoImg.src = settings.logo;
+                    loginLogoImg.style.display = 'block';
+                } else {
+                    // Sem logo: mostra ícone com inicial
+                    if (loginLogoIcon) {
+                        loginLogoIcon.style.display = 'flex';
+                        loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
+                    }
+                    if (loginLogoImg) loginLogoImg.style.display = 'none';
+                }
                 
-                if (loginTitle) loginTitle.style.display = 'none';
-                if (loginSubtitle) {
-                    loginSubtitle.style.display = 'block';
-                    loginSubtitle.textContent = siteTagline;
-                    loginSubtitle.style.fontSize = '1rem';
-                    loginSubtitle.style.color = 'var(--text-secondary)';
-                }
-            } else {
-                // Sem logo: ícone + nome + tagline
-                if (loginLogoIcon) {
-                    loginLogoIcon.style.display = 'flex';
-                    loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
-                }
-                if (loginLogoImg) loginLogoImg.style.display = 'none';
+                if (loginTitle) loginTitle.textContent = 'Painel Administrativo';
+                if (loginSubtitle) loginSubtitle.textContent = siteName;
                 
-                if (loginTitle) {
-                    loginTitle.style.display = 'block';
-                    loginTitle.textContent = 'Bem-vindo de volta';
-                }
-                if (loginSubtitle) {
-                    loginSubtitle.style.display = 'block';
-                    loginSubtitle.textContent = 'Faça login para acessar o ' + siteName;
-                }
+                document.title = 'Admin - ' + siteName;
+            } catch(e) {
+                console.log('Error applying brand to login:', e);
             }
-            
-            document.title = 'Admin - ' + siteName;
         }
 
         // Restaurar marca padrão
@@ -3624,25 +3649,7 @@
             showModal('Restaurado!', 'Cores restauradas para o padrão.', 'info');
         }
 
-        // Sincronizar color pickers
-        document.addEventListener('DOMContentLoaded', function () {
-            const colorInputs = [
-                'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'Card', 'FooterText'
-            ];
-
-            colorInputs.forEach(name => {
-                const colorInput = document.getElementById(`color${name}`);
-                if (colorInput) {
-                    colorInput.addEventListener('input', function () {
-                        updatePreview();
-                    });
-                }
-            });
-            
-            // Inicializar preview
-            updatePreview();
-        });
+        // Sincronizar color pickers - movido para DOMContentLoaded unificado
 
         // ========================================
         // NEWS EDITOR FUNCTIONS
@@ -3955,13 +3962,7 @@
 
         // Verificar estado de autenticação
         // Carregar configurações de marca na inicialização
-        (function initBrand() {
-            const savedBrand = localStorage.getItem('siteBrand');
-            if (savedBrand) {
-                const settings = JSON.parse(savedBrand);
-                applyBrandToLogin(settings);
-            }
-        })();
+        // DOMContentLoaded da marca movido para o unificado acima
 
         auth.onAuthStateChanged((user) => {
             if (user) {
