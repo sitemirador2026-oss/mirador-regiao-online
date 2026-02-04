@@ -255,8 +255,8 @@
         }
 
         .brand-icon {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             border-radius: var(--radius);
             display: flex;
@@ -1117,21 +1117,21 @@
 
         /* Sidebar logo styles */
         .sidebar-brand-logo {
-            width: 40px;
-            height: 40px;
+            width: 60px;
+            height: 60px;
             object-fit: contain;
             border-radius: var(--radius);
         }
 
         .sidebar-brand-text-logo {
-            max-width: 180px;
-            max-height: 50px;
+            max-width: 270px;
+            max-height: 75px;
             object-fit: contain;
         }
 
         .sidebar-brand-logo-full {
-            max-width: 180px;
-            max-height: 55px;
+            max-width: 270px;
+            max-height: 83px;
             object-fit: contain;
         }
 
@@ -1390,10 +1390,10 @@
 
                 <div class="sidebar-footer">
                     <div class="user-profile">
-                        <div class="user-avatar">EC</div>
+                        <div class="user-avatar" id="userAvatar">EC</div>
                         <div class="user-info">
-                            <div class="user-name">Editor Chefe</div>
-                            <div class="user-role">admin@mirador.com</div>
+                            <div class="user-name" id="userName">Editor Chefe</div>
+                            <div class="user-role" id="userEmail">admin@mirador.com</div>
                         </div>
                     </div>
                     <button class="btn-logout" onclick="logout()">
@@ -1921,6 +1921,21 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
             loadDashboard();
+            updateUserInfo();
+        }
+
+        // Atualizar informações do usuário logado
+        function updateUserInfo() {
+            const user = auth.currentUser;
+            if (user) {
+                const email = user.email;
+                const name = user.displayName || 'Editor Chefe';
+                const initials = name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+                
+                document.getElementById('userEmail').textContent = email;
+                document.getElementById('userName').textContent = name;
+                document.getElementById('userAvatar').textContent = initials || 'EC';
+            }
         }
 
         // Toggle Sidebar Mobile
