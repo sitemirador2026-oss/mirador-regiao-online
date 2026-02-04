@@ -1,4 +1,8 @@
-// Dados de exemplo (serão salvos no Firebase)
+// App principal do site público
+
+console.log('[App] v2.0 - Script carregado');
+
+// Dados de exemplo
 const sampleNews = [
     {
         id: '1',
@@ -32,78 +36,31 @@ const sampleNews = [
         date: "2026-02-02",
         author: "Redação",
         featured: false
-    },
-    {
-        id: '4',
-        title: "Polícia prende suspeitos de assalto na região",
-        excerpt: "Operação policial resulta na prisão de três pessoas.",
-        category: "policia",
-        categoryName: "Polícia",
-        image: "https://via.placeholder.com/800x400/7c3aed/ffffff?text=Polícia",
-        date: "2026-02-02",
-        author: "Redação",
-        featured: false
-    },
-    {
-        id: '5',
-        title: "Time local conquista campeonato regional",
-        excerpt: "Vitória histórica marca temporada do clube.",
-        category: "esportes",
-        categoryName: "Esportes",
-        image: "https://via.placeholder.com/800x400/ea580c/ffffff?text=Esportes",
-        date: "2026-02-01",
-        author: "Redação",
-        featured: false
-    },
-    {
-        id: '6',
-        title: "Câmara aprova novo projeto de lei municipal",
-        excerpt: "Projeto visa melhorar serviços públicos na cidade.",
-        category: "politica",
-        categoryName: "Política",
-        image: "https://via.placeholder.com/800x400/0891b2/ffffff?text=Política",
-        date: "2026-02-01",
-        author: "Redação",
-        featured: false
     }
 ];
 
-// Inicializar dados de exemplo no Firebase (apenas se não existir)
+// Inicializar dados de exemplo
 async function initializeData() {
     try {
         const snapshot = await db.collection('news').limit(1).get();
-
-        // Se não houver notícias, adicionar dados de exemplo
         if (snapshot.empty) {
-            console.log('[App] Adicionando dados de exemplo ao Firebase...');
+            console.log('[App] Adicionando notícias de exemplo...');
             const batch = db.batch();
-
             sampleNews.forEach(news => {
-                const newsRef = db.collection('news').doc(news.id);
-                batch.set(newsRef, {
-                    ...news,
-                    views: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                const ref = db.collection('news').doc(news.id);
+                batch.set(ref, { ...news, views: 0 });
             });
-
             await batch.commit();
-            console.log('[App] Dados de exemplo adicionados!');
+            console.log('[App] Notícias adicionadas!');
         }
     } catch (error) {
         console.error('[App] Erro ao inicializar dados:', error);
     }
 }
 
-// Carregar notícias do Firebase
-async function loadNews() {
-    return await loadNewsFromFirebase();
-}
-
 // Formatar data
 function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('pt-BR', {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: 'long',
         year: 'numeric'
@@ -128,173 +85,138 @@ function createNewsCard(news) {
     `;
 }
 
-// Renderizar notícias em destaque
-async function renderFeaturedNews() {
-    const news = await loadNews();
-    const featured = news.filter(n => n.featured);
-    const container = document.getElementById('featuredNews');
-
-    if (featured.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma notícia em destaque.</div>';
-        return;
+// Renderizar notícias
+async function renderNews() {
+    try {
+        const news = await loadNewsFromFirebase();
+        
+        // Destaques
+        const featured = news.filter(n => n.featured);
+        const featuredContainer = document.getElementById('featuredNews');
+        if (featuredContainer) {
+            featuredContainer.innerHTML = featured.length > 0 
+                ? featured.map(createNewsCard).join('')
+                : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
+        }
+        
+        // Últimas notícias
+        const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+        const latestContainer = document.getElementById('latestNews');
+        if (latestContainer) {
+            latestContainer.innerHTML = latest.length > 0
+                ? latest.map(createNewsCard).join('')
+                : '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+        }
+    } catch (error) {
+        console.error('[App] Erro ao renderizar notícias:', error);
     }
-
-    container.innerHTML = featured.map(createNewsCard).join('');
-}
-
-// Renderizar últimas notícias
-async function renderLatestNews() {
-    const news = await loadNews();
-    const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
-    const container = document.getElementById('latestNews');
-
-    if (latest.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma notícia encontrada.</div>';
-        return;
-    }
-
-    container.innerHTML = latest.map(createNewsCard).join('');
-}
-
-// Filtrar por categoria
-async function filterByCategory(category) {
-    const news = await loadNews();
-    const filtered = news.filter(n => n.category === category);
-    const container = document.getElementById('latestNews');
-
-    if (filtered.length === 0) {
-        container.innerHTML = '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
-        return;
-    }
-
-    container.innerHTML = filtered.map(createNewsCard).join('');
-
-    // Scroll suave para as notícias
-    container.scrollIntoView({ behavior: 'smooth' });
 }
 
 // Ver detalhes da notícia
 function viewNews(id) {
-    // Salvar ID da notícia no localStorage e redirecionar
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html';
 }
 
-// Busca de notícias
+// Busca
 async function searchNews(query) {
-    const news = await loadNews();
-    const results = news.filter(n =>
+    const news = await loadNewsFromFirebase();
+    const results = news.filter(n => 
         n.title.toLowerCase().includes(query.toLowerCase()) ||
         n.excerpt.toLowerCase().includes(query.toLowerCase())
     );
-
-    const resultsContainer = document.getElementById('searchResults');
-
-    if (results.length === 0) {
-        resultsContainer.innerHTML = '<div class="empty-state">Nenhum resultado encontrado.</div>';
-        return;
+    
+    const container = document.getElementById('searchResults');
+    if (container) {
+        container.innerHTML = results.length > 0
+            ? results.map(createNewsCard).join('')
+            : '<div class="empty-state">Nenhum resultado encontrado.</div>';
     }
-
-    resultsContainer.innerHTML = results.map(createNewsCard).join('');
 }
 
-// Modal de busca
+// Toggle modal de busca
 function toggleSearchModal() {
     const modal = document.getElementById('searchModal');
-    modal.classList.toggle('active');
-
-    if (modal.classList.contains('active')) {
-        document.getElementById('searchInput').focus();
+    if (modal) {
+        modal.classList.toggle('active');
+        if (modal.classList.contains('active')) {
+            document.getElementById('searchInput')?.focus();
+        }
     }
 }
 
-// Menu mobile
+// Toggle menu mobile
 function toggleMobileMenu() {
     const menu = document.getElementById('mobileMenu');
-    menu.classList.toggle('active');
+    if (menu) menu.classList.toggle('active');
 }
 
-// Event Listeners
-document.addEventListener('DOMContentLoaded', async function () {
-    console.log('[App] DOM carregado, iniciando aplicação...');
+// Filtrar por categoria
+async function filterByCategory(category) {
+    const news = await loadNewsFromFirebase();
+    const filtered = news.filter(n => n.category === category);
+    const container = document.getElementById('latestNews');
     
-    // Verificar se as funções do Firebase estão disponíveis
-    console.log('[App] Verificando funções:', {
-        applyFirebaseColors: typeof window.applyFirebaseColors,
-        applyFirebaseBrand: typeof window.applyFirebaseBrand
-    });
-    
-    try {
-        // Aplicar cores e marca do Firebase
-        console.log('[App] Aplicando cores do Firebase...');
-        const coresResult = await applyFirebaseColors();
-        console.log('[App] Resultado cores:', coresResult);
-        
-        console.log('[App] Aplicando marca do Firebase...');
-        const marcaResult = await applyFirebaseBrand();
-        console.log('[App] Resultado marca:', marcaResult);
-    } catch (error) {
-        console.error('[App] ERRO ao aplicar configurações:', error);
+    if (container) {
+        container.innerHTML = filtered.length > 0
+            ? filtered.map(createNewsCard).join('')
+            : '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
+        container.scrollIntoView({ behavior: 'smooth' });
     }
+    
+    // Fechar menu mobile
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu?.classList.contains('active')) {
+        toggleMobileMenu();
+    }
+}
 
+// Inicialização
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('[App] v2.0 - Inicializando...');
+    
     // Inicializar dados
     await initializeData();
-
+    
     // Renderizar notícias
-    await renderFeaturedNews();
-    await renderLatestNews();
-
-    // Botão de busca
-    document.querySelector('.btn-search').addEventListener('click', toggleSearchModal);
-
-    // Fechar modal de busca
-    document.querySelector('.search-close').addEventListener('click', toggleSearchModal);
-
+    await renderNews();
+    
+    // Event Listeners
+    document.querySelector('.btn-search')?.addEventListener('click', toggleSearchModal);
+    document.querySelector('.search-close')?.addEventListener('click', toggleSearchModal);
+    document.querySelector('.btn-menu-mobile')?.addEventListener('click', toggleMobileMenu);
+    document.querySelector('.mobile-menu-close')?.addEventListener('click', toggleMobileMenu);
+    
     // Busca em tempo real
-    document.getElementById('searchInput').addEventListener('input', function (e) {
-        const query = e.target.value;
-        if (query.length >= 2) {
-            searchNews(query);
-        } else {
-            document.getElementById('searchResults').innerHTML = '';
+    document.getElementById('searchInput')?.addEventListener('input', function(e) {
+        if (e.target.value.length >= 2) {
+            searchNews(e.target.value);
         }
     });
-
+    
     // Fechar modal ao clicar fora
-    document.getElementById('searchModal').addEventListener('click', function (e) {
-        if (e.target === this) {
-            toggleSearchModal();
-        }
+    document.getElementById('searchModal')?.addEventListener('click', function(e) {
+        if (e.target === this) toggleSearchModal();
     });
-
-    // Menu mobile
-    document.querySelector('.btn-menu-mobile').addEventListener('click', toggleMobileMenu);
-    document.querySelector('.mobile-menu-close').addEventListener('click', toggleMobileMenu);
-
-    // Links de categoria (desktop e mobile)
+    
+    // Links de categoria
     document.querySelectorAll('[data-category]').forEach(link => {
-        link.addEventListener('click', function (e) {
+        link.addEventListener('click', function(e) {
             e.preventDefault();
-            const category = this.getAttribute('data-category');
-            filterByCategory(category);
-
-            // Fechar menu mobile se estiver aberto
-            const mobileMenu = document.getElementById('mobileMenu');
-            if (mobileMenu.classList.contains('active')) {
-                toggleMobileMenu();
-            }
+            filterByCategory(this.getAttribute('data-category'));
         });
     });
-
-    // Fechar menu mobile ao clicar fora
-    document.addEventListener('click', function (e) {
+    
+    // Fechar menu ao clicar fora
+    document.addEventListener('click', function(e) {
         const menu = document.getElementById('mobileMenu');
-        const btnMenu = document.querySelector('.btn-menu-mobile');
-
-        if (!menu.contains(e.target) && !btnMenu.contains(e.target)) {
+        const btn = document.querySelector('.btn-menu-mobile');
+        if (menu && !menu.contains(e.target) && !btn?.contains(e.target)) {
             menu.classList.remove('active');
         }
     });
     
-    console.log('[App] Aplicação inicializada!');
+    console.log('[App] v2.0 - Pronto!');
 });
+
+console.log('[App] v2.0 - Script finalizado');

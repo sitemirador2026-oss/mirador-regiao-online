@@ -1,250 +1,204 @@
-// Funções do banco de dados Firebase para o site público
+// Firebase Database Functions v2.1
 
-console.log('[Firebase DB] Script carregado');
+console.log('[Firebase DB] v2.1 - Script carregado');
 
-// Testar conexão com Firebase
-async function testFirebaseConnection() {
-    console.log('[Firebase DB] Testando conexão...');
-    try {
-        // Tentar ler um documento de teste
-        const testDoc = await db.collection('settings').doc('test').get();
-        console.log('[Firebase DB] Conexão OK - permissões de leitura funcionando');
-        return true;
-    } catch (error) {
-        console.error('[Firebase DB] ERRO de conexão:', error.code, error.message);
-        if (error.code === 'permission-denied') {
-            console.error('[Firebase DB] PERMISSÃO NEGADA - Verifique as regras de segurança do Firebase');
-        }
-        return false;
-    }
-}
+// Flag para rastrear se as configurações foram carregadas
+let settingsLoaded = {
+    colors: false,
+    brand: false
+};
 
-// Carregar todas as notícias
-async function loadNewsFromFirebase() {
-    try {
-        const snapshot = await db.collection('news')
-            .orderBy('date', 'desc')
-            .get();
-
-        const news = [];
-        snapshot.forEach(doc => {
-            news.push({
-                id: doc.id,
-                ...doc.data()
-            });
-        });
-
-        return news;
-    } catch (error) {
-        console.error('[Firebase DB] Erro ao carregar notícias:', error);
-        return [];
-    }
-}
-
-// Carregar uma notícia específica
-async function loadNewsById(id) {
-    try {
-        const doc = await db.collection('news').doc(id).get();
-
-        if (doc.exists) {
-            return {
-                id: doc.id,
-                ...doc.data()
-            };
-        }
-        return null;
-    } catch (error) {
-        console.error('[Firebase DB] Erro ao carregar notícia:', error);
-        return null;
-    }
-}
-
-// Carregar configurações de cores do Firebase
-async function loadColorsFromFirebase() {
-    console.log('[Firebase DB] Carregando cores do Firebase...');
-    try {
-        const doc = await db.collection('settings').doc('colors').get();
-        
-        if (doc.exists) {
-            console.log('[Firebase DB] Cores encontradas:', doc.data());
-            return doc.data();
-        } else {
-            console.log('[Firebase DB] Documento de cores não existe no Firebase');
-            return null;
-        }
-    } catch (error) {
-        console.error('[Firebase DB] ERRO ao carregar cores:', error.code, error.message);
-        return null;
-    }
-}
-
-// Carregar configurações da marca do Firebase
-async function loadBrandFromFirebase() {
-    console.log('[Firebase DB] Carregando marca do Firebase...');
-    try {
-        const doc = await db.collection('settings').doc('brand').get();
-        
-        if (doc.exists) {
-            console.log('[Firebase DB] Marca encontrada:', doc.data());
-            return doc.data();
-        } else {
-            console.log('[Firebase DB] Documento de marca não existe no Firebase');
-            return null;
-        }
-    } catch (error) {
-        console.error('[Firebase DB] ERRO ao carregar marca:', error.code, error.message);
-        return null;
-    }
-}
-
-// Aplicar cores do Firebase ao site
-async function applyFirebaseColors() {
-    console.log('[Aplicar Cores] Iniciando...');
+// Iniciar listeners em tempo real
+function startRealtimeListeners() {
+    console.log('[Firebase DB] Iniciando listeners em tempo real...');
     
-    let colors = null;
-    let source = '';
-    
-    // Tentar carregar do Firebase
-    try {
-        colors = await loadColorsFromFirebase();
-        if (colors) {
-            source = 'firebase';
-            // Salvar no localStorage para fallback
-            localStorage.setItem('publicSiteColors', JSON.stringify(colors));
-            console.log('[Aplicar Cores] Cores salvas no localStorage');
-        }
-    } catch (error) {
-        console.error('[Aplicar Cores] Erro ao carregar do Firebase:', error);
-    }
-    
-    // Fallback para localStorage
-    if (!colors) {
-        console.log('[Aplicar Cores] Tentando localStorage...');
-        const savedColors = localStorage.getItem('publicSiteColors');
-        if (savedColors) {
-            try {
-                colors = JSON.parse(savedColors);
-                source = 'localStorage';
-                console.log('[Aplicar Cores] Cores carregadas do localStorage:', colors);
-            } catch (e) {
-                console.error('[Aplicar Cores] Erro ao parsear localStorage:', e);
+    // Listener para cores
+    db.collection('settings').doc('colors')
+        .onSnapshot((doc) => {
+            if (doc.exists) {
+                console.log('[Firebase DB] Cores atualizadas:', doc.data());
+                applyColors(doc.data());
+                localStorage.setItem('publicSiteColors', JSON.stringify(doc.data()));
+                settingsLoaded.colors = true;
+                hideLoadingWarning();
             }
+        }, (error) => {
+            console.error('[Firebase DB] Erro ao carregar cores:', error.code, error.message);
+            if (error.code === 'permission-denied') {
+                showPermissionError();
+            }
+            // Tentar localStorage
+            loadColorsFromLocalStorage();
+        });
+    
+    // Listener para marca
+    db.collection('settings').doc('brand')
+        .onSnapshot((doc) => {
+            if (doc.exists) {
+                console.log('[Firebase DB] Marca atualizada:', doc.data());
+                applyBrand(doc.data());
+                localStorage.setItem('publicSiteBrand', JSON.stringify(doc.data()));
+                settingsLoaded.brand = true;
+                hideLoadingWarning();
+            }
+        }, (error) => {
+            console.error('[Firebase DB] Erro ao carregar marca:', error.code, error.message);
+            if (error.code === 'permission-denied') {
+                showPermissionError();
+            }
+            // Tentar localStorage
+            loadBrandFromLocalStorage();
+        });
+}
+
+// Mostrar erro de permissão
+function showPermissionError() {
+    console.error('╔════════════════════════════════════════════════════════════════╗');
+    console.error('║  ERRO DE PERMISSÃO DO FIREBASE                                 ║');
+    console.error('║                                                                ║');
+    console.error('║  O site não consegue ler as configurações do painel admin.    ║');
+    console.error('║                                                                ║');
+    console.error('║  SOLUÇÃO:                                                      ║');
+    console.error('║  1. Acesse: https://console.firebase.google.com                ║');
+    console.error('║  2. Selecione o projeto: sitemirador-fb33d                     ║');
+    console.error('║  3. Vá em "Firestore Database" > "Regras"                       ║');
+    console.error('║  4. Atualize as regras para:                                   ║');
+    console.error('║                                                                ║');
+    console.error('║  match /settings/{docId} {                                     ║');
+    console.error('║    allow read: if true;  // Leitura pública                     ║');
+    console.error('║    allow write: if request.auth != null;                        ║');
+    console.error('║  }                                                             ║');
+    console.error('║                                                                ║');
+    console.error('╚════════════════════════════════════════════════════════════════╝');
+    
+    // Mostrar aviso visual após 3 segundos se as configurações não carregarem
+    setTimeout(() => {
+        if (!settingsLoaded.colors && !settingsLoaded.brand) {
+            showConfigWarning();
+        }
+    }, 3000);
+}
+
+// Mostrar aviso visual na página
+function showConfigWarning() {
+    // Verificar se já existe
+    if (document.getElementById('firebase-warning')) return;
+    
+    const warning = document.createElement('div');
+    warning.id = 'firebase-warning';
+    warning.innerHTML = `
+        <div style="position:fixed; top:80px; right:20px; background:#fee2e2; border:2px solid #ef4444; 
+                    color:#991b1b; padding:16px; border-radius:8px; max-width:350px; z-index:9999;
+                    box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); font-family:sans-serif; font-size:14px;">
+            <strong style="display:block; margin-bottom:8px; font-size:16px;">⚠️ Configurações não carregadas</strong>
+            <p style="margin:0 0 10px 0; line-height:1.5;">
+                O site não conseguiu carregar as configurações do painel admin.
+            </p>
+            <p style="margin:0 0 10px 0; font-size:13px;">
+                <strong>Provável causa:</strong> Regras de segurança do Firebase
+            </p>
+            <button onclick="this.parentElement.remove()" 
+                    style="background:#ef4444; color:white; border:none; padding:8px 16px; 
+                           border-radius:4px; cursor:pointer; font-weight:bold;">
+                Fechar
+            </button>
+            <button onclick="window.open('README-FIREBASE.md','_blank')" 
+                    style="background:white; color:#991b1b; border:1px solid #991b1b; 
+                           padding:8px 16px; border-radius:4px; cursor:pointer; margin-left:8px;">
+                Ver solução
+            </button>
+        </div>
+    `;
+    document.body.appendChild(warning);
+}
+
+function hideLoadingWarning() {
+    const warning = document.getElementById('firebase-warning');
+    if (warning) warning.remove();
+}
+
+// Carregar do localStorage
+function loadColorsFromLocalStorage() {
+    const saved = localStorage.getItem('publicSiteColors');
+    if (saved) {
+        try {
+            const colors = JSON.parse(saved);
+            console.log('[Firebase DB] Cores carregadas do localStorage');
+            applyColors(colors);
+            settingsLoaded.colors = true;
+        } catch (e) {
+            console.error('[Firebase DB] Erro ao parsear cores:', e);
         }
     }
-    
-    if (!colors) {
-        console.log('[Aplicar Cores] Nenhuma cor encontrada, usando padrão');
-        return false;
+}
+
+function loadBrandFromLocalStorage() {
+    const saved = localStorage.getItem('publicSiteBrand');
+    if (saved) {
+        try {
+            const brand = JSON.parse(saved);
+            console.log('[Firebase DB] Marca carregada do localStorage');
+            applyBrand(brand);
+            settingsLoaded.brand = true;
+        } catch (e) {
+            console.error('[Firebase DB] Erro ao parsear marca:', e);
+        }
     }
+}
+
+// Aplicar cores
+function applyColors(colors) {
+    if (!colors) return;
     
-    console.log('[Aplicar Cores] Aplicando de:', source);
-    
-    // Aplicar as cores
     const root = document.documentElement;
     let count = 0;
     
-    if (colors.Primary) {
-        root.style.setProperty('--primary', colors.Primary);
-        console.log('[Aplicar Cores] --primary =', colors.Primary);
-        count++;
-    }
-    if (colors.Secondary) {
-        root.style.setProperty('--secondary', colors.Secondary);
-        count++;
-    }
-    if (colors.Accent) {
-        root.style.setProperty('--accent', colors.Accent);
-        count++;
-    }
-    if (colors.Background) {
-        root.style.setProperty('--background', colors.Background);
-        count++;
-    }
-    if (colors.Foreground) {
-        root.style.setProperty('--foreground', colors.Foreground);
-        count++;
-    }
-    if (colors.Muted) {
-        root.style.setProperty('--muted', colors.Muted);
-        count++;
-    }
-    if (colors.MutedForeground) {
-        root.style.setProperty('--muted-foreground', colors.MutedForeground);
-        count++;
+    const colorMap = {
+        'Primary': '--primary',
+        'Secondary': '--secondary',
+        'Accent': '--accent',
+        'Background': '--background',
+        'Foreground': '--foreground',
+        'Muted': '--muted',
+        'MutedForeground': '--muted-foreground'
+    };
+    
+    for (const [key, cssVar] of Object.entries(colorMap)) {
+        if (colors[key]) {
+            root.style.setProperty(cssVar, colors[key]);
+            count++;
+        }
     }
     
-    console.log('[Aplicar Cores]', count, 'cores aplicadas de', source);
-    return true;
+    console.log('[Aplicar Cores]', count, 'cores aplicadas');
 }
 
-// Aplicar marca do Firebase ao site
-async function applyFirebaseBrand() {
-    console.log('[Aplicar Marca] Iniciando...');
+// Aplicar marca
+function applyBrand(brand) {
+    if (!brand) return;
     
-    let brand = null;
-    let source = '';
-    
-    // Tentar carregar do Firebase
-    try {
-        brand = await loadBrandFromFirebase();
-        if (brand) {
-            source = 'firebase';
-            // Salvar no localStorage para fallback
-            localStorage.setItem('publicSiteBrand', JSON.stringify(brand));
-            console.log('[Aplicar Marca] Marca salva no localStorage');
-        }
-    } catch (error) {
-        console.error('[Aplicar Marca] Erro ao carregar do Firebase:', error);
-    }
-    
-    // Fallback para localStorage
-    if (!brand) {
-        console.log('[Aplicar Marca] Tentando localStorage...');
-        const savedBrand = localStorage.getItem('publicSiteBrand');
-        if (savedBrand) {
-            try {
-                brand = JSON.parse(savedBrand);
-                source = 'localStorage';
-                console.log('[Aplicar Marca] Marca carregada do localStorage:', brand);
-            } catch (e) {
-                console.error('[Aplicar Marca] Erro ao parsear localStorage:', e);
-            }
-        }
-    }
-    
-    if (!brand) {
-        console.log('[Aplicar Marca] Nenhuma marca encontrada, usando padrão');
-        return false;
-    }
-    
-    console.log('[Aplicar Marca] Aplicando de:', source, brand);
-    
-    // Aplicar nome do site
+    // Nome do site
     if (brand.siteName) {
         document.title = brand.siteName;
         const titleEl = document.getElementById('siteTitle');
-        if (titleEl) {
-            titleEl.textContent = brand.siteName;
-            console.log('[Aplicar Marca] Título:', brand.siteName);
-        }
+        if (titleEl) titleEl.textContent = brand.siteName;
     }
     
-    // Aplicar logo
+    // Logo ou texto
     const logoImg = document.getElementById('siteLogoImg');
     const logoText = document.getElementById('siteLogoText');
     
     if (brand.logo && logoImg) {
-        console.log('[Aplicar Marca] Aplicando logo...');
         logoImg.src = brand.logo;
         logoImg.style.display = 'block';
         logoImg.alt = brand.siteName || 'Logo';
         if (logoText) logoText.style.display = 'none';
-        console.log('[Aplicar Marca] Logo aplicada!');
+        console.log('[Aplicar Marca] Logo aplicada');
     } else if (brand.siteName && logoText) {
-        console.log('[Aplicar Marca] Aplicando texto:', brand.siteName);
         logoText.textContent = brand.siteName;
         logoText.style.display = 'block';
         if (logoImg) logoImg.style.display = 'none';
+        console.log('[Aplicar Marca] Texto aplicado:', brand.siteName);
     }
     
     // Footer
@@ -252,62 +206,102 @@ async function applyFirebaseBrand() {
     if (footerSiteName && brand.siteName) {
         footerSiteName.textContent = brand.siteName;
     }
-    
-    console.log('[Aplicar Marca] Marca aplicada com sucesso de', source);
-    return true;
 }
 
-// Incrementar visualizações
-async function incrementViews(newsId) {
+// Funções de carregamento
+async function loadColorsFromFirebase() {
     try {
-        const newsRef = db.collection('news').doc(newsId);
-        await newsRef.update({
-            views: firebase.firestore.FieldValue.increment(1)
-        });
+        const doc = await db.collection('settings').doc('colors').get();
+        return doc.exists ? doc.data() : null;
     } catch (error) {
-        console.error('[Firebase DB] Erro ao incrementar visualizações:', error);
+        console.error('[Firebase DB] Erro:', error.code);
+        return null;
     }
 }
 
-// Função para forçar aplicação de configurações (para teste)
-function forceApplySettings() {
-    console.log('[FORCE] Aplicando configurações manualmente...');
+async function loadBrandFromFirebase() {
+    try {
+        const doc = await db.collection('settings').doc('brand').get();
+        return doc.exists ? doc.data() : null;
+    } catch (error) {
+        console.error('[Firebase DB] Erro:', error.code);
+        return null;
+    }
+}
+
+// Funções principais
+async function applyFirebaseColors() {
+    const colors = await loadColorsFromFirebase();
+    if (colors) {
+        applyColors(colors);
+        localStorage.setItem('publicSiteColors', JSON.stringify(colors));
+        settingsLoaded.colors = true;
+        return true;
+    }
+    return false;
+}
+
+async function applyFirebaseBrand() {
+    const brand = await loadBrandFromFirebase();
+    if (brand) {
+        applyBrand(brand);
+        localStorage.setItem('publicSiteBrand', JSON.stringify(brand));
+        settingsLoaded.brand = true;
+        return true;
+    }
+    return false;
+}
+
+// Carregar notícias
+async function loadNewsFromFirebase() {
+    try {
+        const snapshot = await db.collection('news').orderBy('date', 'desc').get();
+        const news = [];
+        snapshot.forEach(doc => news.push({ id: doc.id, ...doc.data() }));
+        return news;
+    } catch (error) {
+        console.error('[Firebase DB] Erro ao carregar notícias:', error);
+        return [];
+    }
+}
+
+async function loadNewsById(id) {
+    try {
+        const doc = await db.collection('news').doc(id).get();
+        return doc.exists ? { id: doc.id, ...doc.data() } : null;
+    } catch (error) {
+        console.error('[Firebase DB] Erro:', error);
+        return null;
+    }
+}
+
+async function incrementViews(newsId) {
+    try {
+        await db.collection('news').doc(newsId).update({
+            views: firebase.firestore.FieldValue.increment(1)
+        });
+    } catch (error) {
+        console.error('[Firebase DB] Erro:', error);
+    }
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('[Firebase DB] DOM carregado, iniciando...');
+    
+    // Carregar imediatamente
     applyFirebaseColors();
     applyFirebaseBrand();
-}
-
-// Função para verificar o localStorage
-function checkLocalStorage() {
-    console.log('[DEBUG] Verificando localStorage...');
-    const colors = localStorage.getItem('publicSiteColors');
-    const brand = localStorage.getItem('publicSiteBrand');
     
-    console.log('[DEBUG] Cores:', colors ? JSON.parse(colors) : 'Não encontrado');
-    console.log('[DEBUG] Marca:', brand ? JSON.parse(brand) : 'Não encontrado');
-    
-    return { colors: colors ? JSON.parse(colors) : null, brand: brand ? JSON.parse(brand) : null };
-}
+    // Iniciar listeners em tempo real
+    startRealtimeListeners();
+});
 
-// Função para limpar cache
-function clearSettingsCache() {
-    localStorage.removeItem('publicSiteColors');
-    localStorage.removeItem('publicSiteBrand');
-    console.log('[DEBUG] Cache limpo!');
-}
+// Exportar funções
+window.applyFirebaseColors = applyFirebaseColors;
+window.applyFirebaseBrand = applyFirebaseBrand;
+window.loadNewsFromFirebase = loadNewsFromFirebase;
+window.loadNewsById = loadNewsById;
+window.incrementViews = incrementViews;
 
-// Exportar funções para teste
-window.testFirebaseConnection = testFirebaseConnection;
-window.loadColorsFromFirebase = loadColorsFromFirebase;
-window.loadBrandFromFirebase = loadBrandFromFirebase;
-window.forceApplySettings = forceApplySettings;
-window.checkLocalStorage = checkLocalStorage;
-window.clearSettingsCache = clearSettingsCache;
-
-console.log('[Firebase DB] Script finalizado');
-console.log('[Firebase DB] Funções disponíveis no console:');
-console.log('  - testFirebaseConnection() - Testar conexão com Firebase');
-console.log('  - loadColorsFromFirebase() - Carregar cores do Firebase');
-console.log('  - loadBrandFromFirebase() - Carregar marca do Firebase');
-console.log('  - forceApplySettings() - Forçar aplicação das configurações');
-console.log('  - checkLocalStorage() - Verificar localStorage');
-console.log('  - clearSettingsCache() - Limpar cache local');
+console.log('[Firebase DB] v2.1 - Pronto!');
