@@ -980,6 +980,155 @@
             color: var(--primary);
         }
 
+        /* ========================================
+           LOGO UPLOAD STYLES
+           ======================================== */
+        .logo-upload-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-upload-area {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            background: var(--bg-primary);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .logo-upload-area:hover {
+            border-color: var(--primary-light);
+            background: var(--info-light);
+        }
+
+        .logo-upload-area.drag-over {
+            border-color: var(--primary);
+            background: var(--info-light);
+        }
+
+        .logo-upload-area.has-image {
+            border-style: solid;
+            border-color: var(--success);
+            background: var(--success-light);
+        }
+
+        .logo-upload-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            color: var(--text-muted);
+        }
+
+        .logo-upload-text {
+            font-size: 0.9375rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .logo-upload-hint {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .logo-preview-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .logo-preview {
+            max-width: 200px;
+            max-height: 80px;
+            object-fit: contain;
+            border-radius: var(--radius);
+        }
+
+        .logo-preview-dark {
+            background: var(--bg-sidebar);
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+        }
+
+        .logo-preview-light {
+            background: white;
+            padding: 1rem 1.5rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+        }
+
+        .logo-preview-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+
+        .logo-remove-btn {
+            padding: 0.5rem 1rem;
+            background: var(--danger-light);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo-remove-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .brand-input-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .brand-input-group label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-secondary);
+        }
+
+        .brand-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            background: var(--bg-card);
+        }
+
+        .brand-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Sidebar logo styles */
+        .sidebar-brand-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: var(--radius);
+        }
+
+        .sidebar-brand-text-logo {
+            max-width: 140px;
+            max-height: 36px;
+            object-fit: contain;
+        }
+
         /* Activity Feed */
         .activity-list {
             display: flex;
@@ -1138,9 +1287,10 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-logo">
-                <div class="login-logo-icon">M</div>
-                <h1 class="login-title">Bem-vindo de volta</h1>
-                <p class="login-subtitle">Faça login para acessar o painel administrativo</p>
+                <div class="login-logo-icon" id="loginLogoIcon">M</div>
+                <img id="loginLogoImg" class="login-logo-icon" src="" alt="" style="display: none; padding: 0; object-fit: contain;">
+                <h1 class="login-title" id="loginTitle">Bem-vindo de volta</h1>
+                <p class="login-subtitle" id="loginSubtitle">Faça login para acessar o painel administrativo</p>
             </div>
             <div class="login-error" id="loginError">Email ou senha incorretos</div>
             <form id="loginForm">
@@ -1167,11 +1317,12 @@
             <!-- Sidebar -->
             <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <div class="sidebar-brand">
-                        <div class="brand-icon">M</div>
-                        <div>
-                            <div class="brand-text">Mirador Online</div>
-                            <div class="brand-tagline">Portal de Notícias</div>
+                    <div class="sidebar-brand" id="sidebarBrand">
+                        <div class="brand-icon" id="sidebarIcon">M</div>
+                        <img id="sidebarLogo" class="sidebar-brand-text-logo" src="" alt="" style="display: none;">
+                        <div id="sidebarText">
+                            <div class="brand-text" id="sidebarBrandText">Mirador Online</div>
+                            <div class="brand-tagline" id="sidebarTagline">Portal de Notícias</div>
                         </div>
                     </div>
                 </div>
@@ -1482,6 +1633,106 @@
                     </div>
 
                     <div class="content-section" style="max-width: 900px;">
+                        <div class="section-header">
+                            <h2 class="section-title">🏷️ Identidade Visual</h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="resetBrand()">Restaurar Padrão</button>
+                                <button class="btn btn-primary btn-sm" onclick="saveBrand()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Salvar Identidade
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="padding: 2rem;">
+                            <!-- Logo Upload -->
+                            <div class="logo-upload-section">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Logomarca do Site
+                                </h3>
+                                
+                                <div class="logo-upload-area" id="logoUploadArea" onclick="document.getElementById('logoInput').click()">
+                                    <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                                    <div id="uploadPlaceholder">
+                                        <svg class="logo-upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <div class="logo-upload-text">Clique ou arraste uma imagem aqui</div>
+                                        <div class="logo-upload-hint">PNG, JPG ou SVG (máx. 2MB)</div>
+                                    </div>
+                                    <div id="logoPreviewContainer" class="logo-preview-container" style="display: none;">
+                                        <div>
+                                            <div class="logo-preview-dark">
+                                                <img id="logoPreviewDark" class="sidebar-brand-text-logo" src="" alt="Logo Preview">
+                                            </div>
+                                            <div class="logo-preview-label">Fundo Escuro (Sidebar)</div>
+                                        </div>
+                                        <div>
+                                            <div class="logo-preview-light">
+                                                <img id="logoPreviewLight" class="sidebar-brand-text-logo" src="" alt="Logo Preview">
+                                            </div>
+                                            <div class="logo-preview-label">Fundo Claro (Site)</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div id="logoActions" style="display: none; margin-top: 1rem; text-align: center;">
+                                    <button class="logo-remove-btn" onclick="removeLogo(event)">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                        Remover Logo
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Brand Name Inputs -->
+                            <div style="margin-bottom: 1.5rem;">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
+                                    Informações da Marca
+                                </h3>
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
+                                    <div class="brand-input-group">
+                                        <label for="siteName">Nome do Site</label>
+                                        <input type="text" id="siteName" class="brand-input" placeholder="Mirador Online" value="Mirador Online">
+                                    </div>
+                                    <div class="brand-input-group">
+                                        <label for="siteTagline">Tagline / Subtítulo</label>
+                                        <input type="text" id="siteTagline" class="brand-input" placeholder="Portal de Notícias" value="Portal de Notícias">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Preview da Marca -->
+                            <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+                                <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
+                                    👁️ Pré-visualização da Marca
+                                </h3>
+                                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <!-- Preview Sidebar -->
+                                    <div style="padding: 1.25rem; background: var(--bg-sidebar); border-radius: var(--radius); display: flex; align-items: center; gap: 0.875rem;">
+                                        <div id="brandPreviewIcon" style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 700; color: white;">M</div>
+                                        <img id="brandPreviewLogo" class="sidebar-brand-text-logo" src="" alt="" style="display: none;">
+                                        <div>
+                                            <div id="brandPreviewName" style="font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 700; color: white; letter-spacing: -0.02em;">Mirador Online</div>
+                                            <div id="brandPreviewTagline" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.125rem;">Portal de Notícias</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Info -->
+                            <div style="margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--info-light); border-radius: var(--radius); border-left: 3px solid var(--info);">
+                                <p style="color: var(--primary-dark); font-size: 0.875rem; line-height: 1.5;">
+                                    <strong>💡 Dica:</strong> A logomarca e as informações serão aplicadas automaticamente ao site público e ao painel administrativo.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-section" style="max-width: 900px; margin-top: 1.5rem;">
                         <div class="section-header">
                             <h2 class="section-title">🎨 Personalização de Cores</h2>
                             <div class="section-actions">
@@ -1866,6 +2117,279 @@
             alert('✅ Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.');
         }
 
+        // ========================================
+        // LOGO E IDENTIDADE VISUAL
+        // ========================================
+        
+        let currentLogo = null;
+
+        // Inicializar configurações de marca ao carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBrandSettings();
+            setupLogoDragAndDrop();
+        });
+
+        // Configurar drag and drop para logo
+        function setupLogoDragAndDrop() {
+            const uploadArea = document.getElementById('logoUploadArea');
+            
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            ['dragenter', 'dragover'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.add('drag-over');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                uploadArea.addEventListener(eventName, () => {
+                    uploadArea.classList.remove('drag-over');
+                }, false);
+            });
+
+            uploadArea.addEventListener('drop', handleDrop, false);
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if (files.length > 0) {
+                handleLogoFile(files[0]);
+            }
+        }
+
+        // Processar upload de logo
+        function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleLogoFile(file);
+            }
+        }
+
+        function handleLogoFile(file) {
+            // Validar tipo de arquivo
+            const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                alert('❌ Formato de arquivo não suportado. Use PNG, JPG, SVG ou WebP.');
+                return;
+            }
+
+            // Validar tamanho (2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                alert('❌ Arquivo muito grande. Máximo 2MB.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentLogo = e.target.result;
+                updateLogoPreview(currentLogo);
+                updateBrandPreview();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Atualizar preview da logo
+        function updateLogoPreview(logoData) {
+            const uploadArea = document.getElementById('logoUploadArea');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const previewContainer = document.getElementById('logoPreviewContainer');
+            const logoActions = document.getElementById('logoActions');
+            const previewDark = document.getElementById('logoPreviewDark');
+            const previewLight = document.getElementById('logoPreviewLight');
+
+            uploadArea.classList.add('has-image');
+            placeholder.style.display = 'none';
+            previewContainer.style.display = 'flex';
+            logoActions.style.display = 'block';
+
+            previewDark.src = logoData;
+            previewLight.src = logoData;
+        }
+
+        // Remover logo
+        function removeLogo(e) {
+            e.stopPropagation();
+            currentLogo = null;
+            
+            const uploadArea = document.getElementById('logoUploadArea');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const previewContainer = document.getElementById('logoPreviewContainer');
+            const logoActions = document.getElementById('logoActions');
+            const logoInput = document.getElementById('logoInput');
+
+            uploadArea.classList.remove('has-image');
+            placeholder.style.display = 'block';
+            previewContainer.style.display = 'none';
+            logoActions.style.display = 'none';
+            logoInput.value = '';
+
+            updateBrandPreview();
+        }
+
+        // Atualizar preview da marca em tempo real
+        document.getElementById('siteName')?.addEventListener('input', updateBrandPreview);
+        document.getElementById('siteTagline')?.addEventListener('input', updateBrandPreview);
+
+        function updateBrandPreview() {
+            const siteName = document.getElementById('siteName').value || 'Mirador Online';
+            const siteTagline = document.getElementById('siteTagline').value || 'Portal de Notícias';
+            
+            const previewName = document.getElementById('brandPreviewName');
+            const previewTagline = document.getElementById('brandPreviewTagline');
+            const previewIcon = document.getElementById('brandPreviewIcon');
+            const previewLogo = document.getElementById('brandPreviewLogo');
+
+            previewName.textContent = siteName;
+            previewTagline.textContent = siteTagline;
+
+            if (currentLogo) {
+                previewIcon.style.display = 'none';
+                previewLogo.src = currentLogo;
+                previewLogo.style.display = 'block';
+            } else {
+                previewIcon.style.display = 'flex';
+                previewIcon.textContent = siteName.charAt(0).toUpperCase();
+                previewLogo.style.display = 'none';
+            }
+        }
+
+        // Salvar configurações de marca
+        function saveBrand() {
+            const brandSettings = {
+                siteName: document.getElementById('siteName').value || 'Mirador Online',
+                siteTagline: document.getElementById('siteTagline').value || 'Portal de Notícias',
+                logo: currentLogo
+            };
+
+            localStorage.setItem('siteBrand', JSON.stringify(brandSettings));
+            localStorage.setItem('publicSiteBrand', JSON.stringify(brandSettings));
+
+            // Aplicar imediatamente no admin
+            applyBrandToAdmin(brandSettings);
+
+            alert('✅ Identidade visual salva com sucesso!\n\nAs alterações foram aplicadas ao site público e ao painel.');
+        }
+
+        // Carregar configurações de marca
+        function loadBrandSettings() {
+            const savedBrand = localStorage.getItem('siteBrand');
+            if (savedBrand) {
+                const settings = JSON.parse(savedBrand);
+                
+                document.getElementById('siteName').value = settings.siteName || 'Mirador Online';
+                document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de Notícias';
+                
+                if (settings.logo) {
+                    currentLogo = settings.logo;
+                    updateLogoPreview(settings.logo);
+                }
+
+                applyBrandToAdmin(settings);
+            }
+            updateBrandPreview();
+        }
+
+        // Aplicar marca ao painel admin
+        function applyBrandToAdmin(settings) {
+            const siteName = settings.siteName || 'Mirador Online';
+            const siteTagline = settings.siteTagline || 'Portal de Notícias';
+            
+            // Atualizar sidebar
+            const sidebarBrandText = document.getElementById('sidebarBrandText');
+            const sidebarTagline = document.getElementById('sidebarTagline');
+            
+            if (sidebarBrandText) sidebarBrandText.textContent = siteName;
+            if (sidebarTagline) sidebarTagline.textContent = siteTagline;
+            
+            const sidebarIcon = document.getElementById('sidebarIcon');
+            const sidebarLogo = document.getElementById('sidebarLogo');
+            const sidebarText = document.getElementById('sidebarText');
+
+            if (settings.logo && sidebarLogo) {
+                if (sidebarIcon) sidebarIcon.style.display = 'none';
+                sidebarLogo.src = settings.logo;
+                sidebarLogo.style.display = 'block';
+                if (sidebarText) sidebarText.style.display = 'block';
+            } else if (sidebarIcon) {
+                sidebarIcon.style.display = 'flex';
+                sidebarIcon.textContent = siteName.charAt(0).toUpperCase();
+                if (sidebarLogo) sidebarLogo.style.display = 'none';
+            }
+
+            // Atualizar título da página
+            document.title = `Admin - ${siteName}`;
+        }
+
+        // Aplicar marca na página de login
+        function applyBrandToLogin(settings) {
+            const siteName = settings.siteName || 'Mirador Online';
+            const siteTagline = settings.siteTagline || 'Portal de Notícias';
+            
+            const loginLogoIcon = document.getElementById('loginLogoIcon');
+            const loginLogoImg = document.getElementById('loginLogoImg');
+            const loginTitle = document.getElementById('loginTitle');
+            const loginSubtitle = document.getElementById('loginSubtitle');
+
+            if (settings.logo && loginLogoImg) {
+                if (loginLogoIcon) loginLogoIcon.style.display = 'none';
+                loginLogoImg.src = settings.logo;
+                loginLogoImg.style.display = 'block';
+            } else if (loginLogoIcon) {
+                loginLogoIcon.style.display = 'flex';
+                loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
+                if (loginLogoImg) loginLogoImg.style.display = 'none';
+            }
+
+            if (loginTitle) loginTitle.textContent = `Bem-vindo de volta`;
+            if (loginSubtitle) loginSubtitle.textContent = `Faça login para acessar o ${siteName}`;
+            
+            document.title = `Admin - ${siteName}`;
+        }
+
+        // Restaurar marca padrão
+        function resetBrand() {
+            if (!confirm('Deseja restaurar a identidade visual padrão?')) return;
+
+            currentLogo = null;
+            document.getElementById('siteName').value = 'Mirador Online';
+            document.getElementById('siteTagline').value = 'Portal de Notícias';
+            
+            // Limpar preview
+            const uploadArea = document.getElementById('logoUploadArea');
+            const placeholder = document.getElementById('uploadPlaceholder');
+            const previewContainer = document.getElementById('logoPreviewContainer');
+            const logoActions = document.getElementById('logoActions');
+
+            uploadArea.classList.remove('has-image');
+            placeholder.style.display = 'block';
+            previewContainer.style.display = 'none';
+            logoActions.style.display = 'none';
+            document.getElementById('logoInput').value = '';
+
+            // Aplicar padrão
+            const defaultBrand = {
+                siteName: 'Mirador Online',
+                siteTagline: 'Portal de Notícias',
+                logo: null
+            };
+
+            applyBrandToAdmin(defaultBrand);
+            updateBrandPreview();
+
+            localStorage.removeItem('siteBrand');
+            localStorage.removeItem('publicSiteBrand');
+
+            alert('✅ Identidade visual restaurada para o padrão!');
+        }
+
         // Restaurar cores padrão
         function resetColors() {
             if (!confirm('Deseja restaurar as cores padrão?')) return;
@@ -1917,6 +2441,15 @@
         });
 
         // Verificar estado de autenticação
+        // Carregar configurações de marca na inicialização
+        (function initBrand() {
+            const savedBrand = localStorage.getItem('siteBrand');
+            if (savedBrand) {
+                const settings = JSON.parse(savedBrand);
+                applyBrandToLogin(settings);
+            }
+        })();
+
         auth.onAuthStateChanged((user) => {
             if (user) {
                 showAdmin();
