@@ -166,7 +166,8 @@ function applyColors(colors) {
         'Foreground': '--foreground',
         'Muted': '--muted',
         'MutedForeground': '--muted-foreground',
-        'Header': '--header-bg'
+        'Header': '--header-bg',
+        'HeaderText': '--header-text'
     };
     
     for (const [key, cssVar] of Object.entries(colorMap)) {

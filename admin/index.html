@@ -2153,6 +2153,13 @@
                                                     <div class="color-item-value" id="colorHeaderValue">#FFFFFF</div>
                                                 </div>
                                             </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorHeaderText" value="#0f172a">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Texto do Cabeçalho</div>
+                                                    <div class="color-item-value" id="colorHeaderTextValue">#0F172A</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -2485,6 +2492,7 @@
             const foreground = document.getElementById('colorForeground').value;
             const mutedForeground = document.getElementById('colorMutedForeground').value;
             const header = document.getElementById('colorHeader').value;
+            const headerText = document.getElementById('colorHeaderText').value;
 
             // Atualizar valores dos textos
             document.getElementById('colorPrimaryValue').textContent = primary.toUpperCase();
@@ -2495,6 +2503,7 @@
             document.getElementById('colorForegroundValue').textContent = foreground.toUpperCase();
             document.getElementById('colorMutedForegroundValue').textContent = mutedForeground.toUpperCase();
             document.getElementById('colorHeaderValue').textContent = header.toUpperCase();
+            document.getElementById('colorHeaderTextValue').textContent = headerText.toUpperCase();
 
             // Atualizar preview ao vivo
             const previewHeader = document.getElementById('previewHeader');
@@ -2509,7 +2518,8 @@
 
             if (previewHeader) previewHeader.style.background = header;
             if (previewHeader) previewHeader.style.borderColor = accent;
-            if (previewLogo) previewLogo.style.color = primary;
+            if (previewLogo) previewLogo.style.color = headerText;
+            if (previewNav) previewNav.style.color = headerText;
             if (previewNav) previewNav.style.color = secondary;
             if (previewBody) previewBody.style.background = background;
             if (previewTitle) previewTitle.style.color = foreground;
@@ -2532,7 +2542,8 @@
                 Muted: document.getElementById('colorMuted').value,
                 Foreground: document.getElementById('colorForeground').value,
                 MutedForeground: document.getElementById('colorMutedForeground').value,
-                Header: document.getElementById('colorHeader').value
+                Header: document.getElementById('colorHeader').value,
+                HeaderText: document.getElementById('colorHeaderText').value
             };
 
             console.log('[Admin] Salvando cores:', colors);
@@ -2889,7 +2900,8 @@
                 Muted: '#f1f5f9',
                 Foreground: '#0f172a',
                 MutedForeground: '#64748b',
-                Header: '#ffffff'
+                Header: '#ffffff',
+                HeaderText: '#0f172a'
             };
 
             Object.keys(defaultColors).forEach(key => {
@@ -2910,7 +2922,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const colorInputs = [
                 'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground', 'Header'
+                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText'
             ];
 
             colorInputs.forEach(name => {
