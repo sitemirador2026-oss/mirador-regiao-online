@@ -6,6 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Mirador e Região Online</title>
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
@@ -13,21 +18,53 @@
 
     <style>
         :root {
-            --primary: #0f172a;
-            /* Slate 900 */
-            --secondary: #334155;
-            /* Slate 700 */
-            --accent: #2563eb;
-            /* Blue 600 */
-            --background: #f1f5f9;
-            /* Slate 100 */
-            --surface: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
+            /* Cores Principais - Paleta sofisticada */
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --primary-dark: #1e3a8a;
+            --secondary: #64748b;
+            --accent: #f59e0b;
+            
+            /* Cores de Fundo */
+            --bg-primary: #f8fafc;
+            --bg-secondary: #f1f5f9;
+            --bg-sidebar: #0f172a;
+            --bg-sidebar-hover: rgba(255, 255, 255, 0.03);
+            --bg-card: #ffffff;
+            
+            /* Cores de Texto */
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-sidebar: #cbd5e1;
+            --text-sidebar-hover: #ffffff;
+            
+            /* Cores de Estado */
             --success: #10b981;
+            --success-light: #d1fae5;
             --warning: #f59e0b;
+            --warning-light: #fef3c7;
             --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --info: #3b82f6;
+            --info-light: #dbeafe;
+            
+            /* Bordas e Sombras */
+            --border: #e2e8f0;
+            --border-light: #f1f5f9;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            
+            /* Espaçamentos */
+            --radius-sm: 6px;
+            --radius: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+            
+            /* Transições */
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         * {
@@ -37,158 +74,687 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--background);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
             color: var(--text-primary);
-            font-size: 0.925rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
-        /* Admin Layout */
+        /* ========================================
+           LOGIN STYLES
+           ======================================== */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--bg-sidebar) 0%, var(--primary-dark) 100%);
+            padding: 1.5rem;
+        }
+
+        .login-box {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 420px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .login-logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .login-logo-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            background: var(--bg-card);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9375rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .login-error {
+            display: none;
+            background: var(--danger-light);
+            color: var(--danger);
+            padding: 0.75rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--danger);
+        }
+
+        .link-site {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .link-site:hover {
+            color: var(--primary);
+        }
+
+        /* ========================================
+           ADMIN LAYOUT
+           ======================================== */
+        .admin-container {
+            display: none;
+        }
+
         .admin-layout {
             display: flex;
             min-height: 100vh;
         }
 
-        /* Sidebar */
+        /* ========================================
+           SIDEBAR - Design Moderno e Compacto
+           ======================================== */
         .sidebar {
-            width: 250px;
-            background: var(--primary);
-            color: white;
+            width: 260px;
+            background: var(--bg-sidebar);
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100vh;
-            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 50;
         }
 
         .sidebar-header {
             padding: 1.5rem;
-            background: rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
         }
 
-        .sidebar-logo {
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.25rem;
             font-weight: 700;
-            font-size: 1.1rem;
             color: white;
-            letter-spacing: -0.5px;
+            flex-shrink: 0;
+        }
+
+        .brand-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: white;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-tagline {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
         }
 
         .sidebar-nav {
-            padding: 1rem 0;
             flex: 1;
+            padding: 1rem 0.75rem;
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 0 0.875rem;
+            margin-bottom: 0.5rem;
         }
 
         .nav-item {
-            padding: 0.75rem 1.5rem;
-            color: #94a3b8;
-            text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            transition: all 0.2s;
-            border-left: 3px solid transparent;
+            padding: 0.625rem 0.875rem;
+            margin: 0.125rem 0.5rem;
+            color: var(--text-sidebar);
+            text-decoration: none;
+            border-radius: var(--radius);
+            transition: var(--transition);
             font-weight: 500;
+            font-size: 0.875rem;
         }
 
         .nav-item:hover {
-            color: white;
-            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-sidebar-hover);
+            background: var(--bg-sidebar-hover);
         }
 
         .nav-item.active {
             color: white;
-            background: rgba(37, 99, 235, 0.1);
-            border-left-color: var(--accent);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        /* Main Content */
+        .nav-item.active .nav-icon {
+            color: var(--primary-light);
+        }
+
+        /* Ícones pequenos e elegantes */
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            flex-shrink: 0;
+            opacity: 0.9;
+        }
+
+        .nav-badge {
+            margin-left: auto;
+            background: var(--primary);
+            color: white;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            padding: 0.125rem 0.5rem;
+            border-radius: 999px;
+        }
+
+        /* User Profile no Footer da Sidebar */
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: var(--radius);
+            margin-bottom: 0.75rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .user-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .user-name {
+            color: white;
+            font-weight: 500;
+            font-size: 0.875rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .user-role {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 0.625rem;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius);
+            color: var(--text-sidebar);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-logout:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        /* ========================================
+           MAIN CONTENT
+           ======================================== */
         .main-content {
             flex: 1;
-            margin-left: 250px;
-            padding: 2rem;
+            margin-left: 260px;
+            min-height: 100vh;
         }
 
-        /* Header / Stats */
+        /* Top Header */
+        .top-header {
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .header-search {
+            position: relative;
+            width: 320px;
+        }
+
+        .header-search input {
+            width: 100%;
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            background: var(--bg-primary);
+            transition: var(--transition);
+        }
+
+        .header-search input:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            background: var(--bg-card);
+        }
+
+        .header-search svg {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .header-btn:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .header-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .notification-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 8px;
+            height: 8px;
+            background: var(--danger);
+            border-radius: 50%;
+            border: 2px solid var(--bg-card);
+        }
+
+        /* Page Content */
+        .page-content {
+            padding: 2rem;
+            max-width: 1400px;
+        }
+
         .page-header {
             margin-bottom: 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
         }
 
         .page-title {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
+        .page-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+        }
+
+        /* ========================================
+           STATS CARDS - Design Moderno
+           ======================================== */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .stat-card {
-            background: var(--surface);
+            background: var(--bg-card);
             padding: 1.5rem;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
         }
 
-        .stat-label {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card.primary::before { background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%); }
+        .stat-card.success::before { background: linear-gradient(90deg, var(--success) 0%, #34d399 100%); }
+        .stat-card.warning::before { background: linear-gradient(90deg, var(--warning) 0%, #fbbf24 100%); }
+        .stat-card.info::before { background: linear-gradient(90deg, var(--info) 0%, #60a5fa 100%); }
+
+        .stat-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stat-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .stat-icon.primary {
+            background: var(--info-light);
+            color: var(--primary);
+        }
+
+        .stat-icon.success {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .stat-icon.warning {
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .stat-icon.info {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+        }
+
+        .stat-trend.up {
+            color: var(--success);
+            background: var(--success-light);
+        }
+
+        .stat-trend.down {
+            color: var(--danger);
+            background: var(--danger-light);
         }
 
         .stat-value {
-            font-size: 2rem;
+            font-size: 1.875rem;
             font-weight: 700;
             color: var(--text-primary);
+            margin-bottom: 0.25rem;
         }
 
-        /* Data Table */
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        /* ========================================
+           CONTENT SECTIONS
+           ======================================== */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
         .content-section {
-            background: var(--surface);
-            border-radius: 8px;
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
             border: 1px solid var(--border);
             overflow: hidden;
         }
 
         .section-header {
-            padding: 1rem 1.5rem;
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #f8fafc;
         }
 
-        .btn-add {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.9rem;
+        .section-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-actions {
             display: flex;
-            align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
         }
 
-        .btn-add:hover {
-            background: #1d4ed8;
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            box-shadow: var(--shadow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border-light);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8125rem;
+        }
+
+        .btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* ========================================
+           DATA TABLE - Estilo Profissional
+           ======================================== */
+        .table-container {
+            overflow-x: auto;
         }
 
         .data-table {
@@ -198,124 +764,301 @@
 
         .data-table th {
             text-align: left;
-            padding: 0.75rem 1.5rem;
-            background: #f8fafc;
+            padding: 0.875rem 1.5rem;
+            background: var(--bg-primary);
             color: var(--text-secondary);
             font-weight: 600;
-            font-size: 0.85rem;
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
             border-bottom: 1px solid var(--border);
+            white-space: nowrap;
         }
 
         .data-table td {
             padding: 1rem 1.5rem;
-            border-bottom: 1px solid var(--border);
+            border-bottom: 1px solid var(--border-light);
             color: var(--text-primary);
+            font-size: 0.875rem;
+        }
+
+        .data-table tr:hover td {
+            background: var(--bg-primary);
         }
 
         .data-table tr:last-child td {
             border-bottom: none;
         }
 
+        /* Status Badges */
         .status-badge {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.5rem;
-            border-radius: 999px;
+            gap: 0.375rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: var(--radius-sm);
             font-size: 0.75rem;
             font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
         }
 
         .status-published {
-            background: #dcfce7;
-            color: #166534;
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .status-published::before {
+            background: var(--success);
         }
 
         .status-draft {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--warning-light);
+            color: var(--warning);
+        }
+
+        .status-draft::before {
+            background: var(--warning);
+        }
+
+        .status-scheduled {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .status-scheduled::before {
+            background: var(--info);
+        }
+
+        /* Category Badge */
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.625rem;
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            border-radius: var(--radius-sm);
+        }
+
+        /* Action Buttons */
+        .actions-cell {
+            display: flex;
+            gap: 0.375rem;
         }
 
         .action-btn {
-            padding: 0.4rem;
+            width: 32px;
+            height: 32px;
             border: 1px solid var(--border);
-            border-radius: 4px;
-            background: white;
+            border-radius: var(--radius);
+            background: var(--bg-card);
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: var(--text-secondary);
-            margin-right: 0.25rem;
+            transition: var(--transition);
         }
 
         .action-btn:hover {
-            background: #f1f5f9;
-            color: var(--accent);
+            background: var(--bg-primary);
+            color: var(--primary);
+            border-color: var(--primary-light);
         }
 
         .action-btn.delete:hover {
             color: var(--danger);
-            background: #fef2f2;
+            border-color: var(--danger);
+            background: var(--danger-light);
         }
 
-        /* Login Styles (simplified) */
-        .login-container {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #0f172a;
+        .action-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
-        .login-box {
-            background: white;
-            padding: 2.5rem;
-            border-radius: 8px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-title {
+        /* Empty State */
+        .empty-state {
             text-align: center;
-            margin-bottom: 1.5rem;
-            font-size: 1.5rem;
+            padding: 3rem;
+            color: var(--text-secondary);
         }
 
-        .form-group {
+        .empty-state svg {
+            width: 48px;
+            height: 48px;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+
+        /* News Title Cell */
+        .news-title-cell {
+            max-width: 300px;
+        }
+
+        .news-title {
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .news-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ========================================
+           QUICK ACTIONS SIDEBAR
+           ======================================== */
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .action-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border);
+            padding: 1.25rem;
+        }
+
+        .action-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-primary);
             margin-bottom: 1rem;
         }
 
-        .form-group label {
-            display: block;
+        .quick-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.875rem 1rem;
             margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-        }
-
-        .btn-login {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 4px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
             cursor: pointer;
+            transition: var(--transition);
+            text-align: left;
+        }
+
+        .quick-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        .quick-btn:hover {
+            background: var(--bg-primary);
+            border-color: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .quick-btn svg {
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+        }
+
+        .quick-btn:hover svg {
+            color: var(--primary);
+        }
+
+        /* Activity Feed */
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.published {
+            background: var(--success-light);
+            color: var(--success);
+        }
+
+        .activity-icon.edited {
+            background: var(--info-light);
+            color: var(--info);
+        }
+
+        .activity-icon.deleted {
+            background: var(--danger-light);
+            color: var(--danger);
+        }
+
+        .activity-icon svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.875rem;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .activity-text strong {
             font-weight: 600;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* ========================================
+           RESPONSIVE
+           ======================================== */
+        @media (max-width: 1280px) {
             .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .content-grid {
                 grid-template-columns: 1fr;
             }
+        }
 
+        @media (max-width: 768px) {
             .sidebar {
                 transform: translateX(-100%);
                 transition: transform 0.3s;
-                z-index: 50;
             }
 
             .sidebar.active {
@@ -325,6 +1068,67 @@
             .main-content {
                 margin-left: 0;
             }
+
+            .page-content {
+                padding: 1.5rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .top-header {
+                padding: 1rem 1.5rem;
+            }
+
+            .header-search {
+                display: none;
+            }
+
+            .section-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+
+            .data-table {
+                font-size: 0.8125rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.875rem 1rem;
+            }
+        }
+
+        /* Mobile menu toggle */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-primary);
+            padding: 0.5rem;
+            margin-right: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+        }
+
+        .sidebar-overlay.active {
+            display: block;
         }
     </style>
 </head>
@@ -334,20 +1138,20 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-logo">
-                <div class="login-logo-placeholder">M</div>
-                <h1 class="login-title">Bem-vindo</h1>
-                <p class="login-subtitle">Faça login para acessar o painel</p>
+                <div class="login-logo-icon">M</div>
+                <h1 class="login-title">Bem-vindo de volta</h1>
+                <p class="login-subtitle">Faça login para acessar o painel administrativo</p>
             </div>
+            <div class="login-error" id="loginError">Email ou senha incorretos</div>
             <form id="loginForm">
                 <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="email" placeholder="seu@email.com" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" class="form-input" placeholder="admin@mirador.com" required>
                 </div>
                 <div class="form-group">
-                    <label>Senha</label>
-                    <input type="password" id="password" placeholder="••••••••" required>
+                    <label for="password">Senha</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
                 </div>
-                <div class="error" id="loginError">❌ Email ou senha incorretos</div>
                 <button type="submit" class="btn-login">Entrar no Painel</button>
             </form>
             <a href="../public/index.html" class="link-site">← Voltar para o site</a>
@@ -357,127 +1161,334 @@
     <!-- Admin Dashboard -->
     <div class="admin-container" id="adminContainer">
         <div class="admin-layout">
+            <!-- Sidebar Overlay (Mobile) -->
+            <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
             <!-- Sidebar -->
-            <aside class="sidebar">
+            <aside class="sidebar" id="sidebar">
                 <div class="sidebar-header">
-                    <div class="sidebar-logo">M</div>
-                    <div class="sidebar-logo-text">Mirador Online</div>
+                    <div class="sidebar-brand">
+                        <div class="brand-icon">M</div>
+                        <div>
+                            <div class="brand-text">Mirador Online</div>
+                            <div class="brand-tagline">Portal de Notícias</div>
+                        </div>
+                    </div>
                 </div>
 
                 <nav class="sidebar-nav">
-                    <a href="#" class="nav-item active">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                        </svg>
-                        Dashboard
-                    </a>
-                    <a href="#" class="nav-item">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                        </svg>
-                        Notícias
-                    </a>
-                    <a href="#" class="nav-item">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-                        </svg>
-                        Categorias
-                    </a>
-                    <a href="#" class="nav-item">
-                        <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Configurações
-                    </a>
+                    <div class="nav-section">
+                        <div class="nav-section-title">Menu Principal</div>
+                        <a href="#" class="nav-item active" onclick="showPage('dashboard', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                        <a href="#" class="nav-item" onclick="showPage('news', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                            </svg>
+                            Notícias
+                            <span class="nav-badge">12</span>
+                        </a>
+                        <a href="#" class="nav-item" onclick="showPage('categories', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                            Categorias
+                        </a>
+                        <a href="#" class="nav-item" onclick="showPage('media', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Mídia
+                        </a>
+                    </div>
+
+                    <div class="nav-section">
+                        <div class="nav-section-title">Configurações</div>
+                        <a href="#" class="nav-item" onclick="showPage('settings', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Configurações
+                        </a>
+                        <a href="#" class="nav-item" onclick="showPage('users', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            </svg>
+                            Usuários
+                        </a>
+                    </div>
                 </nav>
 
                 <div class="sidebar-footer">
-                    <div class="user-info">
-                        <div class="user-details">
+                    <div class="user-profile">
+                        <div class="user-avatar">EC</div>
+                        <div class="user-info">
                             <div class="user-name">Editor Chefe</div>
                             <div class="user-role">admin@mirador.com</div>
                         </div>
                     </div>
-                    <button class="btn-logout" onclick="logout()">Sair</button>
+                    <button class="btn-logout" onclick="logout()">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Sair da conta
+                    </button>
                 </div>
             </aside>
 
             <!-- Main Content -->
             <main class="main-content">
+                <!-- Top Header -->
+                <header class="top-header">
+                    <div style="display: flex; align-items: center;">
+                        <button class="menu-toggle" id="menuToggle" onclick="toggleSidebar()">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            </svg>
+                        </button>
+                        <div class="header-search">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <input type="text" placeholder="Buscar notícias, categorias...">
+                        </div>
+                    </div>
+                    <div class="header-actions">
+                        <button class="header-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                            </svg>
+                            <span class="notification-dot"></span>
+                        </button>
+                        <button class="header-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </header>
+
                 <!-- Dashboard Page -->
                 <div id="dashboardPage" class="page-content">
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Visão Geral</h1>
-                            <p class="page-subtitle">Acompanhe o desempenho do seu conteúdo</p>
+                            <p class="page-subtitle">Acompanhe o desempenho do seu conteúdo em tempo real</p>
                         </div>
                     </div>
 
-                    <!-- Stats -->
+                    <!-- Stats Grid -->
                     <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-label">Notícias Publicadas</div>
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend up">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                    </svg>
+                                    +12%
+                                </span>
+                            </div>
                             <div class="stat-value" id="totalNews">0</div>
+                            <div class="stat-label">Notícias Publicadas</div>
                         </div>
 
-                        <div class="stat-card">
-                            <div class="stat-label">Rascunhos</div>
-                            <div class="stat-value" id="draftNews">0</div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-label">Total Visualizações</div>
+                        <div class="stat-card success">
+                            <div class="stat-header">
+                                <div class="stat-icon success">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend up">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                    </svg>
+                                    +24%
+                                </span>
+                            </div>
                             <div class="stat-value" id="totalViews">0</div>
+                            <div class="stat-label">Total de Visualizações</div>
+                        </div>
+
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div class="stat-icon warning">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend down">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                                    </svg>
+                                    -5%
+                                </span>
+                            </div>
+                            <div class="stat-value" id="draftNews">0</div>
+                            <div class="stat-label">Rascunhos Pendentes</div>
+                        </div>
+
+                        <div class="stat-card info">
+                            <div class="stat-header">
+                                <div class="stat-icon info">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend up">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+                                    </svg>
+                                    +8%
+                                </span>
+                            </div>
+                            <div class="stat-value">1.2K</div>
+                            <div class="stat-label">Leitores Ativos</div>
                         </div>
                     </div>
 
-                    <!-- News List Table -->
-                    <div class="content-section">
-                        <div class="section-header">
-                            <h2 class="section-title">Últimas Publicações</h2>
-                            <button class="btn-add" onclick="alert('Funcionalidade em desenvolvimento!')">
-                                + Nova Notícia
-                            </button>
+                    <!-- Content Grid -->
+                    <div class="content-grid">
+                        <!-- News Table -->
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Últimas Publicações</h2>
+                                <div class="section-actions">
+                                    <button class="btn btn-secondary btn-sm">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                        </svg>
+                                        Filtrar
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                        Nova Notícia
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Status</th>
+                                            <th>Título</th>
+                                            <th>Categoria</th>
+                                            <th>Data</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="newsList">
+                                        <!-- Notícias serão inseridas aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                        <table class="data-table">
-                            <thead>
-                                <tr>
-                                    <th>Status</th>
-                                    <th>Título</th>
-                                    <th>Categoria</th>
-                                    <th>Data</th>
-                                    <th>Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody id="newsList">
-                                <!-- Notícias serão inseridas aqui -->
-                            </tbody>
-                        </table>
+
+                        <!-- Quick Actions & Activity -->
+                        <div class="quick-actions">
+                            <!-- Quick Actions -->
+                            <div class="action-card">
+                                <h3 class="action-card-title">Ações Rápidas</h3>
+                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                    Escrever nova notícia
+                                </button>
+                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    Fazer upload de imagem
+                                </button>
+                                <button class="quick-btn" onclick="showPage('settings', document.querySelectorAll('.nav-item')[4]); return false;">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                    Personalizar aparência
+                                </button>
+                                <button class="quick-btn" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Gerar relatório
+                                </button>
+                            </div>
+
+                            <!-- Recent Activity -->
+                            <div class="action-card">
+                                <h3 class="action-card-title">Atividade Recente</h3>
+                                <div class="activity-list">
+                                    <div class="activity-item">
+                                        <div class="activity-icon published">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-text">Notícia <strong>"Nova obra inaugura"</strong> publicada</div>
+                                            <div class="activity-time">Há 2 horas</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon edited">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-text"><strong>João</strong> editou uma notícia</div>
+                                            <div class="activity-time">Há 4 horas</div>
+                                        </div>
+                                    </div>
+                                    <div class="activity-item">
+                                        <div class="activity-icon deleted">
+                                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </div>
+                                        <div class="activity-content">
+                                            <div class="activity-text">Notícia <strong>"Evento cancelado"</strong> excluída</div>
+                                            <div class="activity-time">Há 6 horas</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Settings Page -->
                 <div id="settingsPage" class="page-content" style="display: none;">
                     <div class="page-header">
-                        <h1 class="page-title">Configurações</h1>
-                        <p class="page-subtitle">Personalize as cores do seu site</p>
+                        <div>
+                            <h1 class="page-title">Configurações</h1>
+                            <p class="page-subtitle">Personalize a aparência do seu site de notícias</p>
+                        </div>
                     </div>
 
-                    <div class="content-section">
+                    <div class="content-section" style="max-width: 900px;">
                         <div class="section-header">
                             <h2 class="section-title">🎨 Personalização de Cores</h2>
-                            <div style="display: flex; gap: 0.75rem;">
-                                <button class="btn-edit" onclick="resetColors()">Restaurar Padrão</button>
-                                <button class="btn-add" onclick="saveColors()">
+                            <div class="section-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="resetColors()">Restaurar Padrão</button>
+                                <button class="btn btn-primary btn-sm" onclick="saveColors()">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 13l4 4L19 7" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                                     </svg>
                                     Salvar Alterações
                                 </button>
@@ -487,33 +1498,31 @@
                         <div style="padding: 2rem;">
                             <!-- Cores Principais -->
                             <div style="margin-bottom: 2.5rem;">
-                                <h3
-                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
                                     Cores Principais
                                 </h3>
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
                                     <div class="color-control">
-                                        <label>Cor Primária (Botões, Links)</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorPrimary" value="#2563eb">
-                                            <input type="text" id="colorPrimaryText" value="#2563eb" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor Primária (Botões, Links)</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorPrimary" value="#2563eb" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorPrimaryText" value="#2563eb" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
 
                                     <div class="color-control">
-                                        <label>Cor Secundária</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorSecondary" value="#64748b">
-                                            <input type="text" id="colorSecondaryText" value="#64748b" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor Secundária</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorSecondary" value="#64748b" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorSecondaryText" value="#64748b" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
 
                                     <div class="color-control">
-                                        <label>Cor de Destaque</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorAccent" value="#f8fafc">
-                                            <input type="text" id="colorAccentText" value="#f8fafc" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Cor de Destaque</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorAccent" value="#f8fafc" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorAccentText" value="#f8fafc" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
                                 </div>
@@ -521,25 +1530,23 @@
 
                             <!-- Cores de Fundo -->
                             <div style="margin-bottom: 2.5rem;">
-                                <h3
-                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
                                     Cores de Fundo
                                 </h3>
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
                                     <div class="color-control">
-                                        <label>Fundo Principal</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorBackground" value="#ffffff">
-                                            <input type="text" id="colorBackgroundText" value="#ffffff" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo Principal</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorBackground" value="#ffffff" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorBackgroundText" value="#ffffff" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
 
                                     <div class="color-control">
-                                        <label>Fundo Secundário (Cards)</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorMuted" value="#f1f5f9">
-                                            <input type="text" id="colorMutedText" value="#f1f5f9" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Fundo Secundário (Cards)</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorMuted" value="#f1f5f9" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorMutedText" value="#f1f5f9" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
                                 </div>
@@ -547,74 +1554,46 @@
 
                             <!-- Cores de Texto -->
                             <div style="margin-bottom: 2.5rem;">
-                                <h3
-                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1.25rem; color: var(--text-primary);">
                                     Cores de Texto
                                 </h3>
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
                                     <div class="color-control">
-                                        <label>Texto Principal</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorForeground" value="#0f172a">
-                                            <input type="text" id="colorForegroundText" value="#0f172a" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Texto Principal</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorForeground" value="#0f172a" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorForegroundText" value="#0f172a" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
 
                                     <div class="color-control">
-                                        <label>Texto Secundário</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorMutedForeground" value="#64748b">
-                                            <input type="text" id="colorMutedForegroundText" value="#64748b" readonly>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Cores de Borda -->
-                            <div style="margin-bottom: 2.5rem;">
-                                <h3
-                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
-                                    Bordas e Divisores
-                                </h3>
-                                <div
-                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
-                                    <div class="color-control">
-                                        <label>Cor das Bordas</label>
-                                        <div class="color-input-group">
-                                            <input type="color" id="colorBorder" value="#e2e8f0">
-                                            <input type="text" id="colorBorderText" value="#e2e8f0" readonly>
+                                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary);">Texto Secundário</label>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <input type="color" id="colorMutedForeground" value="#64748b" style="width: 50px; height: 42px; border: 1px solid var(--border); border-radius: var(--radius); cursor: pointer;">
+                                            <input type="text" id="colorMutedForegroundText" value="#64748b" readonly style="flex: 1; padding: 0.625rem 1rem; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.875rem; font-family: monospace; background: var(--bg-primary);">
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Preview -->
-                            <div
-                                style="margin-top: 3rem; padding: 2rem; background: #f8fafc; border-radius: 12px; border: 2px dashed #cbd5e1;">
-                                <h3
-                                    style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1.5rem; color: #1e293b;">
+                            <div style="margin-top: 2rem; padding: 1.5rem; background: var(--bg-primary); border-radius: var(--radius-lg); border: 1px solid var(--border);">
+                                <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">
                                     👁️ Pré-visualização
                                 </h3>
-                                <div id="colorPreview"
-                                    style="padding: 1.5rem; background: white; border-radius: 8px; border: 1px solid #e2e8f0;">
-                                    <h4 style="margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600;">Exemplo de
-                                        Título</h4>
-                                    <p style="margin-bottom: 1rem; color: #64748b;">Este é um exemplo de texto
-                                        secundário para você visualizar as cores.</p>
-                                    <button
-                                        style="padding: 0.75rem 1.5rem; background: #2563eb; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                <div id="colorPreview" style="padding: 1.5rem; background: white; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <h4 style="margin-bottom: 0.75rem; font-size: 1.125rem; font-weight: 600;">Exemplo de Título</h4>
+                                    <p style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9375rem;">Este é um exemplo de texto secundário para você visualizar as cores.</p>
+                                    <button style="padding: 0.625rem 1.25rem; background: var(--primary); color: white; border: none; border-radius: var(--radius); font-weight: 500; font-size: 0.875rem; cursor: pointer;">
                                         Botão de Exemplo
                                     </button>
                                 </div>
                             </div>
 
                             <!-- Info -->
-                            <div
-                                style="margin-top: 2rem; padding: 1.25rem; background: #dbeafe; border-radius: 8px; border-left: 4px solid #2563eb;">
-                                <p style="color: #1e40af; font-size: 0.875rem; line-height: 1.6;">
-                                    <strong>💡 Dica:</strong> As cores serão aplicadas automaticamente ao site público.
-                                    Clique em "Salvar Alterações" para confirmar as mudanças.
+                            <div style="margin-top: 1.5rem; padding: 1rem 1.25rem; background: var(--info-light); border-radius: var(--radius); border-left: 3px solid var(--info);">
+                                <p style="color: var(--primary-dark); font-size: 0.875rem; line-height: 1.5;">
+                                    <strong>💡 Dica:</strong> As cores serão aplicadas automaticamente ao site público. Clique em "Salvar Alterações" para confirmar as mudanças.
                                 </p>
                             </div>
                         </div>
@@ -641,16 +1620,14 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Login com Firebase Authentication
+        // Login
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const errorElement = document.getElementById('loginError');
 
             try {
-                // Fazer login com Firebase
                 await auth.signInWithEmailAndPassword(email, password);
                 showAdmin();
             } catch (error) {
@@ -675,6 +1652,58 @@
             loadDashboard();
         }
 
+        // Toggle Sidebar Mobile
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // Navegação entre páginas
+        function showPage(pageName, element) {
+            // Esconder todas as páginas
+            document.querySelectorAll('.page-content').forEach(page => {
+                page.style.display = 'none';
+            });
+
+            // Remover active de todos os nav-items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            // Mostrar página selecionada
+            const pageMap = {
+                'dashboard': 'dashboardPage',
+                'settings': 'settingsPage',
+                'news': 'dashboardPage',
+                'categories': 'dashboardPage',
+                'media': 'dashboardPage',
+                'users': 'dashboardPage'
+            };
+
+            const pageId = pageMap[pageName];
+            if (pageId) {
+                document.getElementById(pageId).style.display = 'block';
+            }
+
+            // Adicionar active no nav-item correspondente
+            if (element) {
+                element.classList.add('active');
+            }
+
+            // Fechar sidebar no mobile
+            if (window.innerWidth <= 768) {
+                toggleSidebar();
+            }
+
+            // Carregar dados se necessário
+            if (pageName === 'dashboard' || pageName === 'news') {
+                loadDashboard();
+            } else if (pageName === 'settings') {
+                loadColors();
+            }
+        }
 
         // Carregar Dashboard
         async function loadDashboard() {
@@ -688,9 +1717,9 @@
                 // Atualizar Estatísticas
                 document.getElementById('totalNews').innerText = news.length;
 
-                // Calcular visualizações (simulado se não existir)
+                // Calcular visualizações
                 const totalViews = news.reduce((acc, curr) => acc + (curr.views || 0), 0);
-                document.getElementById('totalViews').innerText = totalViews;
+                document.getElementById('totalViews').innerText = totalViews.toLocaleString('pt-BR');
 
                 // Rascunhos (simulado por enquanto)
                 document.getElementById('draftNews').innerText = "0";
@@ -700,7 +1729,20 @@
                 newsList.innerHTML = '';
 
                 if (news.length === 0) {
-                    newsList.innerHTML = '<tr><td colspan="5" class="empty-state">Nenhuma notícia encontrada</td></tr>';
+                    newsList.innerHTML = `
+                        <tr>
+                            <td colspan="5">
+                                <div class="empty-state">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    <p>Nenhuma notícia encontrada</p>
+                                    <button class="btn btn-primary btn-sm" style="margin-top: 1rem;" onclick="alert('Funcionalidade em desenvolvimento!')">
+                                        Criar primeira notícia
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
                     return;
                 }
 
@@ -712,12 +1754,25 @@
                     const html = `
                         <tr>
                             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                            <td style="font-weight: 500; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${n.title}</td>
-                            <td>${n.categoryName || n.category}</td>
+                            <td class="news-title-cell">
+                                <div class="news-title">${n.title}</div>
+                                <div class="news-meta">Por ${n.author || 'Admin'} • ${n.views || 0} visualizações</div>
+                            </td>
+                            <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
                             <td>${date}</td>
                             <td>
-                                <button class="action-btn" onclick="alert('Editar: ${n.id}')" title="Editar">✏️</button>
-                                <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">🗑️</button>
+                                <div class="actions-cell">
+                                    <button class="action-btn" onclick="alert('Editar: ${n.id}')" title="Editar">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                    </button>
+                                    <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
+                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     `;
@@ -726,7 +1781,17 @@
 
             } catch (error) {
                 console.error("Erro ao carregar dashboard:", error);
-                document.getElementById('newsList').innerHTML = '<tr><td colspan="5" class="empty-state">❌ Erro ao carregar notícias</td></tr>';
+                document.getElementById('newsList').innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <p>Erro ao carregar notícias</p>
+                            </div>
+                        </td>
+                    </tr>`;
             }
         }
 
@@ -743,70 +1808,6 @@
                 alert('❌ Erro ao excluir notícia!');
             }
         }
-
-        // Navegação entre páginas
-        function showPage(pageName) {
-            // Esconder todas as páginas
-            document.querySelectorAll('.page-content').forEach(page => {
-                page.style.display = 'none';
-            });
-
-            // Remover active de todos os nav-items
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-
-            // Mostrar página selecionada
-            const pageMap = {
-                'dashboard': 'dashboardPage',
-                'settings': 'settingsPage'
-            };
-
-            const pageId = pageMap[pageName];
-            if (pageId) {
-                document.getElementById(pageId).style.display = 'block';
-            }
-
-            // Adicionar active no nav-item correspondente
-            event.target.closest('.nav-item').classList.add('active');
-
-            // Carregar dados se necessário
-            if (pageName === 'dashboard') {
-                loadDashboard();
-            } else if (pageName === 'settings') {
-                loadColors();
-            }
-        }
-
-        // Configurar navegação
-        document.addEventListener('DOMContentLoaded', function () {
-            const navItems = document.querySelectorAll('.nav-item');
-            navItems.forEach((item, index) => {
-                item.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const pages = ['dashboard', 'news', 'categories', 'settings'];
-                    showPage(pages[index]);
-                });
-            });
-
-            // Sincronizar color pickers com text inputs
-            const colorInputs = [
-                'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground', 'Border'
-            ];
-
-            colorInputs.forEach(name => {
-                const colorInput = document.getElementById(`color${name}`);
-                const textInput = document.getElementById(`color${name}Text`);
-
-                if (colorInput && textInput) {
-                    colorInput.addEventListener('input', function () {
-                        textInput.value = this.value.toUpperCase();
-                        updatePreview();
-                    });
-                }
-            });
-        });
 
         // Carregar cores salvas
         function loadColors() {
@@ -832,12 +1833,10 @@
             const background = document.getElementById('colorBackground').value;
             const foreground = document.getElementById('colorForeground').value;
             const mutedForeground = document.getElementById('colorMutedForeground').value;
-            const border = document.getElementById('colorBorder').value;
 
             if (preview) {
                 preview.style.background = background;
-                preview.style.borderColor = border;
-
+                
                 const title = preview.querySelector('h4');
                 if (title) title.style.color = foreground;
 
@@ -858,22 +1857,13 @@
                 Background: document.getElementById('colorBackground').value,
                 Muted: document.getElementById('colorMuted').value,
                 Foreground: document.getElementById('colorForeground').value,
-                MutedForeground: document.getElementById('colorMutedForeground').value,
-                Border: document.getElementById('colorBorder').value
+                MutedForeground: document.getElementById('colorMutedForeground').value
             };
 
             localStorage.setItem('siteColors', JSON.stringify(colors));
-
-            // Aplicar cores no CSS do site público
-            applyColorsToPublicSite(colors);
+            localStorage.setItem('publicSiteColors', JSON.stringify(colors));
 
             alert('✅ Cores salvas com sucesso!\n\nAs alterações foram aplicadas ao site público.');
-        }
-
-        // Aplicar cores ao site público
-        function applyColorsToPublicSite(colors) {
-            // Salvar no localStorage para o site público usar
-            localStorage.setItem('publicSiteColors', JSON.stringify(colors));
         }
 
         // Restaurar cores padrão
@@ -887,8 +1877,7 @@
                 Background: '#ffffff',
                 Muted: '#f1f5f9',
                 Foreground: '#0f172a',
-                MutedForeground: '#64748b',
-                Border: '#e2e8f0'
+                MutedForeground: '#64748b'
             };
 
             Object.keys(defaultColors).forEach(key => {
@@ -907,14 +1896,31 @@
             alert('✅ Cores restauradas para o padrão!');
         }
 
+        // Sincronizar color pickers
+        document.addEventListener('DOMContentLoaded', function () {
+            const colorInputs = [
+                'Primary', 'Secondary', 'Accent', 'Background',
+                'Muted', 'Foreground', 'MutedForeground'
+            ];
+
+            colorInputs.forEach(name => {
+                const colorInput = document.getElementById(`color${name}`);
+                const textInput = document.getElementById(`color${name}Text`);
+
+                if (colorInput && textInput) {
+                    colorInput.addEventListener('input', function () {
+                        textInput.value = this.value.toUpperCase();
+                        updatePreview();
+                    });
+                }
+            });
+        });
 
         // Verificar estado de autenticação
         auth.onAuthStateChanged((user) => {
             if (user) {
-                // Usuário está logado
                 showAdmin();
             } else {
-                // Usuário não está logado
                 document.getElementById('loginContainer').style.display = 'flex';
                 document.getElementById('adminContainer').style.display = 'none';
             }
