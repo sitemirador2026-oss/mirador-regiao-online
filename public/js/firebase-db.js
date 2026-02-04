@@ -1,4 +1,4 @@
-// Firebase Database Functions v2.3 - Added Layout Support
+// Firebase Database Functions v2.4 - Custom Cards Per Row
 
 console.log('[Firebase DB] v2.2 - Script carregado');
 
@@ -309,25 +309,11 @@ async function incrementViews(newsId) {
 function applyLayout(layout) {
     if (!layout) return;
     
-    const cardSize = layout.cardSize || 'medium';
+    const cardsPerRow = layout.cardsPerRow || 3;
     const root = document.documentElement;
     
-    // Definir número de colunas baseado no tamanho
-    let columns;
-    switch(cardSize) {
-        case 'compact':
-            columns = '4';
-            break;
-        case 'large':
-            columns = '2';
-            break;
-        case 'medium':
-        default:
-            columns = '3';
-    }
-    
-    root.style.setProperty('--news-columns', columns);
-    console.log('[Aplicar Layout] Tamanho:', cardSize, 'Colunas:', columns);
+    root.style.setProperty('--news-columns', cardsPerRow.toString());
+    console.log('[Aplicar Layout] Cards por linha:', cardsPerRow);
 }
 
 // Carregar layout do Firebase
