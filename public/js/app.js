@@ -91,43 +91,116 @@ function getDomainFromUrl(url) {
     }
 }
 
+// Obter logo do site configurada no admin
+function getSiteLogo() {
+    const brandSettings = localStorage.getItem('publicSiteBrand');
+    if (brandSettings) {
+        try {
+            const settings = JSON.parse(brandSettings);
+            if (settings.logo) return settings.logo;
+        } catch(e) {}
+    }
+    return null;
+}
+
 // Criar card de notícia
 function createNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
-    const sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl || '');
-    const sourceLogo = sourceDomain
-        ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
-        : '';
-    const excerpt = news.excerpt || '';
-    const isImported = news.isImported || news.externalUrl;
+    const isExternal = news.externalUrl || news.isImported;
+    
+    let sourceDomain, sourceLogo;
+    
+    if (isExternal) {
+        // Notícia de terceiros - usar favicon
+        sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
+        sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
+    } else {
+        // Notícia própria - usar logo do site configurada
+        sourceDomain = 'Nossa Notícia';
+        const siteLogo = getSiteLogo();
+        if (siteLogo) {
+            sourceLogo = siteLogo;
+        } else {
+            // Se não tiver logo, usar favicon como fallback
+            sourceDomain = window.location.hostname || 'miradoronline.com.br';
+            sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
+        }
+    }
+    
+    // Formatar data e hora separadamente
+    const dateObj = new Date(news.date);
+    const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
             <div class="news-card-image-wrapper">
-                ${isImported ? '<span class="news-card-imported-badge">Importado</span>' : ''}
                 <img src="${news.image}" alt="${news.title}" class="news-card-image">
                 <div class="news-card-gradient"></div>
                 <div class="news-card-overlay">
                     <h3 class="news-card-title">${news.title}</h3>
-                    ${excerpt ? `<p class="news-card-excerpt">${excerpt}</p>` : ''}
                 </div>
             </div>
             <div class="news-card-footer">
-                <div class="news-card-meta">
-                    <span class="news-card-category-text">${categoryLabel}</span>
-                    <span class="news-card-meta-divider">•</span>
-                    <span class="news-card-time">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                        ${formatDateTime(news.date)}
-                    </span>
+                <span class="news-card-category-text">${categoryLabel}</span>
+                <div class="news-card-datetime">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    ${timeStr} • ${dateStr}
                 </div>
-                ${sourceLogo ? `<div class="news-card-source"><img src="${sourceLogo}" alt="${sourceDomain}" title="Fonte: ${sourceDomain}"><span class="news-card-source-name">${sourceDomain}</span></div>` : ''}
+                <div class="news-card-source">
+                    <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 80px; height: 16px; object-fit: contain;"' : ''}>
+                    ${isExternal ? `<span class="news-card-source-name">${sourceDomain}</span>` : ''}
+                </div>
             </div>
         </article>
     `;
 }
 
-// Renderizar notícias
+// Criar card de notícia HORIZONTAL - layout especial (foto esquerda, texto direita)
+function createHorizontalNewsCard(news) {
+    const categoryLabel = news.categoryName || news.category || 'Geral';
+    const isExternal = news.externalUrl || news.isImported;
+    
+    let sourceDomain, sourceLogo;
+    
+    if (isExternal) {
+        sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
+        sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
+    } else {
+        sourceDomain = 'Nossa Notícia';
+        const siteLogo = getSiteLogo();
+        if (siteLogo) {
+            sourceLogo = siteLogo;
+        } else {
+            sourceDomain = window.location.hostname || 'miradoronline.com.br';
+            sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
+        }
+    }
+    
+    const dateObj = new Date(news.date);
+    const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    
+    return `
+        <article class="news-card-horizontal" onclick="viewNews('${news.id}')">
+            <div class="news-card-horizontal-image">
+                <img src="${news.image}" alt="${news.title}">
+            </div>
+            <div class="news-card-horizontal-content">
+                <h3 class="news-card-horizontal-title">${news.title}</h3>
+                <div class="news-card-horizontal-footer">
+                    <span class="news-card-horizontal-category">${categoryLabel}</span>
+                    <span class="news-card-horizontal-time">${timeStr} • ${dateStr}</span>
+                    <div class="news-card-horizontal-source">
+                        <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                    </div>
+                </div>
+            </div>
+        </article>
+    `;
+}
+
+// Renderizar notícias com layout alternado
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
@@ -141,12 +214,44 @@ async function renderNews() {
                 : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
         }
         
-        // Últimas notícias
+        // Últimas notícias - layout alternado
         const latest = news.sort((a, b) => new Date(b.date) - new Date(a.date));
         const latestContainer = document.getElementById('latestNews');
+        
         if (latestContainer) {
+            let html = '';
+            const cardsPerRow = 5; // Cards normais por fileira
+            const cardsInSpecialRow = 4; // Cards na fileira horizontal
+            let index = 0;
+            
+            while (index < latest.length) {
+                // Fileira 1: Normal (5 cards)
+                for (let i = 0; i < cardsPerRow && index < latest.length; i++) {
+                    html += createNewsCard(latest[index++]);
+                }
+                
+                // Fileira 2: Normal (5 cards)
+                for (let i = 0; i < cardsPerRow && index < latest.length; i++) {
+                    html += createNewsCard(latest[index++]);
+                }
+                
+                // Fileira 3: Especial horizontal (4 cards)
+                if (index + cardsInSpecialRow <= latest.length) {
+                    html += '<div class="news-row-horizontal">';
+                    for (let i = 0; i < cardsInSpecialRow && index < latest.length; i++) {
+                        html += createHorizontalNewsCard(latest[index++]);
+                    }
+                    html += '</div>';
+                } else {
+                    // Se não tiver notícias suficientes, completa com cards normais
+                    while (index < latest.length) {
+                        html += createNewsCard(latest[index++]);
+                    }
+                }
+            }
+            
             latestContainer.innerHTML = latest.length > 0
-                ? latest.map(createNewsCard).join('')
+                ? html
                 : '<div class="empty-state">Nenhuma notícia encontrada.</div>';
         }
     } catch (error) {

@@ -26,7 +26,7 @@
     --footer-text-auto: #64748b;
     
     /* Espaçamentos */
-    --container-max: 1200px;
+    --container-max: 1400px;
     --spacing-xs: 0.5rem;
     --spacing-sm: 1rem;
     --spacing-md: 1.5rem;
@@ -46,8 +46,10 @@ body {
 
 .container {
     max-width: var(--container-max);
-    margin: 0 auto;
+    margin-left: 0;
+    margin-right: auto;
     padding: 0 var(--spacing-md);
+    padding-left: 2rem;
 }
 
 /* Header */
@@ -311,6 +313,26 @@ body {
     display: grid;
     grid-template-columns: 1fr;
     gap: 1rem;
+    align-items: start;
+    position: relative;
+}
+
+.news-grid > * {
+    min-width: 0;
+}
+
+/* Container da fileira horizontal deve expandir */
+.news-grid .news-row-horizontal {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .news-grid .news-row-horizontal {
+        grid-template-columns: repeat(4, 1fr);
+    }
 }
 
 /* Card de notícia - Design compacto */
@@ -319,32 +341,31 @@ body {
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
     display: flex;
     flex-direction: column;
+    height: 230px;
     position: relative;
-    height: 280px;
+    margin-bottom: 0;
 }
 
 .news-card:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
-    z-index: 10;
-    height: auto;
-    min-height: 320px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    z-index: 100;
+    transform: translateY(-8px) scale(1.02);
 }
 
 .news-card-image-wrapper {
     position: relative;
     width: 100%;
-    height: 160px;
+    height: 150px;
     overflow: hidden;
     flex-shrink: 0;
 }
 
 .news-card:hover .news-card-image-wrapper {
-    height: 180px;
+    height: 170px;
 }
 
 .news-card-image {
@@ -425,44 +446,25 @@ body {
     font-size: 0.9375rem;
 }
 
-/* Conteúdo expandível no hover */
+/* Conteúdo expandível no hover - DESATIVADO */
 .news-card-excerpt {
-    font-size: 0.8125rem;
-    color: rgba(255,255,255,0.85);
-    line-height: 1.5;
-    margin-top: 0.5rem;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    opacity: 0;
-    max-height: 0;
-    transition: all 0.3s ease;
-}
-
-.news-card:hover .news-card-excerpt {
-    opacity: 1;
-    max-height: 80px;
-    -webkit-line-clamp: 3;
+    display: none;
 }
 
 .news-card-footer {
-    padding: 0.625rem 0.875rem;
+    padding: 0.25rem 0.5rem 0.375rem;
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.125rem;
     background: var(--card-bg, white);
     border-top: 1px solid var(--border);
     margin-top: auto;
+    min-height: auto;
 }
 
 .news-card-meta {
-    font-size: 0.6875rem;
-    color: var(--muted-foreground);
-    display: flex;
-    align-items: center;
-    gap: 0.375rem;
+    display: contents;
 }
 
 .news-card-category-text {
@@ -470,21 +472,24 @@ body {
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: var(--muted-foreground);
-    background: var(--accent);
+    color: var(--primary);
+    background: var(--info-light);
     padding: 0.125rem 0.375rem;
     border-radius: 4px;
+    align-self: flex-start;
+    line-height: 1;
 }
 
-.news-card-time {
+.news-card-datetime {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    font-size: 0.6875rem;
-    color: var(--muted-foreground);
+    line-height: 1;
 }
 
-.news-card-time svg {
+.news-card-datetime svg {
     width: 12px;
     height: 12px;
 }
@@ -492,12 +497,15 @@ body {
 .news-card-source {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    gap: 0.375rem;
+    padding-top: 0.125rem;
+    margin-top: 0.125rem;
+    width: 100%;
 }
 
 .news-card-source img {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
     border-radius: 3px;
     object-fit: contain;
     background: white;
@@ -505,26 +513,124 @@ body {
 }
 
 .news-card-source-name {
-    font-size: 0.6875rem;
+    font-size: 0.625rem;
     color: var(--text-muted);
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1;
 }
 
-.news-card-imported-badge {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
+/* ========================================
+   FILEIRA HORIZONTAL ESPECIAL
+   ======================================== */
+.news-row-horizontal {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin: 1rem 0;
+    width: 100%;
+    grid-column: 1 / -1;
+}
+
+@media (min-width: 768px) {
+    .news-row-horizontal {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .news-row-horizontal {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.news-card-horizontal {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 120px;
+    background: var(--card-bg, white);
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.news-card-horizontal:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.news-card-horizontal-image {
+    width: 120px;
+    height: 100%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.news-card-horizontal-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.news-card-horizontal-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 0.625rem;
+    background: var(--bg-card);
+    min-width: 0;
+}
+
+.news-card-horizontal-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text-primary);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.news-card-horizontal-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.375rem;
+}
+
+.news-card-horizontal-category {
     font-size: 0.625rem;
     font-weight: 600;
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
     text-transform: uppercase;
-    letter-spacing: 0.025em;
+    color: var(--primary);
+    background: var(--info-light);
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+
+.news-card-horizontal-time {
+    font-size: 0.6875rem;
+    color: var(--text-muted);
+}
+
+.news-card-horizontal-source {
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
+}
+
+.news-card-horizontal-source img {
+    width: 14px;
+    height: 14px;
+    border-radius: 2px;
+    object-fit: contain;
+    background: white;
+    border: 1px solid var(--border);
 }
 
 /* Footer */
@@ -620,6 +726,7 @@ body {
 @media (min-width: 768px) {
     .news-grid {
         grid-template-columns: repeat(var(--news-columns, 3), 1fr);
+        align-items: start;
     }
     
     .footer-grid {
@@ -638,6 +745,7 @@ body {
     
     .news-grid {
         grid-template-columns: repeat(var(--news-columns, 3), 1fr);
+        align-items: start;
     }
     
     .footer-grid {
