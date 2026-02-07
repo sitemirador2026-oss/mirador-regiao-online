@@ -37,9 +37,13 @@ class R2Storage {
         console.log('[R2] Inicializando cliente S3...');
         console.log('[R2] Endpoint:', this.config.endpoint);
         console.log('[R2] Bucket:', this.bucketName);
-        console.log('[R2] Access Key:', this.config.credentials.accessKeyId.substring(0, 10) + '...');
+        console.log('[R2] Region:', this.config.region);
+        if (this.config.credentials.accessKeyId) {
+            console.log('[R2] Access Key:', this.config.credentials.accessKeyId.substring(0, 10) + '...');
+        }
         
         try {
+            // Configuração específica para Cloudflare R2
             this.s3Client = new AWS.S3({
                 region: this.config.region,
                 endpoint: this.config.endpoint,
@@ -48,7 +52,8 @@ class R2Storage {
                     this.config.credentials.secretAccessKey
                 ),
                 signatureVersion: 'v4',
-                s3ForcePathStyle: true // Importante para R2
+                s3ForcePathStyle: true, // OBRIGATÓRIO para R2
+                maxRetries: 3
             });
             
             console.log('[R2] Cliente S3 inicializado com sucesso');

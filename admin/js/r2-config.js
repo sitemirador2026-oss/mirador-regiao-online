@@ -16,8 +16,8 @@ const R2_CONFIG = {
     // URL pública para acesso aos arquivos
     publicUrl: 'https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev',
     
-    // Região
-    region: 'auto'
+    // Região - R2 requer 'us-east-1' para API S3
+    region: 'us-east-1'
 };
 
 // Limites do Free Tier
