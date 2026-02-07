@@ -1,22 +1,25 @@
-# Configuração para Render
-# Servidor Node.js com frontend estático e backend API
+# Configuração automática para Render
+# Este arquivo configura 2 Static Sites: site público e painel admin
 
 services:
-  # Servidor principal (Node.js + Frontend)
+  # Site Público
   - type: web
-    name: mirador-server
-    env: node
-    buildCommand: npm install
-    startCommand: node server.js
-    plan: free
-    envVars:
-      - key: NODE_VERSION
-        value: 18
-      - key: R2_ACCOUNT_ID
-        value: 8341826f08014d0252c400798d657729
-      - key: R2_BUCKET_NAME
-        value: mirador-regiao-online
-      - key: R2_ACCESS_KEY_ID
-        value: 82b8cac3269b84905aff1d560f9bc958
-      - key: R2_SECRET_ACCESS_KEY
-        value: 2aa8ee9d9bf6da4b5d7796cce1853e8bc45274ade8d88d3a70c6fd9f6989232bd
+    name: mirador-web
+    env: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishPath: public
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  # Painel Admin
+  - type: web
+    name: mirador-admin
+    env: static
+    buildCommand: echo "Static site - no build needed"
+    staticPublishPath: admin
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
