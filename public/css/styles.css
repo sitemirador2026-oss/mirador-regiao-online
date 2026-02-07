@@ -67,6 +67,11 @@ body {
     align-items: center;
     justify-content: space-between;
     height: 64px;
+    position: relative;
+}
+
+.header-content[style*="center"] {
+    justify-content: center !important;
 }
 
 .logo {
@@ -707,7 +712,7 @@ body {
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Instagram News Section */
+/* Instagram News Section - Layout tipo feed do Instagram */
 .instagram-news-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     border-top: 3px solid #E4405F;
@@ -718,69 +723,439 @@ body {
     color: #E4405F;
 }
 
+/* Card "Ver Todos" */
+.instagram-view-all-card {
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.instagram-view-all-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 24px rgba(228, 64, 95, 0.25);
+}
+
+/* Grid de posts do Instagram - 4 colunas compactas */
 .instagram-news-grid {
     display: grid;
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: 1fr;
+    grid-auto-rows: 0;
     gap: 1rem;
     width: 100%;
+    position: relative;
+    grid-auto-flow: dense;
+    align-items: start;
+    overflow: hidden;
 }
 
 @media (max-width: 1200px) {
     .instagram-news-grid {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
     }
 }
 
 @media (max-width: 768px) {
     .instagram-news-grid {
-        grid-template-columns: repeat(3, 1fr);
+        grid-template-columns: repeat(2, 1fr);
         gap: 0.75rem;
     }
 }
 
 @media (max-width: 480px) {
     .instagram-news-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 0.5rem;
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
     }
 }
 
+/* Card do Instagram - Layout vertical compacto */
 .instagram-card {
     display: flex;
     flex-direction: column;
     background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     cursor: pointer;
-    transition: transform 0.2s, box-shadow 0.2s;
-    aspect-ratio: 3/4;
+    transition: all 0.2s ease;
+    border: 1px solid #e5e5e5;
+    height: auto;
+    max-width: 100%;
     position: relative;
 }
 
 .instagram-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-.instagram-card-image-wrapper {
+/* Card expandido no grid - ocupa 2 colunas sem quebrar fileira */
+.instagram-card.expanded {
+    grid-column: span 2;
+    grid-row: span 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    cursor: default;
+    background: white;
+    z-index: 10;
+}
+
+.instagram-card.expanded .instagram-card-image-wrapper {
+    aspect-ratio: auto;
+    height: 100%;
+    min-height: 320px;
+    max-height: 400px;
+    background: #f0f0f0;
+}
+
+.instagram-card.expanded .instagram-card-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.instagram-card.expanded .instagram-card-content {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    max-height: 400px;
+    background: white;
+}
+
+.instagram-card.expanded .instagram-card-header {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #efefef;
+    flex-shrink: 0;
+}
+
+.instagram-card.expanded .instagram-card-caption-full {
+    display: block !important;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: #262626;
+    white-space: pre-wrap;
+    margin-bottom: 0.75rem;
     flex: 1;
+    overflow-y: auto;
+}
+
+.instagram-card.expanded .instagram-card-close {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: #f0f0f0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+.instagram-card.expanded .instagram-card-close:hover {
+    background: #e0e0e0;
+}
+
+.instagram-card.expanded .instagram-card-title-preview,
+.instagram-card.expanded .instagram-card-time {
+    display: none;
+}
+
+.instagram-card.expanded .instagram-card-actions {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #efefef;
+    flex-shrink: 0;
+}
+
+/* Esconder elementos no modo expandido */
+.instagram-card .instagram-card-caption-full,
+.instagram-card .instagram-card-close {
+    display: none !important;
+}
+
+/* Garantir que legenda completa nunca apareça no card fechado */
+.instagram-card:not(.expanded) .instagram-card-caption-full {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+@media (max-width: 768px) {
+    .instagram-card.expanded {
+        grid-column: span 2;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr;
+    }
+    
+    .instagram-card.expanded .instagram-card-image-wrapper {
+        min-height: 200px;
+    }
+    
+    .instagram-card.expanded .instagram-card-content {
+        max-height: 320px;
+    }
+}
+
+/* Imagem do card - Mostrar imagem completa sem cortar */
+.instagram-card-image-wrapper {
     position: relative;
     overflow: hidden;
     background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    aspect-ratio: 1;
 }
 
 .instagram-card-image-wrapper img {
     width: 100%;
     height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #f0f0f0;
+}
+
+/* Indicador de galeria no card fechado */
+.instagram-gallery-indicator {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+}
+
+/* Controles da galeria no card expandido */
+.instagram-gallery-controls {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 12px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.instagram-gallery-controls button {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #262626;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.2s ease;
+    pointer-events: auto;
+}
+
+.instagram-gallery-controls button:hover {
+    background: white;
+    transform: scale(1.1);
+}
+
+.instagram-gallery-controls button:active {
+    transform: scale(0.95);
+}
+
+/* Dots indicadores da galeria */
+.instagram-gallery-dots {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 10px;
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.instagram-gallery-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.5);
+    transition: all 0.2s ease;
+}
+
+.instagram-gallery-dot.active {
+    background: white;
+    transform: scale(1.3);
+}
+
+/* Container da galeria */
+.instagram-gallery-container {
+    width: 100%;
+    height: 100%;
+}
+
+.instagram-gallery-container img,
+.instagram-gallery-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #f0f0f0;
+}
+
+.instagram-gallery-container video {
+    background: #000;
+}
+
+/* Conteúdo do card - Compacto */
+.instagram-card-content {
+    display: flex;
+    flex-direction: column;
+    background: white;
+    padding: 0.75rem;
+}
+
+/* Header do card - Avatar e nome - Compacto */
+.instagram-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.instagram-card-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+    padding: 2px;
+    flex-shrink: 0;
+}
+
+.instagram-card-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
     object-fit: cover;
-    transition: transform 0.3s;
+    border: 2px solid white;
 }
 
-.instagram-card:hover .instagram-card-image-wrapper img {
-    transform: scale(1.05);
+.instagram-card-username {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: #262626;
 }
 
+.instagram-card-verified {
+    color: #0095f6;
+    margin-left: 0.25rem;
+}
+
+/* Corpo do card - Legenda - Escondido em cards compactos */
+.instagram-card-body {
+    display: none;
+}
+
+.instagram-card-caption {
+    font-size: 0.8125rem;
+    color: #262626;
+    line-height: 1.4;
+}
+
+.instagram-card-caption strong {
+    font-weight: 600;
+}
+
+.instagram-card-hashtags {
+    color: #00376b;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.instagram-card-time {
+    font-size: 0.6875rem;
+    color: #8e8e8e;
+    margin-top: 0.25rem;
+}
+
+/* Ações do card - Compacto */
+.instagram-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 0.5rem;
+    margin-top: 0.5rem;
+    border-top: 1px solid #efefef;
+}
+
+.instagram-card-actions-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.instagram-card-action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #262626;
+    transition: color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.instagram-card-action-btn:hover {
+    color: #8e8e8e;
+}
+
+.instagram-card-action-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.instagram-card-action-btn span {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #262626;
+}
+
+.instagram-card-action-btn.liked svg {
+    fill: #ed4956;
+    color: #ed4956;
+}
+
+/* Stats do card - Stats inline com ícones */
+.instagram-card-stats {
+    display: none;
+}
+
+/* Footer antigo (mantido para compatibilidade) */
 .instagram-card-footer {
     padding: 0.75rem;
     background: white;
@@ -1098,6 +1473,48 @@ body {
     border: 1px solid var(--border);
 }
 
+/* Linha com source e botão de compartilhar */
+.news-card-source-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    gap: 0.5rem;
+}
+
+.news-card-source-row .news-card-source {
+    flex: 1;
+    margin-top: 0;
+    padding-top: 0;
+}
+
+/* Botão de compartilhar no card de notícia */
+.news-card-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.news-card-share-btn:hover {
+    background: var(--primary-light);
+    color: white;
+}
+
+.news-card-share-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
 .news-card-source-name {
     font-size: 0.625rem;
     color: var(--text-muted);
@@ -1217,6 +1634,46 @@ body {
     object-fit: contain;
     background: white;
     border: 1px solid var(--border);
+}
+
+/* Linha com source e botão de compartilhar no card horizontal */
+.news-card-horizontal-source-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+}
+
+.news-card-horizontal-source-row .news-card-horizontal-source {
+    flex: 1;
+}
+
+/* Botão de compartilhar no card horizontal */
+.news-card-horizontal-share-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    background: transparent;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.news-card-horizontal-share-btn:hover {
+    background: var(--primary-light);
+    color: white;
+}
+
+.news-card-horizontal-share-btn svg {
+    width: 12px;
+    height: 12px;
 }
 
 /* Footer */
