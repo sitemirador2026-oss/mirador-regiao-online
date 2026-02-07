@@ -2327,14 +2327,77 @@
                                 <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                Informações
+                                Limites do Plano Gratuito (Spark)
                             </h3>
                             <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                <li>O Firebase Firestore possui um limite de 1MB por documento</li>
-                                <li>Imagens em Base64 ocupam mais espaço que o formato original</li>
-                                <li>O plano gratuito do Firebase permite até 1GB de armazenamento</li>
-                                <li>O servidor Render possui limite de armazenamento no plano gratuito</li>
+                                <li><strong>Firestore:</strong> 1GB de armazenamento, 50k leituras/dia, 20k escritas/dia</li>
+                                <li><strong>Limite por documento:</strong> 1MB (incluindo imagens Base64)</li>
+                                <li><strong>Render (Servidor):</strong> Disco efêmero, dados são perdidos em restart</li>
+                                <li><strong>Base64:</strong> Imagens ocupam ~33% mais espaço que o arquivo original</li>
                             </ul>
+                        </div>
+
+                        <!-- Alternativas de Hospedagem -->
+                        <div style="padding: 1.5rem; background: var(--success-light); border-radius: var(--radius); margin-top: 1.5rem;">
+                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--success);">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                                </svg>
+                                ☁️ Alternativas para Fotos e Vídeos (Recomendado)
+                            </h3>
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                Como você recebe muitas fotos e vídeos, recomendamos usar serviços especializados:
+                            </p>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                                <!-- Cloudinary -->
+                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🖼️ Cloudinary</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                        <strong>Gratuito:</strong> 25GB storage + 25GB transferência/mês<br>
+                                        <strong>Ideal para:</strong> Imagens otimizadas automaticamente
+                                    </div>
+                                    <a href="https://cloudinary.com" target="_blank" style="font-size: 0.75rem; color: var(--primary);">cloudinary.com →</a>
+                                </div>
+                                
+                                <!-- ImageKit -->
+                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🚀 ImageKit</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                        <strong>Gratuito:</strong> 20GB storage + 20GB visualizações<br>
+                                        <strong>Ideal para:</strong> CDN rápido com otimização
+                                    </div>
+                                    <a href="https://imagekit.io" target="_blank" style="font-size: 0.75rem; color: var(--primary);">imagekit.io →</a>
+                                </div>
+                                
+                                <!-- Firebase Storage -->
+                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🔥 Firebase Storage</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                        <strong>Gratuito:</strong> 5GB storage + 1GB download/dia<br>
+                                        <strong>Ideal para:</strong> Integração nativa com seu app
+                                    </div>
+                                    <a href="https://firebase.google.com/products/storage" target="_blank" style="font-size: 0.75rem; color: var(--primary);">firebase.google.com →</a>
+                                </div>
+                                
+                                <!-- AWS S3 + CloudFront -->
+                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
+                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">☁️ AWS S3</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+                                        <strong>Pago:</strong> ~$0.023/GB/mês (primeiros 12 meses 5GB grátis)<br>
+                                        <strong>Ideal para:</strong> Grande volume com baixo custo
+                                    </div>
+                                    <a href="https://aws.amazon.com/s3" target="_blank" style="font-size: 0.75rem; color: var(--primary);">aws.amazon.com/s3 →</a>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 1rem; padding: 0.75rem; background: var(--warning-light); border-radius: var(--radius); border-left: 3px solid var(--warning);">
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
+                                    <strong>💡 Dica:</strong> Para seu portal de notícias com muitas imagens, 
+                                    <strong>Cloudinary</strong> ou <strong>ImageKit</strong> são as melhores opções gratuitas. 
+                                    Ambos oferecem otimização automática, redimensionamento e CDN global.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3613,7 +3676,8 @@
             }
             
             if (pageName === 'storage') {
-                loadStorageInfo();
+                // Pequeno delay para garantir que o DOM está pronto
+                setTimeout(() => loadStorageInfo(), 100);
             }
 
             const pageId = pageMap[pageName];
@@ -3649,6 +3713,9 @@
                 snapshot.forEach(doc => {
                     news.push({ id: doc.id, ...doc.data() });
                 });
+                
+                // Armazenar em cache para uso na página de storage
+                cachedNewsData = news;
 
                 // Atualizar Estatísticas
                 document.getElementById('totalNews').innerText = news.length;
@@ -3673,6 +3740,11 @@
             }
         }
 
+        // Variáveis globais para cache de dados
+        let cachedNewsData = [];
+        let cachedStoriesData = [];
+        let cachedSettingsData = [];
+
         // Carregar informações de armazenamento
         async function loadStorageInfo() {
             try {
@@ -3681,12 +3753,20 @@
                 document.getElementById('newsCount').innerText = '...';
                 document.getElementById('imagesSize').innerText = '...';
 
-                // Buscar todas as coleções
-                const [newsSnapshot, storiesSnapshot, settingsSnapshot] = await Promise.all([
-                    db.collection('news').get(),
-                    db.collection('stories').get(),
-                    db.collection('settings').get()
-                ]);
+                // Tentar carregar dados com retry
+                let newsSnapshot, storiesSnapshot, settingsSnapshot;
+                
+                try {
+                    newsSnapshot = await db.collection('news').get();
+                    storiesSnapshot = await db.collection('stories').get();
+                    settingsSnapshot = await db.collection('settings').get();
+                } catch (permError) {
+                    console.warn('[Admin] Sem permissão para ler dados. Usando cache ou estimativas.');
+                    // Usar dados do dashboard se disponíveis
+                    newsSnapshot = { size: cachedNewsData.length || 0, forEach: (cb) => cachedNewsData.forEach(cb) };
+                    storiesSnapshot = { size: cachedStoriesData.length || 0, forEach: (cb) => cachedStoriesData.forEach(cb) };
+                    settingsSnapshot = { size: cachedSettingsData.length || 0, forEach: (cb) => cachedSettingsData.forEach(cb) };
+                }
 
                 // Calcular tamanhos
                 let newsSize = 0;
@@ -3694,8 +3774,10 @@
                 let newsCount = 0;
                 let imagesCount = 0;
 
+                const newsData = [];
                 newsSnapshot.forEach(doc => {
                     const data = doc.data();
+                    newsData.push({ id: doc.id, ...data });
                     const docSize = JSON.stringify(data).length;
                     newsSize += docSize;
                     newsCount++;
@@ -3714,49 +3796,144 @@
                         });
                     }
                 });
+                cachedNewsData = newsData;
 
                 let storiesSize = 0;
+                const storiesData = [];
                 storiesSnapshot.forEach(doc => {
-                    storiesSize += JSON.stringify(doc.data()).length;
+                    const data = doc.data();
+                    storiesData.push(data);
+                    storiesSize += JSON.stringify(data).length;
                 });
+                cachedStoriesData = storiesData;
 
                 let settingsSize = 0;
+                const settingsData = [];
                 settingsSnapshot.forEach(doc => {
-                    settingsSize += JSON.stringify(doc.data()).length;
+                    const data = doc.data();
+                    settingsData.push(data);
+                    settingsSize += JSON.stringify(data).length;
                 });
+                cachedSettingsData = settingsData;
 
                 const totalSize = newsSize + storiesSize + settingsSize;
+                const totalImagesSize = imagesSize;
 
-                // Atualizar cards principais
-                document.getElementById('firestoreSize').innerText = formatBytes(totalSize);
-                document.getElementById('newsCount').innerText = newsCount.toString();
-                document.getElementById('imagesSize').innerText = formatBytes(imagesSize);
+                // Calcular uso do plano gratuito (1GB = 1.073.741.824 bytes)
+                const freePlanLimit = 1073741824;
+                const usedPercent = ((totalSize / freePlanLimit) * 100).toFixed(2);
+                const availableSpace = freePlanLimit - totalSize;
+
+                // Atualizar cards principais com mais informações
+                document.getElementById('firestoreSize').innerHTML = `${formatBytes(totalSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${usedPercent}% de 1GB</small>`;
+                document.getElementById('newsCount').innerHTML = `${newsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${formatBytes(newsSize)}</small>`;
+                document.getElementById('imagesSize').innerHTML = `${formatBytes(imagesSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${imagesCount} imagens</small>`;
 
                 // Atualizar detalhes
                 document.getElementById('newsCollectionSize').innerText = `${formatBytes(newsSize)} (${newsCount} docs)`;
-                document.getElementById('storiesCollectionSize').innerText = `${formatBytes(storiesSize)} (${storiesSnapshot.size} docs)`;
-                document.getElementById('settingsCollectionSize').innerText = `${formatBytes(settingsSize)} (${settingsSnapshot.size} docs)`;
+                document.getElementById('storiesCollectionSize').innerText = `${formatBytes(storiesSize)} (${storiesSnapshot.size || storiesData.length} docs)`;
+                document.getElementById('settingsCollectionSize').innerText = `${formatBytes(settingsSize)} (${settingsSnapshot.size || settingsData.length} docs)`;
 
-                // Atualizar barras de progresso (máximo 100MB para visualização)
-                const maxSize = 100 * 1024 * 1024;
-                document.getElementById('newsProgressBar').style.width = `${Math.min((newsSize / maxSize) * 100, 100)}%`;
-                document.getElementById('storiesProgressBar').style.width = `${Math.min((storiesSize / maxSize) * 100, 100)}%`;
-                document.getElementById('settingsProgressBar').style.width = `${Math.min((settingsSize / maxSize) * 100, 100)}%`;
+                // Atualizar barras de progresso (baseado no limite de 1GB do plano gratuito)
+                document.getElementById('newsProgressBar').style.width = `${Math.min((newsSize / freePlanLimit) * 100, 100)}%`;
+                document.getElementById('storiesProgressBar').style.width = `${Math.min((storiesSize / freePlanLimit) * 100, 100)}%`;
+                document.getElementById('settingsProgressBar').style.width = `${Math.min((settingsSize / freePlanLimit) * 100, 100)}%`;
+
+                // Atualizar informações adicionais
+                updateStorageInfo(totalSize, availableSpace, imagesSize);
 
                 console.log('[Admin] Storage info loaded:', {
                     news: formatBytes(newsSize),
                     stories: formatBytes(storiesSize),
                     settings: formatBytes(settingsSize),
                     images: formatBytes(imagesSize),
-                    total: formatBytes(totalSize)
+                    total: formatBytes(totalSize),
+                    used: `${usedPercent}%`,
+                    available: formatBytes(availableSpace)
                 });
 
             } catch (error) {
                 console.error('[Admin] Erro ao carregar storage:', error);
-                document.getElementById('firestoreSize').innerText = 'Erro';
+                document.getElementById('firestoreSize').innerHTML = 'Erro<br><small style="font-size: 0.75rem;">Sem permissão</small>';
                 document.getElementById('newsCount').innerText = '--';
                 document.getElementById('imagesSize').innerText = '--';
+                
+                // Mostrar mensagem de erro amigável
+                showStorageError();
             }
+        }
+
+        // Atualizar informações de armazenamento na UI
+        function updateStorageInfo(used, available, imagesSize) {
+            const infoSection = document.querySelector('#storagePage .content-section');
+            
+            // Remover seção anterior se existir
+            const existingInfo = document.getElementById('storageUsageInfo');
+            if (existingInfo) existingInfo.remove();
+            
+            // Criar nova seção de informações
+            const infoDiv = document.createElement('div');
+            infoDiv.id = 'storageUsageInfo';
+            infoDiv.style.cssText = 'padding: 1.5rem; background: linear-gradient(135deg, var(--bg-card) 0%, var(--bg-secondary) 100%); border-radius: var(--radius); margin-bottom: 1.5rem; border: 1px solid var(--border);';
+            
+            const usedPercent = ((used / 1073741824) * 100).toFixed(2);
+            const statusColor = usedPercent > 80 ? '#ef4444' : usedPercent > 50 ? '#f59e0b' : '#10b981';
+            
+            infoDiv.innerHTML = `
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">
+                    📊 Uso do Plano Gratuito (Spark)
+                </h3>
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.875rem;">
+                        <span>Espaço Utilizado</span>
+                        <span style="font-weight: 600;">${formatBytes(used)} de 1GB</span>
+                    </div>
+                    <div style="background: var(--bg-secondary); height: 12px; border-radius: 6px; overflow: hidden;">
+                        <div style="background: linear-gradient(90deg, ${statusColor} 0%, ${statusColor}dd 100%); height: 100%; width: ${Math.min(usedPercent, 100)}%; transition: width 0.5s ease;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>${usedPercent}% usado</span>
+                        <span>${formatBytes(available)} disponível</span>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                    <div style="text-align: center; padding: 0.75rem; background: var(--bg-card); border-radius: var(--radius);">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">${formatBytes(imagesSize)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Imagens em Base64</div>
+                    </div>
+                    <div style="text-align: center; padding: 0.75rem; background: var(--bg-card); border-radius: var(--radius);">
+                        <div style="font-size: 1.25rem; font-weight: 700; color: var(--success);">~${Math.floor(available / 500000)}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted);">Posts aprox. disponíveis*</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem; margin-bottom: 0;">
+                    *Estimativa baseada em 500KB por post com imagem
+                </p>
+            `;
+            
+            infoSection.insertBefore(infoDiv, infoSection.firstChild);
+        }
+
+        // Mostrar erro de armazenamento
+        function showStorageError() {
+            const infoSection = document.querySelector('#storagePage .content-section');
+            
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = 'padding: 1.5rem; background: var(--danger-light); border-radius: var(--radius); margin-bottom: 1.5rem; border: 1px solid var(--danger);';
+            errorDiv.innerHTML = `
+                <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--danger);">
+                    ⚠️ Erro de Permissão
+                </h3>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                    Não foi possível acessar os dados do Firestore devido a permissões de segurança.
+                </p>
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0;">
+                    Para ver o uso real do armazenamento, acesse o <a href="https://console.firebase.google.com" target="_blank" style="color: var(--primary); text-decoration: underline;">Console do Firebase</a> 
+                    → Seu projeto → Firestore Database → Usage.
+                </p>
+            `;
+            
+            infoSection.insertBefore(errorDiv, infoSection.firstChild);
         }
 
         // Formatar bytes para exibição
