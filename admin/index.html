@@ -20,11 +20,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-    <!-- Cloudflare R2 SDK -->
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
-    <script src="js/r2-config.js"></script>
-    <script src="js/r2-upload.js"></script>
-    <script src="js/r2-migration.js"></script>
+    <!-- R2 Client (novo - via backend) -->
+    <script src="js/r2-client.js"></script>
 
     <style>
         /* CSS Version: 2025-02-04-012 - CARD FIX */
@@ -2299,40 +2296,21 @@
                         </div>
                     </div>
 
-                    <!-- Configuração R2 -->
-                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); border-radius: var(--radius); margin-bottom: 1.5rem; color: #1f2937;">
+                    <!-- Status do Backend -->
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #10b981 0%, #34d399 100%); border-radius: var(--radius); margin-bottom: 1.5rem; color: white;">
                         <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                             <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                             </svg>
-                            🔐 Configuração R2
+                            ✅ Cloudflare R2 Configurado
                         </h3>
                         <p style="font-size: 0.875rem; margin-bottom: 1rem; opacity: 0.9;">
-                            Insira suas credenciais do Cloudflare R2 para habilitar upload de imagens e vídeos.
+                            O backend está configurado para fazer upload direto para o R2.
+                            Credenciais estão seguras no servidor.
                         </p>
-                        <div style="display: grid; gap: 0.75rem; max-width: 600px;">
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Access Key ID</label>
-                                <input type="text" id="r2AccessKey" placeholder="Sua Access Key ID" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-size: 0.875rem;">
-                            </div>
-                            <div>
-                                <label style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Secret Access Key</label>
-                                <input type="password" id="r2SecretKey" placeholder="Sua Secret Access Key" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-size: 0.875rem;">
-                            </div>
-                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                                <button onclick="saveR2Credentials()" style="padding: 0.5rem 1rem; background: #1f2937; color: white; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.875rem;">
-                                    💾 Salvar Credenciais
-                                </button>
-                                <button onclick="testR2Connection()" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.3); color: #1f2937; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.875rem;">
-                                    🧪 Testar Conexão
-                                </button>
-                            </div>
-                        </div>
-                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.5); border-radius: var(--radius);">
-                            <p style="font-size: 0.8125rem; margin: 0;">
-                                💡 <strong>Onde encontrar:</strong> Cloudflare Dashboard → R2 → Manage API Tokens
-                            </p>
-                        </div>
+                        <button onclick="testR2Connection()" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.875rem;">
+                            🧪 Testar Conexão
+                        </button>
                     </div>
 
                     <!-- Cards de Armazenamento -->
@@ -3720,9 +3698,9 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
-        // Inicializar R2 (carregar credenciais salvas)
+        // Inicializar R2 Client
         document.addEventListener('DOMContentLoaded', function() {
-            loadR2Credentials();
+            initR2Client();
         });
 
         // Login
@@ -3875,107 +3853,31 @@
             }
         }
 
-        // Variáveis globais para R2
-        let r2Storage = null;
-        let r2Credentials = null;
+        // Variável global para cliente R2 (novo - via backend)
+        let r2Client = null;
 
-        // Carregar credenciais R2 do localStorage
-        function loadR2Credentials() {
-            const saved = localStorage.getItem('r2Credentials');
-            if (saved) {
-                try {
-                    r2Credentials = JSON.parse(saved);
-                    document.getElementById('r2AccessKey').value = r2Credentials.accessKeyId || '';
-                    document.getElementById('r2SecretKey').value = r2Credentials.secretAccessKey || '';
-                    
-                    // Inicializar cliente R2
-                    if (r2Credentials.accessKeyId && r2Credentials.secretAccessKey) {
-                        r2Storage = new R2Storage(r2Credentials.accessKeyId, r2Credentials.secretAccessKey);
-                    }
-                    return true;
-                } catch (e) {
-                    console.error('[R2] Erro ao carregar credenciais:', e);
-                }
-            }
-            return false;
-        }
-
-        // Salvar credenciais R2
-        function saveR2Credentials() {
-            const accessKey = document.getElementById('r2AccessKey').value.trim();
-            const secretKey = document.getElementById('r2SecretKey').value.trim();
-            
-            if (!accessKey || !secretKey) {
-                alert('⚠️ Por favor, preencha ambos os campos de credenciais!');
-                return;
-            }
-            
-            r2Credentials = {
-                accessKeyId: accessKey,
-                secretAccessKey: secretKey
-            };
-            
-            localStorage.setItem('r2Credentials', JSON.stringify(r2Credentials));
-            
-            // Inicializar cliente
-            r2Storage = new R2Storage(accessKey, secretKey);
-            
-            alert('✅ Credenciais salvas com sucesso!\n\nClique em "Testar Conexão" para verificar.');
+        // Inicializar cliente R2
+        function initR2Client() {
+            r2Client = new R2Client();
+            console.log('[R2] Cliente inicializado');
         }
 
         // Testar conexão R2
         async function testR2Connection() {
-            if (!r2Credentials) {
-                alert('⚠️ Salve as credenciais primeiro!');
-                return;
-            }
-            
-            console.log('[Test] Iniciando teste de conexão...');
-            console.log('[Test] AWS SDK disponível:', typeof AWS !== 'undefined');
-            console.log('[Test] r2Storage:', r2Storage);
-            
             try {
-                // Verificar se AWS SDK está carregado
-                if (typeof AWS === 'undefined') {
-                    alert('❌ AWS SDK não carregado.\n\nAguarde alguns segundos e tente novamente.');
-                    return;
+                console.log('[Test] Testando conexão...');
+                
+                const isConnected = await r2Client.testConnection();
+                
+                if (isConnected) {
+                    alert('✅ Backend conectado com sucesso!\n\nO servidor está funcionando.');
+                    await loadR2StorageInfo();
+                } else {
+                    alert('❌ Backend não respondeu.\n\nVerifique se o servidor está rodando.');
                 }
-                
-                // Verificar se cliente foi inicializado
-                if (!r2Storage || !r2Storage.s3Client) {
-                    alert('❌ Cliente R2 não inicializado.\n\nRecarregue a página e tente novamente.');
-                    return;
-                }
-                
-                // Tentar listar arquivos para testar conexão
-                console.log('[Test] Tentando listar arquivos...');
-                const files = await r2Storage.listFiles();
-                console.log('[Test] Sucesso! Arquivos encontrados:', files.length);
-                
-                alert(`✅ Conexão bem-sucedida!\n\n📁 Bucket: mirador-regiao-online\n📄 Arquivos encontrados: ${files.length}`);
-                
-                // Recarregar info de storage
-                await loadR2StorageInfo();
             } catch (error) {
-                console.error('[Test] Erro detalhado:', error);
-                console.error('[Test] Código:', error.code);
-                console.error('[Test] Status:', error.statusCode);
-                
-                let mensagem = error.message;
-                
-                if (error.code === 'NetworkingError' || error.message.includes('Network')) {
-                    mensagem = 'Erro de rede. Possíveis causas:\n\n' +
-                              '1. CORS não configurado no bucket R2\n' +
-                              '2. Credenciais incorretas\n' +
-                              '3. Bucket não existe ou está inacessível\n\n' +
-                              'Verifique no console (F12) para mais detalhes.';
-                } else if (error.code === 'InvalidAccessKeyId') {
-                    mensagem = 'Access Key ID inválida. Verifique se copiou corretamente.';
-                } else if (error.code === 'SignatureDoesNotMatch') {
-                    mensagem = 'Secret Access Key incorreta. Verifique se copiou corretamente.';
-                }
-                
-                alert(`❌ Erro na conexão:\n\n${mensagem}`);
+                console.error('[Test] Erro:', error);
+                alert(`❌ Erro:\n\n${error.message}`);
             }
         }
 
@@ -3985,17 +3887,7 @@
                 document.getElementById('r2StorageSize').innerText = 'Carregando...';
                 document.getElementById('r2FileCount').innerText = '--';
                 
-                // Se não tem credenciais, mostrar mensagem
-                if (!r2Credentials || !r2Storage) {
-                    document.getElementById('r2StorageSize').innerText = '0 B';
-                    document.getElementById('r2FileCount').innerText = '0';
-                    document.getElementById('r2StoragePercent').innerText = '0%';
-                    document.getElementById('r2StorageBar').style.width = '0%';
-                    document.getElementById('r2Cost').innerText = 'R$ 0,00';
-                    return;
-                }
-                
-                const usage = await r2Storage.getStorageUsage();
+                const usage = await r2Client.getStorageUsage();
                 const usageGB = usage.total / (1024 * 1024 * 1024);
                 const percent = Math.min((usageGB / 10) * 100, 100); // 10GB free tier
                 
@@ -4026,123 +3918,115 @@
             }
         }
 
-        // Variável global para migração
-        let r2Migration = null;
-
-        // Verificar imagens em base64
+        // Funções de migração (simplificadas - usando backend)
         async function checkBase64Images() {
             const resultDiv = document.getElementById('migrationCheckResult');
-            const statusDiv = document.getElementById('migrationStatus');
-            
-            if (!r2Storage) {
-                alert('Configure as credenciais do R2 primeiro!');
-                return;
-            }
-            
-            resultDiv.style.display = 'none';
-            statusDiv.style.display = 'block';
-            statusDiv.style.background = '#dbeafe';
-            statusDiv.style.color = '#1e40af';
-            document.getElementById('migrationStatusTitle').innerText = '🔍 Verificando...';
-            document.getElementById('migrationStatusText').innerText = 'Analisando notícias no Firestore...';
             
             try {
-                r2Migration = new R2Migration(r2Storage);
-                const result = await r2Migration.checkBase64Images();
-                
-                statusDiv.style.display = 'none';
                 resultDiv.style.display = 'block';
+                resultDiv.innerHTML = '<div style="padding: 1rem;">Analisando...</div>';
                 
-                if (result.count === 0) {
+                const snapshot = await db.collection('news').get();
+                let base64Count = 0;
+                let totalSize = 0;
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (data.image && data.image.startsWith('data:')) {
+                        base64Count++;
+                        totalSize += data.image.length;
+                    }
+                    if (data.gallery && Array.isArray(data.gallery)) {
+                        data.gallery.forEach(item => {
+                            if (item.url && item.url.startsWith('data:')) {
+                                base64Count++;
+                                totalSize += item.url.length;
+                            }
+                        });
+                    }
+                });
+                
+                const sizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+                
+                if (base64Count === 0) {
                     resultDiv.innerHTML = `
                         <div style="padding: 1rem; background: #d1fae5; border-radius: var(--radius); color: #065f46;">
-                            <div style="font-weight: 600; margin-bottom: 0.5rem;">✅ Nenhuma imagem em base64 encontrada!</div>
-                            <div style="font-size: 0.875rem;">Todas as imagens já estão otimizadas no R2.</div>
+                            ✅ Nenhuma imagem em base64 encontrada!
                         </div>
                     `;
                 } else {
                     resultDiv.innerHTML = `
                         <div style="padding: 1rem; background: #fef3c7; border-radius: var(--radius); color: #92400e;">
-                            <div style="font-weight: 600; margin-bottom: 0.5rem;">📊 ${result.count} imagens em base64 encontradas</div>
-                            <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
-                                Espaço ocupado no Firebase: <strong>${result.totalSizeMB} MB</strong>
-                            </div>
-                            <div style="font-size: 0.8125rem; margin-top: 0.75rem;">
-                                Clique em "Iniciar Migração" para mover para o R2.
-                            </div>
+                            📊 ${base64Count} imagens em base64 encontradas<br>
+                            💾 Espaço: ${sizeMB} MB
                         </div>
                     `;
                 }
-                
             } catch (error) {
-                statusDiv.style.display = 'none';
-                alert('Erro ao verificar: ' + error.message);
+                alert('Erro: ' + error.message);
             }
         }
 
-        // Iniciar migração
+        // Migração simples
         async function startMigration() {
+            if (!confirm('Migrar imagens para R2?')) return;
+            
             const logDiv = document.getElementById('migrationLog');
-            const statusDiv = document.getElementById('migrationStatus');
-            const btn = document.getElementById('btnStartMigration');
-            
-            if (!r2Storage) {
-                alert('Configure as credenciais do R2 primeiro!');
-                return;
-            }
-            
-            if (!confirm('⚠️ ATENÇÃO: Isso irá migrar todas as imagens em base64 do Firebase para o R2.\n\nDeseja continuar?')) {
-                return;
-            }
-            
-            btn.disabled = true;
             logDiv.style.display = 'block';
-            statusDiv.style.display = 'block';
-            statusDiv.style.background = '#dbeafe';
-            statusDiv.style.color = '#1e40af';
-            logDiv.innerHTML = '';
-            
-            const addLog = (message) => {
-                logDiv.innerHTML += message + '\n';
-                logDiv.scrollTop = logDiv.scrollHeight;
-            };
+            logDiv.innerHTML = '🚀 Iniciando migração...\n';
             
             try {
-                if (!r2Migration) {
-                    r2Migration = new R2Migration(r2Storage);
+                const snapshot = await db.collection('news').get();
+                let converted = 0;
+                let failed = 0;
+                let spaceSaved = 0;
+                
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    const updates = {};
+                    
+                    // Processar imagem principal
+                    if (data.image && data.image.startsWith('data:')) {
+                        try {
+                            logDiv.innerHTML += `Migrando imagem de "${data.title?.substring(0, 30)}..."\n`;
+                            
+                            // Converter base64 para blob
+                            const arr = data.image.split(',');
+                            const mime = arr[0].match(/:(.*?);/)[1];
+                            const bstr = atob(arr[1]);
+                            let n = bstr.length;
+                            const u8arr = new Uint8Array(n);
+                            while (n--) u8arr[n] = bstr.charCodeAt(n);
+                            
+                            const blob = new Blob([u8arr], { type: mime });
+                            const file = new File([blob], `image.${mime.split('/')[1]}`, { type: mime });
+                            
+                            // Upload via backend
+                            const result = await r2Client.uploadFile(file, 'noticias');
+                            
+                            updates.image = result.url;
+                            spaceSaved += data.image.length;
+                            converted++;
+                            
+                            logDiv.innerHTML += `✅ Sucesso: ${result.url.substring(0, 50)}...\n`;
+                        } catch (e) {
+                            failed++;
+                            logDiv.innerHTML += `❌ Falha: ${e.message}\n`;
+                        }
+                    }
+                    
+                    // Atualizar Firestore
+                    if (Object.keys(updates).length > 0) {
+                        await db.collection('news').doc(doc.id).update(updates);
+                    }
                 }
                 
-                await r2Migration.startMigration(
-                    (message) => {
-                        addLog(message);
-                        document.getElementById('migrationStatusText').innerText = message;
-                    },
-                    (result) => {
-                        if (result.success) {
-                            statusDiv.style.background = '#d1fae5';
-                            statusDiv.style.color = '#065f46';
-                            document.getElementById('migrationStatusTitle').innerText = '✅ Migração Concluída!';
-                            document.getElementById('migrationStatusText').innerHTML = `
-                                Convertidas: ${result.stats.converted} | 
-                                Falhas: ${result.stats.failed} | 
-                                Espaço economizado: ${result.stats.spaceSavedMB} MB
-                            `;
-                            
-                            // Recarregar info do storage
-                            loadR2StorageInfo();
-                        } else {
-                            statusDiv.style.background = '#fee2e2';
-                            statusDiv.style.color = '#991b1b';
-                            document.getElementById('migrationStatusTitle').innerText = '❌ Erro na Migração';
-                            document.getElementById('migrationStatusText').innerText = result.error;
-                        }
-                        btn.disabled = false;
-                    }
-                );
+                const spaceMB = (spaceSaved / (1024 * 1024)).toFixed(2);
+                logDiv.innerHTML += `\n✅ Concluído!\n📊 Convertidas: ${converted}\n❌ Falhas: ${failed}\n💾 Espaço economizado: ${spaceMB} MB`;
                 
+                loadR2StorageInfo();
             } catch (error) {
-                addLog('❌ Erro: ' + error.message);
-                btn.disabled = false;
+                logDiv.innerHTML += `\n❌ Erro: ${error.message}`;
             }
         }
 
