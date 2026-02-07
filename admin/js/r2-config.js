@@ -38,6 +38,20 @@ const R2_PRICING = {
 const EXCHANGE_RATE = 5.0; // 1 USD = R$ 5,00
 
 /**
+ * Calcula o custo estimado
+ * @param {number} storageGB 
+ * @returns {Object}
+ */
+function calculateR2Cost(storageGB) {
+    const storageCostUSD = Math.max(0, storageGB - R2_LIMITS.storageFreeGB) * R2_PRICING.storagePerGB;
+    const totalUSD = storageCostUSD;
+    return {
+        storage: { usd: storageCostUSD, brl: storageCostUSD * EXCHANGE_RATE },
+        total: { usd: totalUSD, brl: totalUSD * EXCHANGE_RATE }
+    };
+}
+
+/**
  * Calcula o custo estimado em reais
  * @param {number} storageGB - Storage em GB
  * @param {number} classAOps - Operações Classe A
