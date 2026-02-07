@@ -24,6 +24,7 @@
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
     <script src="js/r2-config.js"></script>
     <script src="js/r2-upload.js"></script>
+    <script src="js/r2-migration.js"></script>
 
     <style>
         /* CSS Version: 2025-02-04-012 - CARD FIX */
@@ -2478,6 +2479,57 @@
                         </div>
 
                     </div>
+
+                    <!-- Ferramenta de Migração -->
+                    <div class="content-section" style="max-width: 900px; margin-top: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">🔄 Migração de Imagens</h2>
+                            <p style="font-size: 0.875rem; color: var(--text-muted); margin-top: 0.5rem;">
+                                Mova imagens em base64 do Firebase para o R2
+                            </p>
+                        </div>
+                        
+                        <div style="padding: 1.5rem;">
+                            <!-- Status da Migração -->
+                            <div id="migrationStatus" style="display: none; margin-bottom: 1.5rem; padding: 1rem; border-radius: var(--radius);">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;" id="migrationStatusTitle"></div>
+                                <div id="migrationStatusText" style="font-size: 0.875rem;"></div>
+                            </div>
+
+                            <!-- Botões -->
+                            <div style="display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                                <button onclick="checkBase64Images()" class="btn btn-secondary">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                    </svg>
+                                    📊 Verificar Imagens Base64
+                                </button>
+                                <button onclick="startMigration()" class="btn btn-primary" id="btnStartMigration">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                    </svg>
+                                    🚀 Iniciar Migração
+                                </button>
+                            </div>
+
+                            <!-- Resultado da Verificação -->
+                            <div id="migrationCheckResult" style="display: none; margin-bottom: 1.5rem;"></div>
+
+                            <!-- Log da Migração -->
+                            <div id="migrationLog" style="display: none; background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: var(--radius); font-family: monospace; font-size: 0.8125rem; max-height: 400px; overflow-y: auto;"></div>
+
+                            <!-- Aviso -->
+                            <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-radius: var(--radius); border: 1px solid #f59e0b; color: #92400e;">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;">⚠️ Importante</div>
+                                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem;">
+                                    <li>Faça backup dos dados antes de migrar</li>
+                                    <li>A migração pode demorar dependendo da quantidade de imagens</li>
+                                    <li>Não feche a página durante a migração</li>
+                                    <li>As imagens originais em base64 serão substituídas por URLs do R2</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Settings Page -->
@@ -3934,6 +3986,126 @@
                 console.error('[R2] Erro ao carregar info:', error);
                 document.getElementById('r2StorageSize').innerText = 'Erro';
                 document.getElementById('r2FileCount').innerText = '--';
+            }
+        }
+
+        // Variável global para migração
+        let r2Migration = null;
+
+        // Verificar imagens em base64
+        async function checkBase64Images() {
+            const resultDiv = document.getElementById('migrationCheckResult');
+            const statusDiv = document.getElementById('migrationStatus');
+            
+            if (!r2Storage) {
+                alert('Configure as credenciais do R2 primeiro!');
+                return;
+            }
+            
+            resultDiv.style.display = 'none';
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#dbeafe';
+            statusDiv.style.color = '#1e40af';
+            document.getElementById('migrationStatusTitle').innerText = '🔍 Verificando...';
+            document.getElementById('migrationStatusText').innerText = 'Analisando notícias no Firestore...';
+            
+            try {
+                r2Migration = new R2Migration(r2Storage);
+                const result = await r2Migration.checkBase64Images();
+                
+                statusDiv.style.display = 'none';
+                resultDiv.style.display = 'block';
+                
+                if (result.count === 0) {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 1rem; background: #d1fae5; border-radius: var(--radius); color: #065f46;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem;">✅ Nenhuma imagem em base64 encontrada!</div>
+                            <div style="font-size: 0.875rem;">Todas as imagens já estão otimizadas no R2.</div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div style="padding: 1rem; background: #fef3c7; border-radius: var(--radius); color: #92400e;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem;">📊 ${result.count} imagens em base64 encontradas</div>
+                            <div style="font-size: 0.875rem; margin-bottom: 0.5rem;">
+                                Espaço ocupado no Firebase: <strong>${result.totalSizeMB} MB</strong>
+                            </div>
+                            <div style="font-size: 0.8125rem; margin-top: 0.75rem;">
+                                Clique em "Iniciar Migração" para mover para o R2.
+                            </div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                statusDiv.style.display = 'none';
+                alert('Erro ao verificar: ' + error.message);
+            }
+        }
+
+        // Iniciar migração
+        async function startMigration() {
+            const logDiv = document.getElementById('migrationLog');
+            const statusDiv = document.getElementById('migrationStatus');
+            const btn = document.getElementById('btnStartMigration');
+            
+            if (!r2Storage) {
+                alert('Configure as credenciais do R2 primeiro!');
+                return;
+            }
+            
+            if (!confirm('⚠️ ATENÇÃO: Isso irá migrar todas as imagens em base64 do Firebase para o R2.\n\nDeseja continuar?')) {
+                return;
+            }
+            
+            btn.disabled = true;
+            logDiv.style.display = 'block';
+            statusDiv.style.display = 'block';
+            statusDiv.style.background = '#dbeafe';
+            statusDiv.style.color = '#1e40af';
+            logDiv.innerHTML = '';
+            
+            const addLog = (message) => {
+                logDiv.innerHTML += message + '\n';
+                logDiv.scrollTop = logDiv.scrollHeight;
+            };
+            
+            try {
+                if (!r2Migration) {
+                    r2Migration = new R2Migration(r2Storage);
+                }
+                
+                await r2Migration.startMigration(
+                    (message) => {
+                        addLog(message);
+                        document.getElementById('migrationStatusText').innerText = message;
+                    },
+                    (result) => {
+                        if (result.success) {
+                            statusDiv.style.background = '#d1fae5';
+                            statusDiv.style.color = '#065f46';
+                            document.getElementById('migrationStatusTitle').innerText = '✅ Migração Concluída!';
+                            document.getElementById('migrationStatusText').innerHTML = `
+                                Convertidas: ${result.stats.converted} | 
+                                Falhas: ${result.stats.failed} | 
+                                Espaço economizado: ${result.stats.spaceSavedMB} MB
+                            `;
+                            
+                            // Recarregar info do storage
+                            loadR2StorageInfo();
+                        } else {
+                            statusDiv.style.background = '#fee2e2';
+                            statusDiv.style.color = '#991b1b';
+                            document.getElementById('migrationStatusTitle').innerText = '❌ Erro na Migração';
+                            document.getElementById('migrationStatusText').innerText = result.error;
+                        }
+                        btn.disabled = false;
+                    }
+                );
+                
+            } catch (error) {
+                addLog('❌ Erro: ' + error.message);
+                btn.disabled = false;
             }
         }
 
