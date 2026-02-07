@@ -147,9 +147,16 @@ function createNewsCard(news) {
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     ${timeStr} • ${dateStr}
                 </div>
-                <div class="news-card-source">
-                    <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 80px; height: 16px; object-fit: contain;"' : ''}>
-                    ${isExternal ? `<span class="news-card-source-name">${sourceDomain}</span>` : ''}
+                <div class="news-card-source-row">
+                    <div class="news-card-source">
+                        <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 80px; height: 16px; object-fit: contain;"' : ''}>
+                        ${isExternal ? `<span class="news-card-source-name">${sourceDomain}</span>` : ''}
+                    </div>
+                    <button class="news-card-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
         </article>
@@ -191,8 +198,15 @@ function createHorizontalNewsCard(news) {
                 <div class="news-card-horizontal-footer">
                     <span class="news-card-horizontal-category">${categoryLabel}</span>
                     <span class="news-card-horizontal-time">${timeStr} • ${dateStr}</span>
-                    <div class="news-card-horizontal-source">
-                        <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                    <div class="news-card-horizontal-source-row">
+                        <div class="news-card-horizontal-source">
+                            <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                        </div>
+                        <button class="news-card-horizontal-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -253,6 +267,9 @@ function renderNewsBlock(newsItems, startIndex, container) {
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
+        
+        // Armazenar todas as notícias globalmente para compartilhamento
+        window.allNews = news;
         
         // Destaques
         const featured = news.filter(n => n.featured);
@@ -886,20 +903,50 @@ async function fetchInstagramStats(instagramUrl) {
     return null;
 }
 
+// Variável para armazenar os dados dos posts do Instagram
+let instagramPostsData = {};
+
 function createInstagramCard(news) {
     const dateObj = new Date(news.date);
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+    const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     
     // Usar likes e comments salvos ou padrão
     const likes = news.instagramLikes || news.likes || 0;
     const comments = news.instagramComments || news.comments || 0;
     const instagramUrl = news.instagramUrl || news.sourceUrl || '#';
+    const content = news.content || news.excerpt || '';
+    
+    // Verificar se tem galeria
+    const hasGallery = news.gallery && Array.isArray(news.gallery) && news.gallery.length > 0;
+    const totalMedia = hasGallery ? 1 + news.gallery.length : 1;
+    
+    // Guardar dados para uso no modal
+    instagramPostsData[news.id] = {
+        ...news,
+        likes,
+        comments,
+        instagramUrl,
+        content,
+        dateStr,
+        timeStr,
+        hasGallery,
+        totalMedia
+    };
     
     return `
-        <article class="instagram-card" data-instagram-id="${news.id}">
-            <!-- Imagem -->
-            <div class="instagram-card-image-wrapper" onclick="viewNews('${news.id}')">
+        <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}')">
+            <!-- Imagem de Capa -->
+            <div class="instagram-card-image-wrapper">
                 <img src="${news.image}" alt="${news.title}" loading="lazy">
+                ${hasGallery ? `
+                    <div class="instagram-gallery-indicator">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>${totalMedia}</span>
+                    </div>
+                ` : ''}
             </div>
             
             <!-- Conteúdo Compacto -->
@@ -915,12 +962,21 @@ function createInstagramCard(news) {
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                         </svg>
                     </div>
+                    <!-- Botão fechar (só aparece quando expandido) -->
+                    <button class="instagram-card-close" style="display: none;" onclick="event.stopPropagation(); closeInstagramModal();">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- Título do post -->
-                <div style="font-size: 0.8125rem; color: #262626; line-height: 1.4; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                <div class="instagram-card-title-preview" style="font-size: 0.8125rem; color: #262626; line-height: 1.4; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${news.title || 'Post do Instagram'}
                 </div>
+                
+                <!-- Legenda completa (só aparece quando expandido) -->
+                <div class="instagram-card-caption-full" style="display: none;"></div>
                 
                 <!-- Ações com contadores -->
                 <div class="instagram-card-actions">
@@ -943,14 +999,488 @@ function createInstagramCard(news) {
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                         </svg>
                     </button>
+                    <button class="instagram-card-action-btn share-btn" onclick="shareNews('${news.id}', event)">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                        </svg>
+                    </button>
                 </div>
                 
                 <!-- Data -->
-                <div class="instagram-card-time">${dateStr}</div>
+                <div class="instagram-card-time">${dateStr} às ${timeStr}</div>
             </div>
         </article>
     `;
 }
+
+// Expandir card no grid
+let expandedCardId = null;
+
+function openInstagramModal(newsId) {
+    const post = instagramPostsData[newsId];
+    if (!post) return;
+    
+    // Se já tem um card expandido, fechar ele primeiro
+    if (expandedCardId && expandedCardId !== newsId) {
+        const currentExpanded = document.querySelector('.instagram-card.expanded');
+        if (currentExpanded) {
+            closeInstagramCard(currentExpanded);
+        }
+    }
+    
+    // Encontrar o card clicado
+    const card = document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+    if (!card) return;
+    
+    // PRIMEIRO: Esconder o último card para liberar espaço no grid
+    hideLastCard(newsId);
+    
+    // DEPOIS: Expandir o card (agora tem espaço para ocupar 2 colunas)
+    card.classList.add('expanded');
+    expandedCardId = newsId;
+    
+    // Adicionar botão fechar se não existir
+    let closeBtn = card.querySelector('.instagram-card-close');
+    if (!closeBtn) {
+        closeBtn = document.createElement('button');
+        closeBtn.className = 'instagram-card-close';
+        closeBtn.innerHTML = `
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        `;
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            closeInstagramCard(card);
+        };
+        const header = card.querySelector('.instagram-card-header');
+        if (header) header.appendChild(closeBtn);
+    }
+    closeBtn.style.display = 'flex';
+    
+    // Esconder preview e mostrar conteúdo completo
+    const titlePreview = card.querySelector('.instagram-card-title-preview');
+    if (titlePreview) titlePreview.style.display = 'none';
+    
+    const time = card.querySelector('.instagram-card-time');
+    if (time) time.style.display = 'none';
+    
+    // Adicionar legenda completa se não existir
+    let captionFull = card.querySelector('.instagram-card-caption-full');
+    if (!captionFull) {
+        captionFull = document.createElement('div');
+        captionFull.className = 'instagram-card-caption-full';
+        const content = card.querySelector('.instagram-card-content');
+        if (content) {
+            const actions = card.querySelector('.instagram-card-actions');
+            if (actions) {
+                content.insertBefore(captionFull, actions);
+            } else {
+                content.appendChild(captionFull);
+            }
+        }
+    }
+    captionFull.textContent = post.content;
+    captionFull.style.display = 'block';
+    captionFull.style.visibility = 'visible';
+    
+    // Atualizar contadores de curtidas e comentários
+    const likesEl = card.querySelector('.instagram-likes-count');
+    const commentsEl = card.querySelector('.instagram-comments-count');
+    if (likesEl) likesEl.textContent = formatNumber(post.likes || 0);
+    if (commentsEl) commentsEl.textContent = formatNumber(post.comments || 0);
+    
+    // ATUALIZAR todos os links do Instagram com a URL correta
+    const actionButtons = card.querySelectorAll('.instagram-card-action-btn');
+    actionButtons.forEach(btn => {
+        // Atualizar o onclick para abrir o link correto
+        const newBtn = btn.cloneNode(true);
+        newBtn.onclick = (e) => {
+            e.stopPropagation();
+            window.open(post.instagramUrl, '_blank');
+        };
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    
+    // CONFIGURAR GALERIA se houver múltiplas mídias
+    setupInstagramGallery(card, post);
+    
+    // Scroll suave para o card
+    setTimeout(() => {
+        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+}
+
+// Configurar galeria de imagens/vídeos no card expandido
+function setupInstagramGallery(card, post) {
+    const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
+    if (!imageWrapper) return;
+    
+    // Verificar se tem galeria
+    const hasGallery = post.hasGallery && post.gallery && post.gallery.length > 0;
+    
+    // Montar array de todas as mídias (capa + galeria)
+ const allMedia = [{ type: 'image', url: post.image }]; // Capa é sempre imagem
+    if (hasGallery) {
+        post.gallery.forEach(item => {
+            allMedia.push({
+                type: item.type || 'image',
+                url: item.url
+            });
+        });
+    }
+    
+    // Se só tem uma mídia, não precisa de navegação
+    if (allMedia.length <= 1) {
+        // Remover controles de galeria se existirem
+        const existingControls = imageWrapper.querySelector('.instagram-gallery-controls');
+        if (existingControls) existingControls.remove();
+        const existingDots = imageWrapper.querySelector('.instagram-gallery-dots');
+        if (existingDots) existingDots.remove();
+        // Garantir que mostra a imagem de capa
+        const img = imageWrapper.querySelector('img');
+        if (img) {
+            img.style.display = 'block';
+            img.src = post.image;
+        }
+        const video = imageWrapper.querySelector('video');
+        if (video) video.remove();
+        return;
+    }
+    
+    // Guardar dados da galeria no card
+    card.dataset.galleryIndex = '0';
+    card.dataset.galleryTotal = allMedia.length;
+    
+    // Criar container da galeria se não existir
+    let galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
+    if (!galleryContainer) {
+        galleryContainer = document.createElement('div');
+        galleryContainer.className = 'instagram-gallery-container';
+        galleryContainer.style.cssText = 'width: 100%; height: 100%; position: relative; overflow: hidden;';
+        
+        // Mover a imagem atual para dentro do container
+        const img = imageWrapper.querySelector('img');
+        if (img) {
+            img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
+            galleryContainer.appendChild(img);
+        }
+        
+        imageWrapper.appendChild(galleryContainer);
+    }
+    
+    // Criar controles de navegação
+    let controls = imageWrapper.querySelector('.instagram-gallery-controls');
+    if (!controls) {
+        controls = document.createElement('div');
+        controls.className = 'instagram-gallery-controls';
+        controls.innerHTML = `
+            <button class="instagram-gallery-prev" onclick="event.stopPropagation(); navigateGallery('${post.id}', -1)">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <button class="instagram-gallery-next" onclick="event.stopPropagation(); navigateGallery('${post.id}', 1)">
+                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+            </button>
+        `;
+        imageWrapper.appendChild(controls);
+    }
+    
+    // Criar indicadores (dots)
+    let dots = imageWrapper.querySelector('.instagram-gallery-dots');
+    if (!dots) {
+        dots = document.createElement('div');
+        dots.className = 'instagram-gallery-dots';
+        dots.innerHTML = allMedia.map((_, i) => `
+            <span class="instagram-gallery-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></span>
+        `).join('');
+        imageWrapper.appendChild(dots);
+    }
+    
+    // Mostrar primeira mídia
+    showGalleryMedia(card, allMedia, 0);
+}
+
+// Navegar na galeria
+function navigateGallery(newsId, direction) {
+    const card = document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+    if (!card) return;
+    
+    const post = instagramPostsData[newsId];
+    if (!post) return;
+    
+    // Montar array de mídias
+    const allMedia = [{ type: 'image', url: post.image }];
+    if (post.gallery && post.gallery.length > 0) {
+        post.gallery.forEach(item => {
+            allMedia.push({
+                type: item.type || 'image',
+                url: item.url
+            });
+        });
+    }
+    
+    const total = allMedia.length;
+    let currentIndex = parseInt(card.dataset.galleryIndex || '0');
+    
+    // Calcular novo índice
+    currentIndex += direction;
+    if (currentIndex < 0) currentIndex = total - 1;
+    if (currentIndex >= total) currentIndex = 0;
+    
+    card.dataset.galleryIndex = currentIndex;
+    showGalleryMedia(card, allMedia, currentIndex);
+}
+
+// Mostrar mídia específica da galeria
+function showGalleryMedia(card, allMedia, index) {
+    const galleryContainer = card.querySelector('.instagram-gallery-container');
+    if (!galleryContainer) return;
+    
+    const media = allMedia[index];
+    
+    // Limpar container
+    galleryContainer.innerHTML = '';
+    
+    // Criar elemento de mídia
+    if (media.type === 'video') {
+        const video = document.createElement('video');
+        video.src = media.url;
+        video.controls = true;
+        video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #000;';
+        galleryContainer.appendChild(video);
+    } else {
+        const img = document.createElement('img');
+        img.src = media.url;
+        img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
+        galleryContainer.appendChild(img);
+    }
+    
+    // Atualizar dots
+    const dots = card.querySelectorAll('.instagram-gallery-dot');
+    dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === index);
+    });
+}
+
+function closeInstagramCard(card) {
+    if (!card) return;
+    
+    card.classList.remove('expanded');
+    expandedCardId = null;
+    
+    // PRIMEIRO: Esconder botão fechar e elementos do expandido
+    const closeBtn = card.querySelector('.instagram-card-close');
+    if (closeBtn) closeBtn.style.display = 'none';
+    
+    // GARANTIR que legenda completa está totalmente escondida - ANTES de mostrar o card escondido
+    const captionFull = card.querySelector('.instagram-card-caption-full');
+    if (captionFull) {
+        captionFull.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important;';
+    }
+    
+    // RESTAURAR imagem de capa e remover controles da galeria
+    const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
+    if (imageWrapper) {
+        // Remover controles da galeria
+        const controls = imageWrapper.querySelector('.instagram-gallery-controls');
+        if (controls) controls.remove();
+        const dots = imageWrapper.querySelector('.instagram-gallery-dots');
+        if (dots) dots.remove();
+        const galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
+        if (galleryContainer) galleryContainer.remove();
+        
+        // Restaurar imagem de capa
+        const newsId = card.dataset.instagramId;
+        const post = instagramPostsData[newsId];
+        if (post) {
+            // Limpar wrapper
+            imageWrapper.innerHTML = '';
+            // Recriar imagem de capa
+            const img = document.createElement('img');
+            img.src = post.image;
+            img.alt = post.title || 'Post do Instagram';
+            img.loading = 'lazy';
+            imageWrapper.appendChild(img);
+            // Recriar indicador de galeria se houver
+            if (post.hasGallery && post.totalMedia > 1) {
+                const indicator = document.createElement('div');
+                indicator.className = 'instagram-gallery-indicator';
+                indicator.innerHTML = `
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>${post.totalMedia}</span>
+                `;
+                imageWrapper.appendChild(indicator);
+            }
+        }
+    }
+    
+    // Mostrar preview novamente - FORÇAR com line-clamp
+    const titlePreview = card.querySelector('.instagram-card-title-preview');
+    if (titlePreview) {
+        titlePreview.style.display = '-webkit-box';
+        titlePreview.style.webkitLineClamp = '2';
+        titlePreview.style.webkitBoxOrient = 'vertical';
+        titlePreview.style.overflow = 'hidden';
+    }
+    
+    const time = card.querySelector('.instagram-card-time');
+    if (time) time.style.display = '';
+    
+    // DEPOIS: Mostrar o card que estava escondido (evita reflow que mostra a legenda)
+    showLastCard();
+}
+
+function hideLastCard(newsIdToKeep) {
+    // Sempre esconder o último card visível para manter tudo na mesma fileira
+    // (exceto o card que está sendo expandido e o "Ver Todos")
+    const allCards = document.querySelectorAll('.instagram-card:not(.instagram-view-all-card)');
+    
+    // Encontrar o último card que não é o que será expandido
+    for (let i = allCards.length - 1; i >= 0; i--) {
+        const card = allCards[i];
+        const cardId = card.dataset.instagramId;
+        
+        // Não esconder o card que está sendo expandido
+        if (cardId === newsIdToKeep) continue;
+        
+        // Esconder este card
+        card.style.display = 'none';
+        card.dataset.wasHidden = 'true';
+        break; // Esconde apenas um
+    }
+}
+
+function showLastCard() {
+    // Mostrar o card que foi escondido
+    const hiddenCard = document.querySelector('.instagram-card[data-was-hidden="true"]');
+    if (hiddenCard) {
+        hiddenCard.style.display = '';
+        hiddenCard.dataset.wasHidden = '';
+    }
+}
+
+function closeInstagramModal() {
+    if (expandedCardId) {
+        const card = document.querySelector('.instagram-card.expanded');
+        if (card) {
+            closeInstagramCard(card);
+        }
+        expandedCardId = null;
+    }
+}
+
+// Função para compartilhar notícia
+async function shareNews(newsId, event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    
+    // Buscar dados da notícia
+    let news = instagramPostsData[newsId];
+    
+    // Se não encontrar nos posts do Instagram, buscar no array de notícias
+    if (!news && window.allNews) {
+        news = window.allNews.find(n => n.id === newsId);
+    }
+    
+    if (!news) {
+        console.error('Notícia não encontrada:', newsId);
+        return;
+    }
+    
+    const shareUrl = `${window.location.origin}/?news=${newsId}`;
+    const shareData = {
+        title: news.title || 'Mirador e Região Online',
+        text: news.excerpt || news.content?.substring(0, 100) || 'Confira esta notícia',
+        url: shareUrl
+    };
+    
+    try {
+        // Tentar usar a API de compartilhamento nativa (mobile)
+        if (navigator.share) {
+            await navigator.share(shareData);
+        } else {
+            // Fallback: copiar para clipboard
+            await navigator.clipboard.writeText(`${shareData.title}\n${shareData.url}`);
+            showToast('Link copiado para a área de transferência!');
+        }
+    } catch (error) {
+        // Usuário cancelou ou erro
+        if (error.name !== 'AbortError') {
+            console.error('Erro ao compartilhar:', error);
+            // Tentar copiar como fallback
+            try {
+                await navigator.clipboard.writeText(shareUrl);
+                showToast('Link copiado para a área de transferência!');
+            } catch (clipboardError) {
+                console.error('Erro ao copiar:', clipboardError);
+            }
+        }
+    }
+}
+
+// Função para mostrar toast
+function showToast(message) {
+    // Remover toast anterior se existir
+    const existingToast = document.querySelector('.toast-notification');
+    if (existingToast) {
+        existingToast.remove();
+    }
+    
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.style.cssText = `
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #333;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 14px;
+        z-index: 10000;
+        animation: slideUp 0.3s ease;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    toast.textContent = message;
+    
+    // Adicionar animação
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideUp {
+            from { transform: translateX(-50%) translateY(100px); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(0); opacity: 1; }
+            to { transform: translateX(-50%) translateY(100px); opacity: 0; }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    document.body.appendChild(toast);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        toast.style.animation = 'slideDown 0.3s ease forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Fechar com ESC
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        closeInstagramModal();
+    }
+});
 
 // Formatar números (1.2K, 1.5M)
 function formatNumber(num) {
