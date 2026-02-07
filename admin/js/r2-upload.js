@@ -34,17 +34,28 @@ class R2Storage {
             return;
         }
         
-        this.s3Client = new AWS.S3({
-            region: this.config.region,
-            endpoint: this.config.endpoint,
-            credentials: new AWS.Credentials(
-                this.config.credentials.accessKeyId,
-                this.config.credentials.secretAccessKey
-            ),
-            signatureVersion: 'v4'
-        });
+        console.log('[R2] Inicializando cliente S3...');
+        console.log('[R2] Endpoint:', this.config.endpoint);
+        console.log('[R2] Bucket:', this.bucketName);
+        console.log('[R2] Access Key:', this.config.credentials.accessKeyId.substring(0, 10) + '...');
         
-        console.log('R2 Storage inicializado com sucesso');
+        try {
+            this.s3Client = new AWS.S3({
+                region: this.config.region,
+                endpoint: this.config.endpoint,
+                credentials: new AWS.Credentials(
+                    this.config.credentials.accessKeyId,
+                    this.config.credentials.secretAccessKey
+                ),
+                signatureVersion: 'v4',
+                s3ForcePathStyle: true // Importante para R2
+            });
+            
+            console.log('[R2] Cliente S3 inicializado com sucesso');
+        } catch (error) {
+            console.error('[R2] Erro ao inicializar cliente:', error);
+            throw error;
+        }
     }
     
     loadAwsSdk() {

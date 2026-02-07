@@ -3930,15 +3930,52 @@
                 return;
             }
             
+            console.log('[Test] Iniciando teste de conexão...');
+            console.log('[Test] AWS SDK disponível:', typeof AWS !== 'undefined');
+            console.log('[Test] r2Storage:', r2Storage);
+            
             try {
+                // Verificar se AWS SDK está carregado
+                if (typeof AWS === 'undefined') {
+                    alert('❌ AWS SDK não carregado.\n\nAguarde alguns segundos e tente novamente.');
+                    return;
+                }
+                
+                // Verificar se cliente foi inicializado
+                if (!r2Storage || !r2Storage.s3Client) {
+                    alert('❌ Cliente R2 não inicializado.\n\nRecarregue a página e tente novamente.');
+                    return;
+                }
+                
                 // Tentar listar arquivos para testar conexão
+                console.log('[Test] Tentando listar arquivos...');
                 const files = await r2Storage.listFiles();
+                console.log('[Test] Sucesso! Arquivos encontrados:', files.length);
+                
                 alert(`✅ Conexão bem-sucedida!\n\n📁 Bucket: mirador-regiao-online\n📄 Arquivos encontrados: ${files.length}`);
                 
                 // Recarregar info de storage
                 await loadR2StorageInfo();
             } catch (error) {
-                alert(`❌ Erro na conexão:\n\n${error.message}\n\nVerifique suas credenciais.`);
+                console.error('[Test] Erro detalhado:', error);
+                console.error('[Test] Código:', error.code);
+                console.error('[Test] Status:', error.statusCode);
+                
+                let mensagem = error.message;
+                
+                if (error.code === 'NetworkingError' || error.message.includes('Network')) {
+                    mensagem = 'Erro de rede. Possíveis causas:\n\n' +
+                              '1. CORS não configurado no bucket R2\n' +
+                              '2. Credenciais incorretas\n' +
+                              '3. Bucket não existe ou está inacessível\n\n' +
+                              'Verifique no console (F12) para mais detalhes.';
+                } else if (error.code === 'InvalidAccessKeyId') {
+                    mensagem = 'Access Key ID inválida. Verifique se copiou corretamente.';
+                } else if (error.code === 'SignatureDoesNotMatch') {
+                    mensagem = 'Secret Access Key incorreta. Verifique se copiou corretamente.';
+                }
+                
+                alert(`❌ Erro na conexão:\n\n${mensagem}`);
             }
         }
 
