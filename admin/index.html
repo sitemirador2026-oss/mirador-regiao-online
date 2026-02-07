@@ -2298,17 +2298,8 @@
                             <div style="font-size: 0.875rem; color: var(--text-secondary);">
                                 <div><strong>Bucket:</strong> mirador-regiao-online</div>
                                 <div><strong>Endpoint:</strong> 8341826f08014d0252c400798d657729.r2.cloudflarestorage.com</div>
-                                <div style="margin-top: 0.5rem;"><strong>Preços (após free tier):</strong></div>
-                                <ul style="margin: 0.25rem 0; padding-left: 1.25rem;">
-                                    <li>Storage: $0,015/GB/mês (~R$ 0,08/GB)</li>
-                                    <li>Download: <strong style="color: var(--success);">GRÁTIS</strong></li>
-                                    <li>Operações Class A: $4,50/milhão</li>
-                                    <li>Operações Class B: $0,36/milhão</li>
-                                </ul>
+                                <div><strong>Download:</strong> Gratuito</div>
                             </div>
-                        </div>
-                        <div style="margin-top: 1rem;">
-                            <a href="https://dash.cloudflare.com/8341826f08014d0252c400798d657729/r2" target="_blank" class="btn btn-secondary btn-sm">Acessar Console R2</a>
                         </div>
                     </div>
 
@@ -2354,30 +2345,20 @@
                                 <div><strong>Função:</strong> Dados textuais + Autenticação</div>
                             </div>
                         </div>
-                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/firestore/usage" target="_blank" class="btn btn-secondary btn-sm">Firestore</a>
-                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/storage" target="_blank" class="btn btn-secondary btn-sm">Storage</a>
-                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/usage" target="_blank" class="btn btn-secondary btn-sm">Faturamento</a>
+                    </div>
+                            <div class="stat-header">
+                                <div class="stat-icon info">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 01-2 2v4a2 2 0 012 2h14a2 2 0 012-2v-4a2 2 0 01-2-2m-2-4h.01M17 16h.01"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend">Render</span>
+                            </div>
+                            <div class="stat-value" id="renderStatus">Online</div>
+                            <div class="stat-label">Status do servidor</div>
                         </div>
                     </div>
 
-                    <!-- 4. Migração de Imagens -->
-                    <div class="content-section">
-                        <div class="section-header">
-                            <h2 class="section-title">Migração de Imagens</h2>
-                        </div>
-                        <div style="padding: 1rem;">
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                                Mova imagens em base64 do Firebase para o R2
-                            </p>
-                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                                <button onclick="checkBase64Images()" class="btn btn-secondary btn-sm">Verificar Imagens Base64</button>
-                                <button onclick="startMigration()" class="btn btn-primary btn-sm" id="btnStartMigration">Iniciar Migração</button>
-                            </div>
-                            <div id="migrationCheckResult" style="display: none; margin-bottom: 1rem;"></div>
-                            <div id="migrationLog" style="display: none; background: #1f2937; color: #e5e7eb; padding: 1rem; border-radius: var(--radius); font-family: monospace; font-size: 0.75rem; max-height: 300px; overflow-y: auto;"></div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Settings Page -->
@@ -3913,56 +3894,68 @@
                 document.getElementById('newsCount').innerText = '...';
                 document.getElementById('imagesSize').innerText = '...';
 
+                // Tentar carregar dados com retry
+                let newsSnapshot, storiesSnapshot, settingsSnapshot;
+                
+                try {
+                    newsSnapshot = await db.collection('news').get();
+                    storiesSnapshot = await db.collection('stories').get();
+                    settingsSnapshot = await db.collection('settings').get();
+                } catch (permError) {
+                    console.warn('[Admin] Sem permissão para ler dados. Usando cache ou estimativas.');
+                    // Usar dados do dashboard se disponíveis
+                    newsSnapshot = { size: cachedNewsData.length || 0, forEach: (cb) => cachedNewsData.forEach(cb) };
+                    storiesSnapshot = { size: cachedStoriesData.length || 0, forEach: (cb) => cachedStoriesData.forEach(cb) };
+                    settingsSnapshot = { size: cachedSettingsData.length || 0, forEach: (cb) => cachedSettingsData.forEach(cb) };
+                }
+
                 // Calcular tamanhos
                 let newsSize = 0;
                 let imagesSize = 0;
                 let newsCount = 0;
                 let imagesCount = 0;
+
+                const newsData = [];
+                newsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    newsData.push({ id: doc.id, ...data });
+                    const docSize = JSON.stringify(data).length;
+                    newsSize += docSize;
+                    newsCount++;
+
+                    // Calcular tamanho das imagens em Base64
+                    if (data.image) {
+                        imagesSize += data.image.length;
+                        imagesCount++;
+                    }
+                    if (data.gallery && Array.isArray(data.gallery)) {
+                        data.gallery.forEach(item => {
+                            if (item.url) {
+                                imagesSize += item.url.length;
+                                imagesCount++;
+                            }
+                        });
+                    }
+                });
+                cachedNewsData = newsData;
+
                 let storiesSize = 0;
+                const storiesData = [];
+                storiesSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    storiesData.push(data);
+                    storiesSize += JSON.stringify(data).length;
+                });
+                cachedStoriesData = storiesData;
+
                 let settingsSize = 0;
-
-                try {
-                    const newsSnapshot = await db.collection('news').get();
-                    newsCount = newsSnapshot.size;
-                    
-                    newsSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        const docSize = JSON.stringify(data).length;
-                        newsSize += docSize;
-
-                        // Calcular tamanho das imagens em Base64
-                        if (data.image) {
-                            imagesSize += data.image.length;
-                            imagesCount++;
-                        }
-                        if (data.gallery && Array.isArray(data.gallery)) {
-                            data.gallery.forEach(item => {
-                                if (item.url) {
-                                    imagesSize += item.url.length;
-                                    imagesCount++;
-                                }
-                            });
-                        }
-                    });
-
-                    const storiesSnapshot = await db.collection('stories').get();
-                    storiesSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        storiesSize += JSON.stringify(data).length;
-                    });
-
-                    const settingsSnapshot = await db.collection('settings').get();
-                    settingsSnapshot.forEach(doc => {
-                        const data = doc.data();
-                        settingsSize += JSON.stringify(data).length;
-                    });
-                } catch (permError) {
-                    console.warn('[Admin] Sem permissão para ler dados.');
-                    document.getElementById('firestoreSize').innerText = 'Sem permissão';
-                    document.getElementById('newsCount').innerText = '--';
-                    document.getElementById('imagesSize').innerText = '--';
-                    return;
-                }
+                const settingsData = [];
+                settingsSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    settingsData.push(data);
+                    settingsSize += JSON.stringify(data).length;
+                });
+                cachedSettingsData = settingsData;
 
                 const totalSize = newsSize + storiesSize + settingsSize;
                 const totalImagesSize = imagesSize;
@@ -3977,9 +3970,18 @@
                 document.getElementById('newsCount').innerHTML = `${newsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${formatBytes(newsSize)}</small>`;
                 document.getElementById('imagesSize').innerHTML = `${formatBytes(imagesSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${imagesCount} imagens</small>`;
 
-                const totalSize = newsSize + storiesSize + settingsSize;
-                const freePlanLimit = 1073741824; // 1GB
-                const usedPercent = ((totalSize / freePlanLimit) * 100).toFixed(2);
+                // Atualizar detalhes
+                document.getElementById('newsCollectionSize').innerText = `${formatBytes(newsSize)} (${newsCount} docs)`;
+                document.getElementById('storiesCollectionSize').innerText = `${formatBytes(storiesSize)} (${storiesSnapshot.size || storiesData.length} docs)`;
+                document.getElementById('settingsCollectionSize').innerText = `${formatBytes(settingsSize)} (${settingsSnapshot.size || settingsData.length} docs)`;
+
+                // Atualizar barras de progresso (baseado no limite de 1GB do plano gratuito)
+                document.getElementById('newsProgressBar').style.width = `${Math.min((newsSize / freePlanLimit) * 100, 100)}%`;
+                document.getElementById('storiesProgressBar').style.width = `${Math.min((storiesSize / freePlanLimit) * 100, 100)}%`;
+                document.getElementById('settingsProgressBar').style.width = `${Math.min((settingsSize / freePlanLimit) * 100, 100)}%`;
+
+                // Atualizar informações adicionais
+                updateStorageInfo(totalSize, availableSpace, imagesSize);
 
                 console.log('[Admin] Storage info loaded:', {
                     news: formatBytes(newsSize),
@@ -3987,16 +3989,8 @@
                     settings: formatBytes(settingsSize),
                     images: formatBytes(imagesSize),
                     total: formatBytes(totalSize),
-                    used: `${usedPercent}%`
-                });
-
-                console.log('[Admin] Storage info loaded:', {
-                    news: formatBytes(newsSize),
-                    stories: formatBytes(storiesSize),
-                    settings: formatBytes(settingsSize),
-                    images: formatBytes(imagesSize),
-                    total: formatBytes(totalSize),
-                    used: `${usedPercent}%`
+                    used: `${usedPercent}%`,
+                    available: formatBytes(availableSpace)
                 });
 
             } catch (error) {
