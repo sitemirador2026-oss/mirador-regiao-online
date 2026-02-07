@@ -20,6 +20,11 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
+    <!-- Cloudflare R2 SDK -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1000.0.min.js"></script>
+    <script src="js/r2-config.js"></script>
+    <script src="js/r2-upload.js"></script>
+
     <style>
         /* CSS Version: 2025-02-04-012 - CARD FIX */
         :root {
@@ -2215,7 +2220,7 @@
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Armazenamento</h1>
-                            <p class="page-subtitle">Monitore o uso de armazenamento do Firebase e servidor</p>
+                            <p class="page-subtitle">Monitore o uso de armazenamento Cloudflare R2</p>
                         </div>
                         <button class="btn btn-secondary" onclick="loadStorageInfo()">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2223,6 +2228,110 @@
                             </svg>
                             Atualizar
                         </button>
+                    </div>
+
+                    <!-- R2 Storage Status Card -->
+                    <div class="stats-grid" style="margin-bottom: 2rem;" id="r2StorageGrid">
+                        <!-- R2 Storage Card -->
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend">Cloudflare R2</span>
+                            </div>
+                            <div class="stat-value" id="r2StorageSize">--</div>
+                            <div class="stat-label">Armazenamento usado</div>
+                            <div style="margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-light);">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                                    <span style="color: var(--text-muted);">Free tier: 10GB</span>
+                                    <span id="r2StoragePercent" style="font-weight: 600; color: var(--primary);">0%</span>
+                                </div>
+                                <div style="background: var(--bg-secondary); height: 6px; border-radius: 3px; overflow: hidden; margin-top: 0.375rem;">
+                                    <div id="r2StorageBar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.5s;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custo Estimado Card -->
+                        <div class="stat-card success">
+                            <div class="stat-header">
+                                <div class="stat-icon success">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend">Custo</span>
+                            </div>
+                            <div class="stat-value" id="r2Cost">R$ 0,00</div>
+                            <div class="stat-label">Estimativa mensal</div>
+                        </div>
+
+                        <!-- Arquivos Card -->
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div class="stat-icon warning">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend">Arquivos</span>
+                            </div>
+                            <div class="stat-value" id="r2FileCount">--</div>
+                            <div class="stat-label">Total de arquivos</div>
+                        </div>
+
+                        <!-- Status Card -->
+                        <div class="stat-card info">
+                            <div class="stat-header">
+                                <div class="stat-icon info">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 01-2 2v4a2 2 0 012 2h14a2 2 0 012-2v-4a2 2 0 01-2-2m-2-4h.01M17 16h.01"/>
+                                    </svg>
+                                </div>
+                                <span class="stat-trend">Status</span>
+                            </div>
+                            <div class="stat-value" id="r2Status">Ativo</div>
+                            <div class="stat-label">Download grátis</div>
+                        </div>
+                    </div>
+
+                    <!-- Configuração R2 -->
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); border-radius: var(--radius); margin-bottom: 1.5rem; color: #1f2937;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                            🔐 Configuração R2
+                        </h3>
+                        <p style="font-size: 0.875rem; margin-bottom: 1rem; opacity: 0.9;">
+                            Insira suas credenciais do Cloudflare R2 para habilitar upload de imagens e vídeos.
+                        </p>
+                        <div style="display: grid; gap: 0.75rem; max-width: 600px;">
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Access Key ID</label>
+                                <input type="text" id="r2AccessKey" placeholder="Sua Access Key ID" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-size: 0.875rem;">
+                            </div>
+                            <div>
+                                <label style="font-size: 0.75rem; font-weight: 600; margin-bottom: 0.25rem; display: block;">Secret Access Key</label>
+                                <input type="password" id="r2SecretKey" placeholder="Sua Secret Access Key" style="width: 100%; padding: 0.5rem; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-size: 0.875rem;">
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                <button onclick="saveR2Credentials()" style="padding: 0.5rem 1rem; background: #1f2937; color: white; border: none; border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.875rem;">
+                                    💾 Salvar Credenciais
+                                </button>
+                                <button onclick="testR2Connection()" style="padding: 0.5rem 1rem; background: rgba(255,255,255,0.3); color: #1f2937; border: 1px solid rgba(0,0,0,0.2); border-radius: var(--radius); font-weight: 600; cursor: pointer; font-size: 0.875rem;">
+                                    🧪 Testar Conexão
+                                </button>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(255,255,255,0.5); border-radius: var(--radius);">
+                            <p style="font-size: 0.8125rem; margin: 0;">
+                                💡 <strong>Onde encontrar:</strong> Cloudflare Dashboard → R2 → Manage API Tokens
+                            </p>
+                        </div>
                     </div>
 
                     <!-- Cards de Armazenamento -->
@@ -2284,121 +2393,90 @@
                         </div>
                     </div>
 
-                    <!-- Detalhes de Armazenamento -->
+                    <!-- Links Diretos para Firebase -->
+                    <div style="padding: 1.5rem; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); border-radius: var(--radius); margin-bottom: 1.5rem; color: white;">
+                        <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <svg width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                            </svg>
+                            🔗 Acessar Console do Firebase
+                        </h3>
+                        <p style="font-size: 0.875rem; margin-bottom: 1rem; opacity: 0.9;">
+                            Para ver seu armazenamento EXATO em tempo real, clique nos links abaixo:
+                        </p>
+                        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/firestore/usage" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: white; color: #1e3a8a; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                📊 Uso do Firestore
+                            </a>
+                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/storage" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.2); color: white; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.3);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/>
+                                </svg>
+                                🗄️ Storage
+                            </a>
+                            <a href="https://console.firebase.google.com/project/sitemirador-fb33d/usage" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.25rem; background: rgba(255,255,255,0.2); color: white; border-radius: var(--radius); text-decoration: none; font-weight: 600; font-size: 0.875rem; transition: all 0.2s; border: 1px solid rgba(255,255,255,0.3);" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                💰 Faturamento
+                            </a>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 0.75rem; background: rgba(0,0,0,0.2); border-radius: var(--radius);">
+                            <p style="font-size: 0.8125rem; margin: 0; opacity: 0.9;">
+                                💡 <strong>Como ver seu espaço:</strong> No link "Uso do Firestore", procure a aba <strong>"Storage"</strong> ou <strong>"Armazenamento"</strong>. Lá mostra o total em MB/GB usado.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Detalhes do R2 -->
                     <div class="content-section" style="max-width: 900px;">
                         <div class="section-header">
-                            <h2 class="section-title">📊 Detalhes do Firestore</h2>
+                            <h2 class="section-title">📊 Detalhes do Cloudflare R2</h2>
                         </div>
                         
                         <div id="storageDetails" style="padding: 1.5rem;">
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 500;">Coleção 'news'</span>
-                                    <span id="newsCollectionSize" style="color: var(--text-muted);">Calculando...</span>
-                                </div>
-                                <div style="background: var(--bg-secondary); height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div id="newsProgressBar" style="background: var(--primary); height: 100%; width: 0%; transition: width 0.5s;"></div>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 500;">Coleção 'stories'</span>
-                                    <span id="storiesCollectionSize" style="color: var(--text-muted);">Calculando...</span>
-                                </div>
-                                <div style="background: var(--bg-secondary); height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div id="storiesProgressBar" style="background: var(--success); height: 100%; width: 0%; transition: width 0.5s;"></div>
-                                </div>
-                            </div>
-
-                            <div style="margin-bottom: 1.5rem;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                                    <span style="font-weight: 500;">Coleção 'settings'</span>
-                                    <span id="settingsCollectionSize" style="color: var(--text-muted);">Calculando...</span>
-                                </div>
-                                <div style="background: var(--bg-secondary); height: 8px; border-radius: 4px; overflow: hidden;">
-                                    <div id="settingsProgressBar" style="background: var(--warning); height: 100%; width: 0%; transition: width 0.5s;"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style="padding: 1.5rem; background: var(--info-light); border-radius: var(--radius); margin-top: 1.5rem;">
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--info);">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                </svg>
-                                Limites do Plano Gratuito (Spark)
-                            </h3>
-                            <ul style="margin: 0; padding-left: 1.5rem; color: var(--text-secondary); font-size: 0.875rem; line-height: 1.6;">
-                                <li><strong>Firestore:</strong> 1GB de armazenamento, 50k leituras/dia, 20k escritas/dia</li>
-                                <li><strong>Limite por documento:</strong> 1MB (incluindo imagens Base64)</li>
-                                <li><strong>Render (Servidor):</strong> Disco efêmero, dados são perdidos em restart</li>
-                                <li><strong>Base64:</strong> Imagens ocupam ~33% mais espaço que o arquivo original</li>
-                            </ul>
-                        </div>
-
-                        <!-- Alternativas de Hospedagem -->
-                        <div style="padding: 1.5rem; background: var(--success-light); border-radius: var(--radius); margin-top: 1.5rem;">
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--success);">
-                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
-                                </svg>
-                                ☁️ Alternativas para Fotos e Vídeos (Recomendado)
-                            </h3>
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                                Como você recebe muitas fotos e vídeos, recomendamos usar serviços especializados:
-                            </p>
-                            
-                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
-                                <!-- Cloudinary -->
-                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
-                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🖼️ Cloudinary</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                                        <strong>Gratuito:</strong> 25GB storage + 25GB transferência/mês<br>
-                                        <strong>Ideal para:</strong> Imagens otimizadas automaticamente
+                            <div style="display: grid; gap: 1rem;">
+                                <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">📁 Bucket</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                        <code style="background: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8125rem;">mirador-regiao-online</code>
                                     </div>
-                                    <a href="https://cloudinary.com" target="_blank" style="font-size: 0.75rem; color: var(--primary);">cloudinary.com →</a>
                                 </div>
                                 
-                                <!-- ImageKit -->
-                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
-                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🚀 ImageKit</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                                        <strong>Gratuito:</strong> 20GB storage + 20GB visualizações<br>
-                                        <strong>Ideal para:</strong> CDN rápido com otimização
+                                <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">🌐 URL Pública</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary); word-break: break-all;">
+                                        <code style="background: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.8125rem;">https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev</code>
                                     </div>
-                                    <a href="https://imagekit.io" target="_blank" style="font-size: 0.75rem; color: var(--primary);">imagekit.io →</a>
                                 </div>
                                 
-                                <!-- Firebase Storage -->
-                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
-                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">🔥 Firebase Storage</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                                        <strong>Gratuito:</strong> 5GB storage + 1GB download/dia<br>
-                                        <strong>Ideal para:</strong> Integração nativa com seu app
+                                <div style="padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                                    <div style="font-weight: 600; margin-bottom: 0.5rem; color: var(--primary);">💰 Preços (após free tier)</div>
+                                    <div style="font-size: 0.875rem; color: var(--text-secondary);">
+                                        <ul style="margin: 0; padding-left: 1.25rem;">
+                                            <li>Storage: $0,015/GB/mês (~R$ 0,08/GB)</li>
+                                            <li>Download: <strong style="color: var(--success);">GRÁTIS</strong></li>
+                                            <li>Operações Class A: $4,50/milhão</li>
+                                            <li>Operações Class B: $0,36/milhão</li>
+                                        </ul>
                                     </div>
-                                    <a href="https://firebase.google.com/products/storage" target="_blank" style="font-size: 0.75rem; color: var(--primary);">firebase.google.com →</a>
-                                </div>
-                                
-                                <!-- AWS S3 + CloudFront -->
-                                <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius); border: 1px solid var(--border);">
-                                    <div style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">☁️ AWS S3</div>
-                                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">
-                                        <strong>Pago:</strong> ~$0.023/GB/mês (primeiros 12 meses 5GB grátis)<br>
-                                        <strong>Ideal para:</strong> Grande volume com baixo custo
-                                    </div>
-                                    <a href="https://aws.amazon.com/s3" target="_blank" style="font-size: 0.75rem; color: var(--primary);">aws.amazon.com/s3 →</a>
                                 </div>
                             </div>
                             
-                            <div style="margin-top: 1rem; padding: 0.75rem; background: var(--warning-light); border-radius: var(--radius); border-left: 3px solid var(--warning);">
-                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
-                                    <strong>💡 Dica:</strong> Para seu portal de notícias com muitas imagens, 
-                                    <strong>Cloudinary</strong> ou <strong>ImageKit</strong> são as melhores opções gratuitas. 
-                                    Ambos oferecem otimização automática, redimensionamento e CDN global.
-                                </p>
+                            <div style="margin-top: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #d1fae5 0%, #ecfdf5 100%); border-radius: var(--radius); border: 1px solid #10b981;">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem; color: #065f46;">✅ Vantagens do R2</div>
+                                <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.875rem; color: #065f46;">
+                                    <li>10GB grátis todo mês</li>
+                                    <li>Download (egress) sempre grátis</li>
+                                    <li>Sem cobrança por transferência</li>
+                                    <li>Ideal para sites com muitas imagens/vídeos</li>
+                                </ul>
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -3590,6 +3668,11 @@
         const db = firebase.firestore();
         const auth = firebase.auth();
 
+        // Inicializar R2 (carregar credenciais salvas)
+        document.addEventListener('DOMContentLoaded', function() {
+            loadR2Credentials();
+        });
+
         // Login
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -3740,6 +3823,120 @@
             }
         }
 
+        // Variáveis globais para R2
+        let r2Storage = null;
+        let r2Credentials = null;
+
+        // Carregar credenciais R2 do localStorage
+        function loadR2Credentials() {
+            const saved = localStorage.getItem('r2Credentials');
+            if (saved) {
+                try {
+                    r2Credentials = JSON.parse(saved);
+                    document.getElementById('r2AccessKey').value = r2Credentials.accessKeyId || '';
+                    document.getElementById('r2SecretKey').value = r2Credentials.secretAccessKey || '';
+                    
+                    // Inicializar cliente R2
+                    if (r2Credentials.accessKeyId && r2Credentials.secretAccessKey) {
+                        r2Storage = new R2Storage(r2Credentials.accessKeyId, r2Credentials.secretAccessKey);
+                    }
+                    return true;
+                } catch (e) {
+                    console.error('[R2] Erro ao carregar credenciais:', e);
+                }
+            }
+            return false;
+        }
+
+        // Salvar credenciais R2
+        function saveR2Credentials() {
+            const accessKey = document.getElementById('r2AccessKey').value.trim();
+            const secretKey = document.getElementById('r2SecretKey').value.trim();
+            
+            if (!accessKey || !secretKey) {
+                alert('⚠️ Por favor, preencha ambos os campos de credenciais!');
+                return;
+            }
+            
+            r2Credentials = {
+                accessKeyId: accessKey,
+                secretAccessKey: secretKey
+            };
+            
+            localStorage.setItem('r2Credentials', JSON.stringify(r2Credentials));
+            
+            // Inicializar cliente
+            r2Storage = new R2Storage(accessKey, secretKey);
+            
+            alert('✅ Credenciais salvas com sucesso!\n\nClique em "Testar Conexão" para verificar.');
+        }
+
+        // Testar conexão R2
+        async function testR2Connection() {
+            if (!r2Credentials) {
+                alert('⚠️ Salve as credenciais primeiro!');
+                return;
+            }
+            
+            try {
+                // Tentar listar arquivos para testar conexão
+                const files = await r2Storage.listFiles();
+                alert(`✅ Conexão bem-sucedida!\n\n📁 Bucket: mirador-regiao-online\n📄 Arquivos encontrados: ${files.length}`);
+                
+                // Recarregar info de storage
+                await loadR2StorageInfo();
+            } catch (error) {
+                alert(`❌ Erro na conexão:\n\n${error.message}\n\nVerifique suas credenciais.`);
+            }
+        }
+
+        // Carregar informações do R2
+        async function loadR2StorageInfo() {
+            try {
+                document.getElementById('r2StorageSize').innerText = 'Carregando...';
+                document.getElementById('r2FileCount').innerText = '--';
+                
+                // Se não tem credenciais, mostrar mensagem
+                if (!r2Credentials || !r2Storage) {
+                    document.getElementById('r2StorageSize').innerText = '0 B';
+                    document.getElementById('r2FileCount').innerText = '0';
+                    document.getElementById('r2StoragePercent').innerText = '0%';
+                    document.getElementById('r2StorageBar').style.width = '0%';
+                    document.getElementById('r2Cost').innerText = 'R$ 0,00';
+                    return;
+                }
+                
+                const usage = await r2Storage.getStorageUsage();
+                const usageGB = usage.total / (1024 * 1024 * 1024);
+                const percent = Math.min((usageGB / 10) * 100, 100); // 10GB free tier
+                
+                // Calcular custo
+                const cost = calculateR2Cost(usageGB);
+                
+                // Atualizar UI
+                document.getElementById('r2StorageSize').innerText = usage.formatted;
+                document.getElementById('r2FileCount').innerText = usage.files.toString();
+                document.getElementById('r2StoragePercent').innerText = percent.toFixed(1) + '%';
+                document.getElementById('r2StorageBar').style.width = percent + '%';
+                document.getElementById('r2Cost').innerText = formatCurrency(cost.total.brl);
+                
+                // Mudar cor se estiver perto do limite
+                const bar = document.getElementById('r2StorageBar');
+                if (percent > 80) {
+                    bar.style.background = '#ef4444';
+                } else if (percent > 50) {
+                    bar.style.background = '#f59e0b';
+                } else {
+                    bar.style.background = 'var(--primary)';
+                }
+                
+            } catch (error) {
+                console.error('[R2] Erro ao carregar info:', error);
+                document.getElementById('r2StorageSize').innerText = 'Erro';
+                document.getElementById('r2FileCount').innerText = '--';
+            }
+        }
+
         // Variáveis globais para cache de dados
         let cachedNewsData = [];
         let cachedStoriesData = [];
@@ -3861,6 +4058,9 @@
                 // Mostrar mensagem de erro amigável
                 showStorageError();
             }
+            
+            // Também carregar info do R2
+            await loadR2StorageInfo();
         }
 
         // Atualizar informações de armazenamento na UI
@@ -3914,7 +4114,10 @@
             infoSection.insertBefore(infoDiv, infoSection.firstChild);
         }
 
-        // Mostrar erro de armazenamento
+        // ID do projeto Firebase (substitua pelo seu)
+        const FIREBASE_PROJECT_ID = 'sitemirador-fb33d'; // Ajuste conforme seu projeto
+        
+        // Mostrar erro de armazenamento com link direto
         function showStorageError() {
             const infoSection = document.querySelector('#storagePage .content-section');
             
@@ -3927,10 +4130,23 @@
                 <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
                     Não foi possível acessar os dados do Firestore devido a permissões de segurança.
                 </p>
-                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0;">
-                    Para ver o uso real do armazenamento, acesse o <a href="https://console.firebase.google.com" target="_blank" style="color: var(--primary); text-decoration: underline;">Console do Firebase</a> 
-                    → Seu projeto → Firestore Database → Usage.
+                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                    Acesse o console do Firebase para ver seu armazenamento real:
                 </p>
+                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <a href="https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/firestore/usage" target="_blank" class="btn btn-primary" style="text-decoration: none; font-size: 0.875rem;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        </svg>
+                        Ver Uso do Firestore
+                    </a>
+                    <a href="https://console.firebase.google.com/project/${FIREBASE_PROJECT_ID}/storage" target="_blank" class="btn btn-secondary" style="text-decoration: none; font-size: 0.875rem;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 0.5rem;">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/>
+                        </svg>
+                        Ver Storage
+                    </a>
+                </div>
             `;
             
             infoSection.insertBefore(errorDiv, infoSection.firstChild);
