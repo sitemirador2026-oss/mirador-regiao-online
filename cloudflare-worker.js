@@ -92,6 +92,85 @@ function parseCompactNumber(value) {
   return Math.max(0, Math.round(numeric * multiplier));
 }
 
+function sanitizeInstagramHandle(value = '') {
+  const text = String(value || '').trim().replace(/^@/, '');
+  if (!text) return '';
+
+  const match = text.match(/[a-z0-9._]{2,30}/i);
+  const handle = (match && match[0]) ? match[0].toLowerCase() : '';
+  if (!handle) return '';
+  if (!/[a-z]/.test(handle)) return '';
+  if (/^[._]|[._]$/.test(handle)) return '';
+
+  const blocked = new Set(['instagram', 'undefined', 'null', 'nan', 'profile', 'user']);
+  if (blocked.has(handle)) return '';
+  return handle;
+}
+
+function extractInstagramHandlesFromText(text = '') {
+  if (!text) return [];
+  const handles = new Set();
+  const addHandle = (value) => {
+    const clean = sanitizeInstagramHandle(value);
+    if (clean) handles.add(clean);
+  };
+
+  const collaborationLead = text.match(/^\s*([a-z0-9._]{2,30})\s+(?:e|and)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i);
+  if (collaborationLead && collaborationLead[1]) addHandle(collaborationLead[1]);
+
+  return Array.from(handles);
+}
+
+function extractInstagramCollaboratorsFromHtml(html = '') {
+  if (!html) return [];
+  const handles = new Set();
+  const addHandle = (value) => {
+    const clean = sanitizeInstagramHandle(value);
+    if (clean) handles.add(clean);
+  };
+
+  const windows = html.match(/coauthor[a-z0-9_]{0,40}.{0,1200}/ig) || [];
+  const usernamePattern = /\\"?username\\"?\s*:\s*\\"?([a-z0-9._]{2,30})\\"?/ig;
+
+  for (const snippet of windows) {
+    let match;
+    while ((match = usernamePattern.exec(snippet)) !== null) {
+      addHandle(match[1]);
+    }
+    usernamePattern.lastIndex = 0;
+  }
+
+  return Array.from(handles);
+}
+
+function collectInstagramCollaborators(...sources) {
+  const handles = new Set();
+  const addHandle = (value) => {
+    const clean = sanitizeInstagramHandle(value);
+    if (clean) handles.add(clean);
+  };
+
+  for (const source of sources) {
+    if (!source) continue;
+
+    if (Array.isArray(source)) {
+      source.forEach(item => addHandle(item));
+      continue;
+    }
+
+    if (typeof source === 'string') {
+      const trimmed = source.trim();
+      if (/^[a-z0-9._]{2,30}$/i.test(trimmed)) {
+        addHandle(trimmed);
+      }
+      extractInstagramHandlesFromText(trimmed).forEach(addHandle);
+      continue;
+    }
+  }
+
+  return Array.from(handles);
+}
+
 function extractInstagramUsernameFromText(text = '') {
   if (!text) return '';
   const patterns = [
@@ -176,6 +255,14 @@ async function scrapeInstagramMeta(instagramUrl = '') {
   const ogTitle = extractMetaTagContent(html, 'og:title', 'property');
   const ogDescription = extractMetaTagContent(html, 'og:description', 'property') || extractMetaTagContent(html, 'description', 'name');
   const ogImage = decodeEscapedUrl(extractMetaTagContent(html, 'og:image', 'property'));
+  const ogVideo = decodeEscapedUrl(
+    extractMetaTagContent(html, 'og:video', 'property') ||
+    extractMetaTagContent(html, 'og:video:url', 'property') ||
+    extractMetaTagContent(html, 'twitter:player:stream', 'name')
+  );
+  const inlineVideoMatch = html.match(/"video_url"\s*:\s*"([^"]+)"/i);
+  const inlineVideoUrl = inlineVideoMatch ? decodeEscapedUrl(inlineVideoMatch[1]) : '';
+  const resolvedVideo = ogVideo || inlineVideoUrl || '';
 
   const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+likes?/i);
   const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+comments?/i);
@@ -193,10 +280,21 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     displayName = decodeHtmlEntities(displayFromTitle[1]).trim();
   }
 
+  const collaborators = collectInstagramCollaborators(
+    username,
+    displayName,
+    extractInstagramCollaboratorsFromHtml(html)
+  );
+  const primaryHandle = collaborators[0] || username;
+  const hasAdditionalCollaborator = Boolean(
+    collaborators.length > 1 ||
+    /(?:\be\b|\band\b)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i.test(`${ogTitle || ''} ${ogDescription || ''}`)
+  );
+
   let profileImage = '';
-  if (username) {
+  if (primaryHandle) {
     try {
-      profileImage = await fetchInstagramProfileImage(username);
+      profileImage = await fetchInstagramProfileImage(primaryHandle);
     } catch (_error) {
       profileImage = '';
     }
@@ -215,6 +313,10 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     title: ogTitle || '',
     description: ogDescription || '',
     image: ogImage || '',
+    video: resolvedVideo,
+    mediaType: resolvedVideo ? 'video' : 'image',
+    collaborators,
+    hasAdditionalCollaborator,
     sourceUrl: cleanUrl
   };
 }

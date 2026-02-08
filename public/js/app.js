@@ -205,20 +205,77 @@ function sanitizeInstagramHandle(value) {
     if (!text) return '';
 
     const match = text.match(/[a-z0-9._]{2,30}/i);
-    const handle = (match && match[0]) ? match[0] : '';
+    const handle = (match && match[0]) ? match[0].toLowerCase() : '';
     if (!handle) return '';
+    if (!/[a-z]/.test(handle)) return '';
+    if (/^[._]|[._]$/.test(handle)) return '';
 
     const blocked = ['instagram', 'undefined', 'null', 'nan', 'profile', 'user'];
-    if (blocked.includes(handle.toLowerCase())) return '';
+    if (blocked.includes(handle)) return '';
     return handle;
+}
+
+function extractInstagramHandlesFromText(text = '') {
+    if (!text || typeof text !== 'string') return [];
+
+    const handles = new Set();
+    const addHandle = (value) => {
+        const clean = sanitizeInstagramHandle(value);
+        if (clean) handles.add(clean);
+    };
+
+    const collaborationLead = text.match(/^\s*([a-z0-9._]{2,30})\s+(?:e|and)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i);
+    if (collaborationLead && collaborationLead[1]) addHandle(collaborationLead[1]);
+
+    return Array.from(handles);
+}
+
+function collectInstagramCollaborators(...sources) {
+    const handles = new Set();
+    const addHandle = (value) => {
+        const clean = sanitizeInstagramHandle(value);
+        if (clean) handles.add(clean);
+    };
+
+    for (const source of sources) {
+        if (!source) continue;
+
+        if (Array.isArray(source)) {
+            source.forEach(item => addHandle(item));
+            continue;
+        }
+
+        if (typeof source === 'string') {
+            const trimmed = source.trim();
+            if (/^[a-z0-9._]{2,30}$/i.test(trimmed)) {
+                addHandle(trimmed);
+            }
+            extractInstagramHandlesFromText(trimmed).forEach(addHandle);
+            continue;
+        }
+    }
+
+    return Array.from(handles);
+}
+
+function formatInstagramCollaborators(handles = [], fallback = 'instagram') {
+    const clean = (handles || []).map(sanitizeInstagramHandle).filter(Boolean);
+    if (clean.length === 0) return fallback;
+    if (clean.length === 1) return clean[0];
+    return `${clean[0]} e outra conta`;
+}
+
+function hasInstagramCollaborationHint(...texts) {
+    return texts.some(text => {
+        if (!text || typeof text !== 'string') return false;
+        return /(?:\be\b|\band\b)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i.test(text);
+    });
 }
 
 function sanitizeInstagramProfileImage(url) {
     if (!url || typeof url !== 'string') return '';
     const clean = url.trim();
     if (!clean) return '';
-    const blockedParts = ['favicon', 'apple-touch-icon', 'static/images/ico', 'default_'];
-    if (blockedParts.some(part => clean.toLowerCase().includes(part))) return '';
     return clean;
 }
 
@@ -249,7 +306,7 @@ function sanitizeInstagramDisplayName(value, fallbackHandle = '', description = 
 
 function buildInstagramAvatarUrl(username, fallbackName = 'IG') {
     const clean = sanitizeInstagramHandle(username);
-    if (!clean) return buildUiAvatarUrl(fallbackName);
+    if (!clean) return '';
     return `https://unavatar.io/instagram/${encodeURIComponent(clean)}`;
 }
 
@@ -275,8 +332,17 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
     const likesMatch = textBlob.match(/([\d.,kmb]+)\s+likes?/i);
     const commentsMatch = textBlob.match(/([\d.,kmb]+)\s+comments?/i);
 
+    const collaborators = collectInstagramCollaborators(
+        meta.collaborators || [],
+        meta.username,
+        extractInstagramUsernameFromUrl(meta.authorUrl || ''),
+        extractInstagramUsernameFromText(textBlob),
+        extractInstagramUsernameFromUrl(instagramUrl)
+    );
+
     const username = sanitizeInstagramHandle(
         meta.username ||
+        collaborators[0] ||
         extractInstagramUsernameFromUrl(meta.authorUrl || '') ||
         extractInstagramUsernameFromText(textBlob) ||
         extractInstagramUsernameFromUrl(instagramUrl)
@@ -289,6 +355,11 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
         username,
         textBlob,
         instagramUrl
+    ) || username || '';
+    const hasAdditionalCollaborator = Boolean(
+        meta.hasAdditionalCollaborator ||
+        collaborators.length > 1 ||
+        hasInstagramCollaborationHint(meta.title || '', meta.description || '', meta.authorName || '')
     );
     const cleanProfileImage = sanitizeInstagramProfileImage(meta.profileImage || '');
 
@@ -297,7 +368,9 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
         comments,
         username,
         displayName,
-        profileImage: cleanProfileImage
+        profileImage: cleanProfileImage,
+        collaborators,
+        hasAdditionalCollaborator
     };
 }
 
@@ -307,10 +380,11 @@ async function fetchInstagramMeta(instagramUrl) {
     let noembedData = null;
 
     const encodedUrl = encodeURIComponent(instagramUrl);
-    const metaEndpoints = [
-        `/api/instagram/meta?url=${encodedUrl}`,
-        `https://mirador-r2.sitemirador2026.workers.dev/api/instagram/meta?url=${encodedUrl}`
-    ];
+    const workerEndpoint = `https://mirador-r2.sitemirador2026.workers.dev/api/instagram/meta?url=${encodedUrl}`;
+    const localEndpoint = `/api/instagram/meta?url=${encodedUrl}`;
+    const metaEndpoints = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
+        ? [workerEndpoint]
+        : [localEndpoint, workerEndpoint];
 
     for (const endpoint of metaEndpoints) {
         try {
@@ -359,7 +433,9 @@ async function fetchInstagramMeta(instagramUrl) {
         authorName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
         authorUrl: microlinkData?.author?.url || '',
         username: internalMeta?.username || microlinkData?.author?.username || '',
-        profileImage: internalMeta?.profileImage || microlinkData?.author?.image?.url || microlinkData?.author?.avatar || ''
+        profileImage: internalMeta?.profileImage || microlinkData?.author?.image?.url || microlinkData?.author?.avatar || '',
+        collaborators: internalMeta?.collaborators || [],
+        hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
 
     return normalizeInstagramMeta(merged, instagramUrl);
@@ -794,6 +870,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     loadStories();
     
     // Carregar notícias do Instagram
+    await loadInstagramProfileSettings();
     loadInstagramNews();
     
     console.log('[App] v2.5 - Pronto!');
@@ -1067,16 +1144,172 @@ document.addEventListener('DOMContentLoaded', function() {
 // Instagram News functionality
 let allInstagramNews = [];
 let showingAllInstagram = false;
+const DEFAULT_INSTAGRAM_PROFILE_SETTINGS = {
+    displayName: 'Mirador e Região Online',
+    username: 'mirador_e_regiao_online',
+    profileImage: ''
+};
+let instagramProfileSettings = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS };
 
-window.addEventListener('public-layout-updated', () => {
+function normalizeInstagramProfileSettings(settings = {}) {
+    const profileImageCandidates = [
+        settings.profileImage,
+        settings.profile_image,
+        settings.profilePhoto,
+        settings.profile_photo,
+        settings.avatar,
+        settings.avatarUrl,
+        settings.avatar_url,
+        settings.photo,
+        settings.photoUrl,
+        settings.photo_url,
+        settings.image,
+        settings.logo,
+        settings.profile && settings.profile.image,
+        settings.profile && settings.profile.photo
+    ];
+    const firstProfileImage = profileImageCandidates.find(value => typeof value === 'string' && value.trim());
+    const displayNameRaw = (settings.displayName || settings.name || '').toString().trim();
+    const usernameRaw = sanitizeInstagramHandle(settings.username || settings.handle || displayNameRaw);
+    const profileImage = sanitizeInstagramProfileImage(firstProfileImage || '');
+
+    return {
+        displayName: displayNameRaw || DEFAULT_INSTAGRAM_PROFILE_SETTINGS.displayName,
+        username: usernameRaw || DEFAULT_INSTAGRAM_PROFILE_SETTINGS.username,
+        profileImage: profileImage || ''
+    };
+}
+
+function getInstagramOfficialProfile() {
+    return normalizeInstagramProfileSettings(instagramProfileSettings || {});
+}
+
+function extractInstagramProfileFromLayout(layoutData = {}) {
+    const nested = (layoutData && typeof layoutData.instagramProfile === 'object' && layoutData.instagramProfile)
+        ? layoutData.instagramProfile
+        : {};
+
+    return normalizeInstagramProfileSettings({
+        ...nested,
+        displayName:
+            nested.displayName ||
+            layoutData.instagramProfileDisplayName ||
+            layoutData.instagramProfileName ||
+            layoutData.instagramDisplayName ||
+            '',
+        username:
+            nested.username ||
+            layoutData.instagramProfileUsername ||
+            layoutData.instagramUsername ||
+            '',
+        profileImage:
+            nested.profileImage ||
+            layoutData.instagramProfileImage ||
+            layoutData.instagramProfilePhoto ||
+            layoutData.instagramAvatar ||
+            ''
+    });
+}
+
+function hasInstagramProfileInLayout(layoutData = {}) {
+    const nested = (layoutData && typeof layoutData.instagramProfile === 'object' && layoutData.instagramProfile)
+        ? layoutData.instagramProfile
+        : {};
+    return Boolean(
+        nested.displayName ||
+        nested.username ||
+        nested.profileImage ||
+        layoutData.instagramProfileDisplayName ||
+        layoutData.instagramProfileUsername ||
+        layoutData.instagramProfileImage ||
+        layoutData.instagramProfileName ||
+        layoutData.instagramProfilePhoto ||
+        layoutData.instagramAvatar
+    );
+}
+
+async function loadInstagramProfileSettings() {
+    let profileDoc = null;
+    try {
+        profileDoc = await db.collection('settings').doc('instagramProfile').get({ source: 'server' });
+    } catch (_error) {}
+
+    try {
+        if (!profileDoc) {
+            profileDoc = await db.collection('settings').doc('instagramProfile').get();
+        }
+        if (profileDoc && profileDoc.exists) {
+            const normalized = normalizeInstagramProfileSettings(profileDoc.data() || {});
+            instagramProfileSettings = normalized;
+            localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+            localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+            return normalized;
+        }
+    } catch (error) {
+        console.log('[App] Nao foi possivel carregar perfil oficial do Instagram:', error);
+    }
+
+    try {
+        const layoutDoc = await db.collection('settings').doc('layout').get();
+        if (layoutDoc && layoutDoc.exists && hasInstagramProfileInLayout(layoutDoc.data() || {})) {
+            const normalized = extractInstagramProfileFromLayout(layoutDoc.data() || {});
+            instagramProfileSettings = normalized;
+            localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+            localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+            return normalized;
+        }
+    } catch (layoutError) {
+        console.log('[App] Nao foi possivel carregar fallback do perfil no layout:', layoutError);
+    }
+
+    try {
+        const savedLayout = localStorage.getItem('publicSiteLayout');
+        if (savedLayout) {
+            const parsedLayout = JSON.parse(savedLayout);
+            if (hasInstagramProfileInLayout(parsedLayout)) {
+                const normalizedFromLayout = extractInstagramProfileFromLayout(parsedLayout);
+                instagramProfileSettings = normalizedFromLayout;
+                localStorage.setItem('publicInstagramProfile', JSON.stringify(normalizedFromLayout));
+                localStorage.setItem('siteInstagramProfile', JSON.stringify(normalizedFromLayout));
+                return normalizedFromLayout;
+            }
+        }
+    } catch (_error) {}
+
+    try {
+        const saved = localStorage.getItem('publicInstagramProfile');
+        if (saved) {
+            const normalized = normalizeInstagramProfileSettings(JSON.parse(saved));
+            instagramProfileSettings = normalized;
+            return normalized;
+        }
+    } catch (_error) {}
+
+    try {
+        const adminSaved = localStorage.getItem('siteInstagramProfile');
+        if (adminSaved) {
+            const normalized = normalizeInstagramProfileSettings(JSON.parse(adminSaved));
+            instagramProfileSettings = normalized;
+            localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+            return normalized;
+        }
+    } catch (_error) {}
+
+    instagramProfileSettings = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS };
+    return instagramProfileSettings;
+}
+
+window.addEventListener('public-layout-updated', async () => {
     if (typeof loadInstagramNews === 'function') {
         showingAllInstagram = false;
+        await loadInstagramProfileSettings();
         loadInstagramNews();
     }
 });
 
 async function loadInstagramNews() {
     try {
+        await loadInstagramProfileSettings();
         let news = [];
         
         try {
@@ -1178,6 +1411,22 @@ async function updateInstagramStats(newsItems) {
 // Variável para armazenar os dados dos posts do Instagram
 let instagramPostsData = {};
 
+function getInstagramPrimaryMedia(post = {}) {
+    const isVideo = (post.instagramMediaType === 'video' || post.mediaType === 'video') && Boolean(post.instagramVideoUrl);
+    if (isVideo) {
+        return {
+            type: 'video',
+            url: post.instagramVideoUrl,
+            poster: post.image || ''
+        };
+    }
+    return {
+        type: 'image',
+        url: post.image || '',
+        poster: ''
+    };
+}
+
 function createInstagramCard(news) {
     const dateObj = new Date(news.date);
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
@@ -1198,20 +1447,27 @@ function createInstagramCard(news) {
         description: rawContent,
         title: news.title || ''
     }, instagramUrl);
-    const profileName = sanitizeInstagramDisplayName(
-        profileMeta.displayName || profileMeta.username || '',
-        profileMeta.username || '',
-        rawContent,
-        instagramUrl
-    ) || sanitizeInstagramHandle(news.instagramDisplayName || news.instagramUsername || '') || 'instagram';
-    const fallbackAvatar = buildUiAvatarUrl(profileName);
-    const profileImage =
-        sanitizeInstagramProfileImage(profileMeta.profileImage) ||
-        sanitizeInstagramProfileImage(news.instagramProfileImage || '') ||
-        buildInstagramAvatarUrl(profileMeta.username || news.instagramUsername || profileName, profileName);
+    const officialProfile = getInstagramOfficialProfile();
+    const fallbackHandle = sanitizeInstagramHandle(
+        news.instagramUsername ||
+        profileMeta.username ||
+        news.instagramDisplayName ||
+        profileMeta.displayName ||
+        ''
+    );
+    const profileHandle = officialProfile.username || fallbackHandle || DEFAULT_INSTAGRAM_PROFILE_SETTINGS.username;
+    const profileName = officialProfile.displayName || news.instagramDisplayName || profileMeta.displayName || profileHandle;
+    const profileImage = sanitizeInstagramProfileImage(
+        officialProfile.profileImage ||
+        news.instagramProfileImage ||
+        profileMeta.profileImage ||
+        ''
+    );
+    const hasAvatar = Boolean(profileImage);
     const displayTitle = buildInstagramTitlePreview(news.title, content);
     
-    // Verificar se tem galeria
+    // Verificar se tem galeria e tipo da midia principal
+    const primaryMedia = getInstagramPrimaryMedia(news);
     const hasGallery = news.gallery && Array.isArray(news.gallery) && news.gallery.length > 0;
     const totalMedia = hasGallery ? 1 + news.gallery.length : 1;
     
@@ -1226,10 +1482,13 @@ function createInstagramCard(news) {
         timeStr,
         hasGallery,
         totalMedia,
-        instagramUsername: sanitizeInstagramHandle(profileMeta.username || news.instagramUsername || profileName),
+        instagramMediaType: primaryMedia.type,
+        instagramVideoUrl: primaryMedia.type === 'video' ? (news.instagramVideoUrl || '') : '',
+        instagramUsername: profileHandle,
         instagramDisplayName: profileName,
-        instagramProfileImage: profileImage,
-        instagramAvatarFallback: fallbackAvatar,
+        instagramProfileImage: profileImage || '',
+        instagramCollaborators: [],
+        instagramHasCollaborator: false,
         title: displayTitle
     };
     
@@ -1237,7 +1496,10 @@ function createInstagramCard(news) {
         <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}')">
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper">
-                <img src="${news.image}" alt="${news.title}" loading="lazy">
+                ${primaryMedia.type === 'video'
+                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted loop playsinline preload="metadata" oncanplay="if(this.paused){this.play().catch(()=>{});}"></video>`
+                    : `<img src="${news.image}" alt="${news.title}" loading="lazy">`
+                }
                 ${hasGallery ? `
                     <div class="instagram-gallery-indicator">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -1252,8 +1514,8 @@ function createInstagramCard(news) {
             <div class="instagram-card-content">
                 <!-- Header com avatar -->
                 <div class="instagram-card-header">
-                    <div class="instagram-card-avatar">
-                        <img class="instagram-profile-img" data-id="${news.id}" src="${profileImage}" alt="${profileName}" onerror="this.onerror=null;this.src='${fallbackAvatar}'">
+                    <div class="instagram-card-avatar ${hasAvatar ? '' : 'is-empty'}" data-id="${news.id}">
+                        ${hasAvatar ? `<img class="instagram-profile-img" data-id="${news.id}" src="${profileImage}" alt="${profileName}" onerror="this.onerror=null;const wrapper=this.closest('.instagram-card-avatar');if(wrapper){wrapper.classList.add('is-empty');}this.remove();">` : ''}
                     </div>
                     <div class="instagram-card-user">
                         <span class="instagram-card-username" data-id="${news.id}">${profileName}</span>
@@ -1422,7 +1684,7 @@ function setupInstagramGallery(card, post) {
     const hasGallery = post.hasGallery && post.gallery && post.gallery.length > 0;
     
     // Montar array de todas as mídias (capa + galeria)
- const allMedia = [{ type: 'image', url: post.image }]; // Capa é sempre imagem
+    const allMedia = [getInstagramPrimaryMedia(post)];
     if (hasGallery) {
         post.gallery.forEach(item => {
             allMedia.push({
@@ -1439,14 +1701,12 @@ function setupInstagramGallery(card, post) {
         if (existingControls) existingControls.remove();
         const existingDots = imageWrapper.querySelector('.instagram-gallery-dots');
         if (existingDots) existingDots.remove();
-        // Garantir que mostra a imagem de capa
-        const img = imageWrapper.querySelector('img');
-        if (img) {
-            img.style.display = 'block';
-            img.src = post.image;
-        }
-        const video = imageWrapper.querySelector('video');
-        if (video) video.remove();
+        const galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
+        if (galleryContainer) galleryContainer.remove();
+        const primary = getInstagramPrimaryMedia(post);
+        imageWrapper.innerHTML = primary.type === 'video'
+            ? `<video src="${primary.url}" poster="${primary.poster || ''}" controls playsinline preload="metadata"></video>`
+            : `<img src="${primary.url}" alt="${post.title || 'Post do Instagram'}" loading="lazy">`;
         return;
     }
     
@@ -1461,11 +1721,16 @@ function setupInstagramGallery(card, post) {
         galleryContainer.className = 'instagram-gallery-container';
         galleryContainer.style.cssText = 'width: 100%; height: 100%; position: relative; overflow: hidden;';
         
-        // Mover a imagem atual para dentro do container
+        // Mover a midia atual para dentro do container
         const img = imageWrapper.querySelector('img');
         if (img) {
             img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
             galleryContainer.appendChild(img);
+        }
+        const existingVideo = imageWrapper.querySelector('video');
+        if (existingVideo) {
+            existingVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #000;';
+            galleryContainer.appendChild(existingVideo);
         }
         
         imageWrapper.appendChild(galleryContainer);
@@ -1515,7 +1780,7 @@ function navigateGallery(newsId, direction) {
     if (!post) return;
     
     // Montar array de mídias
-    const allMedia = [{ type: 'image', url: post.image }];
+    const allMedia = [getInstagramPrimaryMedia(post)];
     if (post.gallery && post.gallery.length > 0) {
         post.gallery.forEach(item => {
             allMedia.push({
@@ -1551,6 +1816,7 @@ function showGalleryMedia(card, allMedia, index) {
     if (media.type === 'video') {
         const video = document.createElement('video');
         video.src = media.url;
+        if (media.poster) video.poster = media.poster;
         video.controls = true;
         video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #000;';
         galleryContainer.appendChild(video);
@@ -1601,12 +1867,24 @@ function closeInstagramCard(card) {
         if (post) {
             // Limpar wrapper
             imageWrapper.innerHTML = '';
-            // Recriar imagem de capa
-            const img = document.createElement('img');
-            img.src = post.image;
-            img.alt = post.title || 'Post do Instagram';
-            img.loading = 'lazy';
-            imageWrapper.appendChild(img);
+            const primary = getInstagramPrimaryMedia(post);
+            if (primary.type === 'video') {
+                const video = document.createElement('video');
+                video.src = primary.url;
+                video.poster = primary.poster || '';
+                video.muted = true;
+                video.loop = true;
+                video.playsInline = true;
+                video.preload = 'metadata';
+                video.oncanplay = () => { if (video.paused) video.play().catch(() => {}); };
+                imageWrapper.appendChild(video);
+            } else {
+                const img = document.createElement('img');
+                img.src = primary.url;
+                img.alt = post.title || 'Post do Instagram';
+                img.loading = 'lazy';
+                imageWrapper.appendChild(img);
+            }
             // Recriar indicador de galeria se houver
             if (post.hasGallery && post.totalMedia > 1) {
                 const indicator = document.createElement('div');
@@ -1801,6 +2079,7 @@ function updateInstagramCardStats(newsId, stats) {
     const likesEl = document.querySelector(`.instagram-likes-count[data-id="${newsId}"]`);
     const commentsEl = document.querySelector(`.instagram-comments-count[data-id="${newsId}"]`);
     const usernameEl = document.querySelector(`.instagram-card-username[data-id="${newsId}"]`);
+    const avatarWrapperEl = document.querySelector(`.instagram-card-avatar[data-id="${newsId}"]`);
     const profileImgEl = document.querySelector(`.instagram-profile-img[data-id="${newsId}"]`);
     
     const current = instagramPostsData[newsId] || {};
@@ -1818,45 +2097,44 @@ function updateInstagramCardStats(newsId, stats) {
         commentsEl.textContent = formatNumber(finalCommentsValue);
     }
 
-    const safeStatsName = isGenericInstagramDisplayName(stats?.displayName) ? '' : (stats?.displayName || '');
-    const safeStatsUsername = sanitizeInstagramHandle(stats?.username || '');
-    const safeCurrentUsername = sanitizeInstagramHandle(current.instagramUsername || current.instagramDisplayName || '');
-    const safeCurrentName = isGenericInstagramDisplayName(current.instagramDisplayName) ? '' : (current.instagramDisplayName || '');
-    const mergedProfileImage =
-        sanitizeInstagramProfileImage(stats?.profileImage || '') ||
-        sanitizeInstagramProfileImage(current.instagramProfileImage || '');
-
-    const normalized = normalizeInstagramMeta({
-        ...stats,
-        username: safeStatsUsername || safeCurrentUsername,
-        displayName: safeStatsName || safeCurrentName || safeCurrentUsername,
-        profileImage: mergedProfileImage,
-        description: current.content || '',
-        title: current.title || ''
-    }, current.instagramUrl || '');
-
-    const finalName = sanitizeInstagramDisplayName(
-        normalized.displayName || normalized.username || '',
-        normalized.username || '',
-        current.content || '',
-        current.instagramUrl || ''
-    ) || safeCurrentName || safeCurrentUsername || 'instagram';
-    const fallbackAvatar = buildUiAvatarUrl(finalName);
-    const finalProfileImage =
-        sanitizeInstagramProfileImage(normalized.profileImage) ||
-        sanitizeInstagramProfileImage(current.instagramProfileImage || '') ||
-        buildInstagramAvatarUrl(normalized.username || safeCurrentUsername || finalName, finalName);
+    const officialProfile = getInstagramOfficialProfile();
+    const safeCurrentUsername = sanitizeInstagramHandle(current.instagramUsername || '');
+    const finalName = officialProfile.displayName || current.instagramDisplayName || safeCurrentUsername || DEFAULT_INSTAGRAM_PROFILE_SETTINGS.displayName;
+    const finalUsername = officialProfile.username || safeCurrentUsername || DEFAULT_INSTAGRAM_PROFILE_SETTINGS.username;
+    const finalProfileImage = sanitizeInstagramProfileImage(
+        officialProfile.profileImage ||
+        current.instagramProfileImage ||
+        stats?.profileImage ||
+        ''
+    );
 
     if (usernameEl) {
         usernameEl.textContent = finalName;
     }
 
-    if (profileImgEl) {
-        profileImgEl.src = finalProfileImage;
-        profileImgEl.onerror = () => {
-            profileImgEl.onerror = null;
-            profileImgEl.src = fallbackAvatar;
-        };
+    if (avatarWrapperEl) {
+        if (finalProfileImage) {
+            avatarWrapperEl.classList.remove('is-empty');
+            let imgEl = profileImgEl;
+            if (!imgEl) {
+                imgEl = document.createElement('img');
+                imgEl.className = 'instagram-profile-img';
+                imgEl.setAttribute('data-id', newsId);
+                avatarWrapperEl.appendChild(imgEl);
+            }
+            imgEl.alt = finalName;
+            imgEl.src = finalProfileImage;
+            imgEl.onerror = () => {
+                imgEl.onerror = null;
+                imgEl.remove();
+                avatarWrapperEl.classList.add('is-empty');
+            };
+        } else {
+            avatarWrapperEl.classList.add('is-empty');
+            if (profileImgEl) {
+                profileImgEl.remove();
+            }
+        }
     }
 
     if (instagramPostsData[newsId]) {
@@ -1864,9 +2142,11 @@ function updateInstagramCardStats(newsId, stats) {
             ...instagramPostsData[newsId],
             likes: finalLikesValue,
             comments: finalCommentsValue,
-            instagramUsername: sanitizeInstagramHandle(normalized.username || safeCurrentUsername || instagramPostsData[newsId].instagramUsername),
+            instagramUsername: finalUsername,
             instagramDisplayName: finalName,
-            instagramProfileImage: finalProfileImage
+            instagramProfileImage: finalProfileImage || '',
+            instagramCollaborators: [],
+            instagramHasCollaborator: false
         };
     }
 }

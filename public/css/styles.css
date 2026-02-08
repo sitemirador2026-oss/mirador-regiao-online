@@ -816,6 +816,13 @@ body {
     object-fit: contain;
 }
 
+.instagram-card.expanded .instagram-card-image-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
 .instagram-card.expanded .instagram-card-content {
     padding: 1.25rem;
     display: flex;
@@ -923,6 +930,14 @@ body {
     object-fit: contain;
     display: block;
     background: #f0f0f0;
+}
+
+.instagram-card-image-wrapper video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    background: #000;
 }
 
 /* Indicador de galeria no card fechado */
@@ -1582,6 +1597,10 @@ body {
     height: 100%;
     overflow: hidden;
     flex-shrink: 0;
+}
+
+.instagram-card-avatar.is-empty {
+    display: none;
 }
 
 .news-card-horizontal-image img {

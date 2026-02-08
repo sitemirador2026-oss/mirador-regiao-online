@@ -2273,6 +2273,44 @@
                         <div style="max-width: 700px; margin: 0 auto; padding: 2rem;">
                             <h2 class="section-title" style="margin-bottom: 1.5rem;"> Importar Post do Instagram</h2>
                             <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
+                                <!-- Perfil oficial do Instagram (configuração fixa) -->
+                                <div style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #fff5f8 0%, #fff 100%); border-radius: var(--radius); border: 1px solid #f5d3df;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                        <label style="display: block; font-size: 0.9375rem; font-weight: 600; color: #E4405F; margin: 0;">
+                                            Perfil oficial exibido no site
+                                        </label>
+                                        <button class="btn btn-secondary" type="button" onclick="saveInstagramProfileSettingsAdmin()" style="white-space: nowrap;">Salvar perfil</button>
+                                    </div>
+                                    <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                        Configure uma vez o nome e a foto do perfil oficial. Todos os cards do Instagram no site usarão esse mesmo perfil.
+                                    </p>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                        <div>
+                                            <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Nome exibido</label>
+                                            <input type="text" id="instagramDefaultProfileName" oninput="updateInstagramProfilePreviewAdmin()" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);" placeholder="Mirador e Região Online">
+                                        </div>
+                                        <div>
+                                            <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">@usuario (sem @)</label>
+                                            <input type="text" id="instagramDefaultProfileUsername" oninput="updateInstagramProfilePreviewAdmin()" style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);" placeholder="mirador_e_regiao_online">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Foto do perfil</label>
+                                        <div id="instagramDefaultProfileUploadArea" style="width: 100%; background: var(--bg-primary); border: 2px dashed var(--border); border-radius: var(--radius); padding: 0.9rem; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('instagramDefaultProfileUpload').click()" ondragover="event.preventDefault(); this.style.borderColor='#E4405F'; this.style.background='#fff5f5';" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg-primary)';" ondrop="handleInstagramDefaultProfileImageDrop(event)">
+                                            <input type="file" id="instagramDefaultProfileUpload" accept="image/*" style="display: none;" onchange="handleInstagramDefaultProfileImageUpload(event)">
+                                            <div style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">Clique ou arraste a foto aqui</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">JPG, PNG, WebP (max. 10MB)</div>
+                                        </div>
+                                        <input type="hidden" id="instagramDefaultProfileImage">
+                                    </div>
+                                    <div style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.625rem;">
+                                        <div id="instagramDefaultProfilePreviewWrap" style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); overflow: hidden; background: var(--bg-secondary); display: none;">
+                                            <img id="instagramDefaultProfilePreview" src="" alt="Preview perfil Instagram" style="width: 100%; height: 100%; object-fit: cover;">
+                                        </div>
+                                        <span id="instagramDefaultProfilePreviewName" style="font-size: 0.8125rem; color: var(--text-muted);">Sem foto configurada</span>
+                                        <button id="instagramDefaultProfileRemoveBtn" type="button" class="btn btn-secondary btn-sm" style="display: none;" onclick="removeInstagramDefaultProfileImage()">Remover foto</button>
+                                    </div>
+                                </div>
                                 
                                 <!-- Link do Instagram (PRIMEIRO - para extracao automatica) -->
                                 <div style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); border-radius: var(--radius); border: 1px solid #e5e5e5;">
@@ -2289,9 +2327,9 @@
                                     </p>
                                 </div>
                                 
-                                <!-- Upload de Imagem -->
+                                <!-- Upload de Midia -->
                                 <div style="margin-bottom: 1.5rem;">
-                                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Imagem do Post</label>
+                                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Midia do Post (Imagem ou Video)</label>
                                     <div id="instagramImageUploadArea" style="width: 100%; background: var(--bg-primary); border: 2px dashed var(--border); border-radius: var(--radius); padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s;" onclick="document.getElementById('instagramImageUpload').click()" ondragover="event.preventDefault(); this.style.borderColor='#E4405F'; this.style.background='#fff5f5';" ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg-primary)';" ondrop="handleInstagramImageDrop(event)">
                                         <input type="file" id="instagramImageUpload" accept="image/*,video/*" style="display: none;" onchange="handleInstagramImageUpload(event)">
                                         <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 0.5rem; opacity: 0.5;">
@@ -2300,12 +2338,13 @@
                                             <line x1="12" y1="3" x2="12" y2="15" stroke-width="2"/>
                                         </svg>
                                         <p style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);">Clique ou arraste a imagem aqui</p>
-                                        <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, MP4 (max. 400KB apos compressao)</p>
+                                        <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, WebP, MP4, MOV, WebM (video max. 15MB apos compressao)</p>
                                     </div>
                                     
                                     <!-- Preview da Imagem -->
                                     <div id="instagramImagePreviewContainer" style="display: none; margin-top: 0.75rem; position: relative;">
                                         <img id="instagramNewsImage" style="width: 100%; max-height: 400px; object-fit: contain; background: #f0f0f0; border-radius: var(--radius); border: 1px solid var(--border);">
+                                        <video id="instagramNewsVideo" style="display: none; width: 100%; max-height: 400px; object-fit: contain; background: #000; border-radius: var(--radius); border: 1px solid var(--border);" controls playsinline muted></video>
                                         <button type="button" onclick="removeInstagramImage()" style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
                                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -2313,6 +2352,8 @@
                                         </button>
                                     </div>
                                     <input type="hidden" id="instagramNewsImageUrl">
+                                    <input type="hidden" id="instagramNewsVideoUrl">
+                                    <input type="hidden" id="instagramNewsMediaType" value="image">
                                 </div>
                                 
                                 <!-- Galeria de Fotos/Videos Adicionais -->
@@ -4103,6 +4144,10 @@
             console.log('[R2] Cliente inicializado');
         }
 
+        function isInlineImageDataUrl(value) {
+            return typeof value === 'string' && value.trim().startsWith('data:image/');
+        }
+
         // Testar conexao R2
         async function testR2Connection() {
             try {
@@ -4798,7 +4843,7 @@
             };
             
             try {
-                await db.collection('settings').doc('layout').set(layoutConfig);
+                await db.collection('settings').doc('layout').set(layoutConfig, { merge: true });
                 localStorage.setItem('siteLayout', JSON.stringify(layoutConfig));
                 showModal('Sucesso!', 'Layout salvo com sucesso!', 'success');
             } catch (error) {
@@ -4912,7 +4957,7 @@
             }
         }
 
-        function handleLogoFile(file) {
+        async function handleLogoFile(file) {
             // Validar tipo de arquivo
             const validTypes = ['image/jpeg', 'image/png', 'image/svg+xml', 'image/webp'];
             if (!validTypes.includes(file.type)) {
@@ -4926,13 +4971,32 @@
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentLogo = e.target.result;
+            const uploadArea = document.getElementById('logoUploadArea');
+            const originalPointerEvents = uploadArea ? uploadArea.style.pointerEvents : '';
+            if (uploadArea) uploadArea.style.pointerEvents = 'none';
+
+            try {
+                if (!r2Client) {
+                    initR2Client();
+                }
+
+                const result = await r2Client.uploadFile(file, 'brand');
+                const uploadedUrl = (result?.url || '').trim();
+                if (!uploadedUrl) {
+                    throw new Error('URL da logo nao retornada pelo R2');
+                }
+
+                currentLogo = uploadedUrl;
                 updateLogoPreview(currentLogo);
                 updateBrandPreview();
-            };
-            reader.readAsDataURL(file);
+            } catch (error) {
+                console.error('[Admin] Erro ao enviar logo para o R2:', error);
+                showModal('Erro!', 'Nao foi possivel enviar a logo para o R2.', 'error');
+            } finally {
+                if (uploadArea) uploadArea.style.pointerEvents = originalPointerEvents;
+                const logoInput = document.getElementById('logoInput');
+                if (logoInput) logoInput.value = '';
+            }
         }
 
         // Atualizar preview da logo
@@ -5010,14 +5074,35 @@
 
         // Salvar configuracoes de marca no Firebase
         async function saveBrand() {
+            let finalLogo = currentLogo;
+            if (isInlineImageDataUrl(finalLogo)) {
+                try {
+                    if (!r2Client) initR2Client();
+                    const logoFile = await dataUrlToFile(finalLogo, `brand-logo-${Date.now()}.jpg`);
+                    const uploadResult = await r2Client.uploadFile(logoFile, 'brand');
+                    finalLogo = (uploadResult?.url || '').trim();
+                    currentLogo = finalLogo || null;
+                    if (finalLogo) {
+                        updateLogoPreview(finalLogo);
+                    }
+                } catch (uploadError) {
+                    console.error('[Admin] Erro ao migrar logo inline para R2:', uploadError);
+                    showModal('Erro!', 'Nao foi possivel enviar a logo para o R2.', 'error');
+                    return;
+                }
+            }
+
             const brandSettings = {
                 siteName: document.getElementById('siteName').value || 'Mirador Online',
                 siteTagline: document.getElementById('siteTagline').value || 'Portal de Noticias',
-                logo: currentLogo,
+                logo: finalLogo || null,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            console.log('[Admin] Salvando marca:', { ...brandSettings, logo: brandSettings.logo ? '[BASE64_IMAGE]' : null });
+            console.log('[Admin] Salvando marca:', {
+                ...brandSettings,
+                logo: brandSettings.logo ? '[R2_URL]' : null
+            });
 
             try {
                 // Salvar no Firebase Firestore
@@ -5647,24 +5732,67 @@
         }
 
         // Upload de imagem da noticia
-        function handleNewsImageUpload(event) {
+        async function handleNewsImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
+
+            if (!file.type || !file.type.startsWith('image/')) {
+                showModal('Erro!', 'Arquivo invalido. Use apenas imagem.', 'error');
+                return;
+            }
 
             if (file.size > 2 * 1024 * 1024) {
                 showModal('Erro!', 'Imagem muito grande. Maximo 2MB.', 'error');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                currentNewsImage = e.target.result;
-                document.getElementById('newsImagePreview').src = currentNewsImage;
-                document.getElementById('newsImagePreview').style.display = 'block';
-                document.getElementById('removeImageBtn').style.display = 'block';
-                document.querySelector('.featured-image-upload').style.display = 'none';
-            };
-            reader.readAsDataURL(file);
+            const uploadArea = document.querySelector('.featured-image-upload');
+            const imagePreview = document.getElementById('newsImagePreview');
+            const removeBtn = document.getElementById('removeImageBtn');
+            const inputEl = document.getElementById('newsImageInput');
+            const originalUploadHtml = uploadArea ? uploadArea.innerHTML : '';
+
+            try {
+                if (uploadArea) {
+                    uploadArea.style.pointerEvents = 'none';
+                    uploadArea.innerHTML = `
+                        <div style="padding: 1.25rem; text-align: center;">
+                            <div style="width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.5rem;"></div>
+                            <div style="font-size: 0.8125rem; color: var(--text-muted);">Enviando imagem para o R2...</div>
+                        </div>
+                    `;
+                }
+
+                if (!r2Client) {
+                    initR2Client();
+                }
+
+                const compressedDataUrl = await compressImage(file, 1400, 1400, 0.8);
+                const uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-noticia.jpg`);
+                const result = await r2Client.uploadFile(uploadFile, 'noticias');
+                const imageUrl = (result?.url || '').trim();
+
+                if (!imageUrl) {
+                    throw new Error('URL da imagem nao retornada pelo R2');
+                }
+
+                currentNewsImage = imageUrl;
+                if (imagePreview) {
+                    imagePreview.src = imageUrl;
+                    imagePreview.style.display = 'block';
+                }
+                if (removeBtn) removeBtn.style.display = 'block';
+                if (uploadArea) uploadArea.style.display = 'none';
+            } catch (error) {
+                console.error('[Admin] Erro ao enviar imagem da noticia para o R2:', error);
+                showModal('Erro!', 'Nao foi possivel enviar a imagem para o R2.', 'error');
+            } finally {
+                if (uploadArea) {
+                    uploadArea.innerHTML = originalUploadHtml;
+                    uploadArea.style.pointerEvents = '';
+                }
+                if (inputEl) inputEl.value = '';
+            }
         }
 
         // Remover imagem
@@ -5714,6 +5842,21 @@
                 return;
             }
 
+            let finalNewsImage = currentNewsImage;
+            if (isInlineImageDataUrl(finalNewsImage)) {
+                try {
+                    if (!r2Client) initR2Client();
+                    const imageFile = await dataUrlToFile(finalNewsImage, `${Date.now()}-noticia.jpg`);
+                    const uploadResult = await r2Client.uploadFile(imageFile, 'noticias');
+                    finalNewsImage = (uploadResult?.url || '').trim();
+                    currentNewsImage = finalNewsImage || null;
+                } catch (uploadError) {
+                    console.error('[Admin] Erro ao migrar imagem inline da noticia para R2:', uploadError);
+                    showModal('Erro!', 'Nao foi possivel enviar a imagem da noticia para o R2.', 'error');
+                    return;
+                }
+            }
+
             const newsData = {
                 title: title,
                 slug: document.getElementById('newsSlug').value || generateSlugFromTitle(title),
@@ -5721,7 +5864,7 @@
                 excerpt: document.getElementById('newsExcerpt').value.trim(),
                 category: category,
                 categoryName: getCategoryName(category),
-                image: currentNewsImage,
+                image: finalNewsImage || '',
                 author: document.getElementById('newsAuthor').value || 'Redacao',
                 tags: document.getElementById('newsTags').value.split(',').map(t => t.trim()).filter(t => t),
                 status: status,
@@ -5908,7 +6051,333 @@
         let currentEditingStoryId = null;
         let extractedStoryImage = '';
         let extractedStoryTitle = '';
+        const DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN = {
+            displayName: 'Mirador e Região Online',
+            username: 'mirador_e_regiao_online',
+            profileImage: ''
+        };
+        let instagramProfileSettingsAdmin = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN };
         let instagramNewsData = {};
+
+        function normalizeInstagramProfileSettingsAdmin(settings = {}) {
+            const profileImageCandidates = [
+                settings.profileImage,
+                settings.profile_image,
+                settings.profilePhoto,
+                settings.profile_photo,
+                settings.avatar,
+                settings.avatarUrl,
+                settings.avatar_url,
+                settings.photo,
+                settings.photoUrl,
+                settings.photo_url,
+                settings.image,
+                settings.logo,
+                settings.profile && settings.profile.image,
+                settings.profile && settings.profile.photo
+            ];
+            const firstProfileImage = profileImageCandidates.find(value => typeof value === 'string' && value.trim());
+            const displayNameRaw = (settings.displayName || settings.name || '').toString().trim();
+            const usernameRaw = sanitizeInstagramHandleAdmin(settings.username || settings.handle || displayNameRaw);
+            const profileImage = sanitizeInstagramProfileImageAdmin(firstProfileImage || '');
+
+            return {
+                displayName: displayNameRaw || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName,
+                username: usernameRaw || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.username,
+                profileImage: profileImage || '',
+                updatedAt: settings.updatedAt || null
+            };
+        }
+
+        function extractInstagramProfileFromLayoutAdmin(layoutData = {}) {
+            const nested = (layoutData && typeof layoutData.instagramProfile === 'object' && layoutData.instagramProfile)
+                ? layoutData.instagramProfile
+                : {};
+
+            return normalizeInstagramProfileSettingsAdmin({
+                ...nested,
+                displayName:
+                    nested.displayName ||
+                    layoutData.instagramProfileDisplayName ||
+                    layoutData.instagramProfileName ||
+                    layoutData.instagramDisplayName ||
+                    layoutData.instagramName ||
+                    '',
+                username:
+                    nested.username ||
+                    layoutData.instagramProfileUsername ||
+                    layoutData.instagramUsername ||
+                    layoutData.instagramHandle ||
+                    '',
+                profileImage:
+                    nested.profileImage ||
+                    layoutData.instagramProfileImage ||
+                    layoutData.instagramProfilePhoto ||
+                    layoutData.instagramAvatar ||
+                    ''
+            });
+        }
+
+        function hasInstagramProfileInLayoutAdmin(layoutData = {}) {
+            const nested = (layoutData && typeof layoutData.instagramProfile === 'object' && layoutData.instagramProfile)
+                ? layoutData.instagramProfile
+                : {};
+            return Boolean(
+                nested.displayName ||
+                nested.username ||
+                nested.profileImage ||
+                layoutData.instagramProfileDisplayName ||
+                layoutData.instagramProfileUsername ||
+                layoutData.instagramProfileImage ||
+                layoutData.instagramProfileName ||
+                layoutData.instagramProfilePhoto ||
+                layoutData.instagramAvatar
+            );
+        }
+
+        function applyInstagramProfileSettingsAdminForm(settings = {}) {
+            const normalized = normalizeInstagramProfileSettingsAdmin(settings);
+            const nameInput = document.getElementById('instagramDefaultProfileName');
+            const usernameInput = document.getElementById('instagramDefaultProfileUsername');
+            const imageInput = document.getElementById('instagramDefaultProfileImage');
+            if (nameInput) nameInput.value = normalized.displayName;
+            if (usernameInput) usernameInput.value = normalized.username;
+            if (imageInput) imageInput.value = normalized.profileImage;
+            instagramProfileSettingsAdmin = normalized;
+            updateInstagramProfilePreviewAdmin();
+        }
+
+        function updateInstagramProfilePreviewAdmin() {
+            const image = sanitizeInstagramProfileImageAdmin(document.getElementById('instagramDefaultProfileImage')?.value || '');
+            const name = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
+            const username = sanitizeInstagramHandleAdmin(document.getElementById('instagramDefaultProfileUsername')?.value || '');
+            const previewWrap = document.getElementById('instagramDefaultProfilePreviewWrap');
+            const previewImg = document.getElementById('instagramDefaultProfilePreview');
+            const previewName = document.getElementById('instagramDefaultProfilePreviewName');
+            const removeBtn = document.getElementById('instagramDefaultProfileRemoveBtn');
+            if (previewName) {
+                previewName.textContent = name || username || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName;
+            }
+            if (previewWrap && previewImg) {
+                if (image) {
+                    previewWrap.style.display = 'block';
+                    previewImg.src = image;
+                    if (removeBtn) removeBtn.style.display = 'inline-flex';
+                } else {
+                    previewWrap.style.display = 'none';
+                    previewImg.src = '';
+                    if (removeBtn) removeBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function removeInstagramDefaultProfileImage() {
+            const imageInput = document.getElementById('instagramDefaultProfileImage');
+            const fileInput = document.getElementById('instagramDefaultProfileUpload');
+            if (imageInput) imageInput.value = '';
+            if (fileInput) fileInput.value = '';
+            updateInstagramProfilePreviewAdmin();
+        }
+
+        function handleInstagramDefaultProfileImageDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const files = e.dataTransfer?.files || [];
+            if (files.length > 0) {
+                handleInstagramDefaultProfileImageUpload({ target: { files } });
+            }
+            if (e.currentTarget && e.currentTarget.style) {
+                e.currentTarget.style.borderColor = 'var(--border)';
+                e.currentTarget.style.background = 'var(--bg-primary)';
+            }
+        }
+
+        async function handleInstagramDefaultProfileImageUpload(event) {
+            const file = event?.target?.files?.[0];
+            if (!file) return;
+
+            if (!file.type || !file.type.startsWith('image/')) {
+                showModal('Erro', 'Arquivo invalido. Envie uma imagem.', 'error');
+                return;
+            }
+
+            if (file.size > 10 * 1024 * 1024) {
+                showModal('Erro', 'Imagem muito grande. Maximo 10MB.', 'error');
+                return;
+            }
+
+            const uploadArea = document.getElementById('instagramDefaultProfileUploadArea');
+            const fileInput = document.getElementById('instagramDefaultProfileUpload');
+            const imageInput = document.getElementById('instagramDefaultProfileImage');
+            if (!uploadArea || !imageInput) return;
+
+            const originalContent = uploadArea.innerHTML;
+            uploadArea.innerHTML = '<div style="padding: 0.75rem; text-align: center;"><div style="width: 26px; height: 26px; border: 2px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 0.5rem;"></div><p style="font-size: 0.8125rem; color: var(--text-muted);">Enviando foto...</p></div>';
+
+            try {
+                if (!r2Client) {
+                    initR2Client();
+                }
+
+                const result = await r2Client.uploadFile(file, 'instagram-profile');
+                const uploadedUrl = sanitizeInstagramProfileImageAdmin(result?.url || '');
+
+                if (!uploadedUrl) {
+                    throw new Error('URL da foto nao retornada pelo upload');
+                }
+
+                imageInput.value = uploadedUrl;
+                updateInstagramProfilePreviewAdmin();
+                showModal('Sucesso!', 'Foto enviada. Agora clique em "Salvar perfil".', 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao enviar foto de perfil do Instagram:', error);
+                showModal('Erro', 'Nao foi possivel enviar a foto: ' + (error.message || 'erro desconhecido'), 'error');
+            } finally {
+                uploadArea.innerHTML = originalContent;
+                if (fileInput) fileInput.value = '';
+            }
+        }
+
+        async function loadInstagramProfileSettingsAdmin() {
+            let profileDoc = null;
+            try {
+                profileDoc = await db.collection('settings').doc('instagramProfile').get({ source: 'server' });
+            } catch (_error) {}
+
+            try {
+                if (!profileDoc) {
+                    profileDoc = await db.collection('settings').doc('instagramProfile').get();
+                }
+                if (profileDoc && profileDoc.exists) {
+                    const normalized = normalizeInstagramProfileSettingsAdmin(profileDoc.data() || {});
+                    instagramProfileSettingsAdmin = normalized;
+                    localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+                    localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+                    applyInstagramProfileSettingsAdminForm(normalized);
+                    return;
+                }
+            } catch (error) {
+                console.log('[Admin] Erro ao carregar perfil oficial do Instagram:', error);
+            }
+
+            try {
+                const layoutDoc = await db.collection('settings').doc('layout').get();
+                if (layoutDoc && layoutDoc.exists && hasInstagramProfileInLayoutAdmin(layoutDoc.data() || {})) {
+                    const normalized = extractInstagramProfileFromLayoutAdmin(layoutDoc.data() || {});
+                    instagramProfileSettingsAdmin = normalized;
+                    localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+                    localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+                    applyInstagramProfileSettingsAdminForm(normalized);
+                    return;
+                }
+            } catch (layoutError) {
+                console.log('[Admin] Erro ao carregar fallback do perfil no layout:', layoutError);
+            }
+
+            try {
+                const saved = localStorage.getItem('siteInstagramProfile');
+                if (saved) {
+                    const normalized = normalizeInstagramProfileSettingsAdmin(JSON.parse(saved));
+                    instagramProfileSettingsAdmin = normalized;
+                    applyInstagramProfileSettingsAdminForm(normalized);
+                    return;
+                }
+            } catch (_e) {}
+
+            applyInstagramProfileSettingsAdminForm(DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN);
+        }
+
+        async function saveInstagramProfileSettingsAdmin() {
+            try {
+                const displayName = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
+                const username = sanitizeInstagramHandleAdmin(document.getElementById('instagramDefaultProfileUsername')?.value || '');
+                let profileImage = sanitizeInstagramProfileImageAdmin(document.getElementById('instagramDefaultProfileImage')?.value || '');
+                if (isInlineImageDataUrl(profileImage)) {
+                    if (!r2Client) initR2Client();
+                    const imageFile = await dataUrlToFile(profileImage, `instagram-profile-${Date.now()}.jpg`);
+                    const uploadResult = await r2Client.uploadFile(imageFile, 'instagram-profile');
+                    profileImage = sanitizeInstagramProfileImageAdmin(uploadResult?.url || '');
+                    const imageInput = document.getElementById('instagramDefaultProfileImage');
+                    if (imageInput) imageInput.value = profileImage;
+                }
+                const payload = normalizeInstagramProfileSettingsAdmin({
+                    displayName,
+                    username,
+                    profileImage,
+                    updatedAt: new Date().toISOString()
+                });
+
+                await Promise.all([
+                    db.collection('settings').doc('instagramProfile').set(payload, { merge: true }),
+                    db.collection('settings').doc('layout').set({
+                        instagramProfile: {
+                            displayName: payload.displayName || '',
+                            username: payload.username || '',
+                            profileImage: payload.profileImage || '',
+                            updatedAt: payload.updatedAt || new Date().toISOString()
+                        },
+                        instagramProfileDisplayName: payload.displayName || '',
+                        instagramProfileUsername: payload.username || '',
+                        instagramProfileImage: payload.profileImage || '',
+                        instagramProfileUpdatedAt: payload.updatedAt || new Date().toISOString()
+                    }, { merge: true })
+                ]);
+                instagramProfileSettingsAdmin = payload;
+                localStorage.setItem('siteInstagramProfile', JSON.stringify(payload));
+                localStorage.setItem('publicInstagramProfile', JSON.stringify(payload));
+                const syncResult = await applyOfficialInstagramProfileToExistingPostsAdmin(payload);
+                updateInstagramProfilePreviewAdmin();
+                const updatedCount = syncResult?.updated || 0;
+                showModal('Sucesso!', `Perfil oficial salvo. ${updatedCount} post(s) de Instagram foram atualizados com a foto/nome oficial.`, 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar perfil oficial do Instagram:', error);
+                showModal('Erro!', 'Nao foi possivel salvar o perfil oficial do Instagram.', 'error');
+            }
+        }
+
+        async function applyOfficialInstagramProfileToExistingPostsAdmin(profile = {}) {
+            const normalized = normalizeInstagramProfileSettingsAdmin(profile || {});
+            let docs = [];
+
+            try {
+                const snapshot = await db.collection('news').where('source', '==', 'Instagram').get();
+                docs = snapshot.docs || [];
+            } catch (_queryError) {
+                try {
+                    const fallbackSnapshot = await db.collection('news').get();
+                    docs = (fallbackSnapshot.docs || []).filter(doc => {
+                        const data = doc.data() || {};
+                        return data.source === 'Instagram' || (String(data.category || '').toLowerCase() === 'instagram');
+                    });
+                } catch (error) {
+                    console.error('[Admin] Falha ao listar posts para sincronizar perfil:', error);
+                    return { updated: 0 };
+                }
+            }
+
+            if (!docs.length) return { updated: 0 };
+
+            const batchLimit = 400;
+            let updated = 0;
+            for (let i = 0; i < docs.length; i += batchLimit) {
+                const chunk = docs.slice(i, i + batchLimit);
+                const batch = db.batch();
+
+                chunk.forEach(doc => {
+                    batch.update(doc.ref, {
+                        instagramUsername: normalized.username || '',
+                        instagramDisplayName: normalized.displayName || '',
+                        instagramProfileImage: normalized.profileImage || '',
+                        instagramMetaUpdatedAt: new Date().toISOString()
+                    });
+                    updated += 1;
+                });
+
+                await batch.commit();
+            }
+
+            return { updated };
+        }
 
         function switchInstagramTab(tab) {
             // Atualizar botÃµes
@@ -5934,6 +6403,7 @@
         }
 
         async function loadInstagramAdmin() {
+            await loadInstagramProfileSettingsAdmin();
             await loadStoriesAdmin();
             checkExpiredStories();
         }
@@ -6063,11 +6533,13 @@
             if (!text) return '';
 
             const match = text.match(/[a-z0-9._]{2,30}/i);
-            const handle = (match && match[0]) ? match[0] : '';
+            const handle = (match && match[0]) ? match[0].toLowerCase() : '';
             if (!handle) return '';
+            if (!/[a-z]/.test(handle)) return '';
+            if (/^[._]|[._]$/.test(handle)) return '';
 
             const blocked = ['instagram', 'undefined', 'null', 'nan', 'profile', 'user'];
-            if (blocked.includes(handle.toLowerCase())) return '';
+            if (blocked.includes(handle)) return '';
             return handle;
         }
 
@@ -6075,8 +6547,6 @@
             if (!url || typeof url !== 'string') return '';
             const clean = url.trim();
             if (!clean) return '';
-            const blockedParts = ['favicon', 'apple-touch-icon', 'static/images/ico', 'default_'];
-            if (blockedParts.some(part => clean.toLowerCase().includes(part))) return '';
             return clean;
         }
 
@@ -6095,6 +6565,49 @@
             return 'instagram';
         }
 
+        function extractInstagramHandlesFromTextAdmin(text = '') {
+            if (!text || typeof text !== 'string') return [];
+
+            const handles = new Set();
+            const addHandle = (value) => {
+                const clean = sanitizeInstagramHandleAdmin(value);
+                if (clean) handles.add(clean);
+            };
+
+            const collabLead = text.match(/^\s*([a-z0-9._]{2,30})\s+(?:e|and)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i);
+            if (collabLead && collabLead[1]) addHandle(collabLead[1]);
+
+            return Array.from(handles);
+        }
+
+        function collectInstagramCollaboratorsAdmin(...sources) {
+            const handles = new Set();
+            const addHandle = (value) => {
+                const clean = sanitizeInstagramHandleAdmin(value);
+                if (clean) handles.add(clean);
+            };
+
+            for (const source of sources) {
+                if (!source) continue;
+
+                if (Array.isArray(source)) {
+                    source.forEach(item => addHandle(item));
+                    continue;
+                }
+
+                if (typeof source === 'string') {
+                    const trimmed = source.trim();
+                    if (/^[a-z0-9._]{2,30}$/i.test(trimmed)) {
+                        addHandle(trimmed);
+                    }
+                    extractInstagramHandlesFromTextAdmin(trimmed).forEach(addHandle);
+                    continue;
+                }
+            }
+
+            return Array.from(handles);
+        }
+
         function normalizeInstagramMetaAdmin(meta = {}, instagramUrl = '') {
             const textBlob = [
                 meta.description,
@@ -6106,8 +6619,17 @@
             const likesMatch = textBlob.match(/([\d.,kmb]+)\s+likes?/i);
             const commentsMatch = textBlob.match(/([\d.,kmb]+)\s+comments?/i);
 
+            const collaborators = collectInstagramCollaboratorsAdmin(
+                meta.collaborators || [],
+                meta.username,
+                extractInstagramUsernameFromUrlAdmin(meta.authorUrl || ''),
+                extractInstagramUsernameFromTextAdmin(textBlob),
+                extractInstagramUsernameFromUrlAdmin(instagramUrl)
+            );
+
             const username = sanitizeInstagramHandleAdmin(
                 meta.username ||
+                collaborators[0] ||
                 extractInstagramUsernameFromUrlAdmin(meta.authorUrl || '') ||
                 extractInstagramUsernameFromTextAdmin(textBlob) ||
                 extractInstagramUsernameFromUrlAdmin(instagramUrl)
@@ -6122,13 +6644,20 @@
                 instagramUrl
             );
             const cleanProfileImage = sanitizeInstagramProfileImageAdmin(meta.profileImage || '');
+            const hasAdditionalCollaborator = Boolean(
+                meta.hasAdditionalCollaborator ||
+                collaborators.length > 1 ||
+                /(?:\be\b|\band\b)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i.test(`${meta.title || ''} ${meta.description || ''} ${meta.authorName || ''}`)
+            );
 
             return {
                 likes,
                 comments,
                 username,
                 displayName,
-                profileImage: cleanProfileImage || buildInstagramAvatarUrlAdmin(username || displayName || 'IG', displayName || 'IG')
+                profileImage: cleanProfileImage || '',
+                collaborators,
+                hasAdditionalCollaborator
             };
         }
 
@@ -6142,10 +6671,11 @@
             const workerBaseUrl = (typeof getWorkerBaseUrl === 'function')
                 ? getWorkerBaseUrl().replace(/\/$/, '')
                 : 'https://mirador-r2.sitemirador2026.workers.dev';
-            const metaEndpoints = [
-                `/api/instagram/meta?url=${encodedUrl}`,
-                `${workerBaseUrl}/api/instagram/meta?url=${encodedUrl}`
-            ];
+            const workerEndpoint = `${workerBaseUrl}/api/instagram/meta?url=${encodedUrl}`;
+            const localEndpoint = `/api/instagram/meta?url=${encodedUrl}`;
+            const metaEndpoints = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
+                ? [workerEndpoint]
+                : [localEndpoint, workerEndpoint];
 
             for (const endpoint of metaEndpoints) {
                 try {
@@ -6202,6 +6732,7 @@
 
             const merged = {
                 image: internalMeta?.image || microlinkData?.image?.url || microlinkData?.image || (jsonlinkData?.images && jsonlinkData.images[0]) || '',
+                video: internalMeta?.video || microlinkData?.video?.url || microlinkData?.video || (jsonlinkData?.videos && jsonlinkData.videos[0]) || '',
                 title: internalMeta?.title || microlinkData?.title || jsonlinkData?.meta?.title || noembedData?.title || '',
                 description: internalMeta?.description || microlinkData?.description || jsonlinkData?.meta?.description || noembedData?.title || '',
                 likes: internalMeta?.likes ?? microlinkData?.likes ?? microlinkData?.like_count ?? microlinkData?.engagement?.likes,
@@ -6210,7 +6741,9 @@
                 authorUrl: microlinkData?.author?.url || '',
                 username: internalMeta?.username || microlinkData?.author?.username || '',
                 profileImage: internalMeta?.profileImage || microlinkData?.author?.image?.url || microlinkData?.author?.avatar || '',
-                displayName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || ''
+                displayName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
+                collaborators: internalMeta?.collaborators || [],
+                hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
             };
 
             const normalized = normalizeInstagramMetaAdmin(merged, url);
@@ -6234,12 +6767,14 @@
                 preview.style.display = 'none';
                 
                 let imageUrl = '';
+                let videoUrl = '';
                 let title = '';
                 let description = '';
                 
                 try {
                     const extracted = await fetchInstagramMetaForAdmin(url);
                     imageUrl = extracted.image || '';
+                    videoUrl = extracted.video || '';
                     title = extracted.title || '';
                     description = extracted.description || '';
                     
@@ -6249,6 +6784,8 @@
                     const finalTitle = cleanedTitle || generateTitleFromText(cleanedContent) || 'Post do Instagram';
                     
                     instagramNewsData.image = imageUrl;
+                    instagramNewsData.video = videoUrl;
+                    instagramNewsData.mediaType = videoUrl ? 'video' : 'image';
                     instagramNewsData.title = finalTitle;
                     instagramNewsData.content = cleanedContent;
                     instagramNewsData.url = url;
@@ -6269,16 +6806,16 @@
                     // Preencher formulario (apenas legenda - titulo e gerado automaticamente da legenda)
                     document.getElementById('instagramNewsCaption').value = cleanedContent;
                     
-                    // Mostrar imagem se conseguiu extrair
-                    if (imageUrl) {
-                        document.getElementById('instagramNewsImage').src = imageUrl;
-                        document.getElementById('instagramImagePreviewContainer').style.display = 'block';
-                        document.getElementById('instagramNewsImageUrl').value = imageUrl;
-                        document.getElementById('instagramImageUploadArea').style.display = 'none';
+                    // Mostrar midia extraida (video ou imagem)
+                    if (videoUrl || imageUrl) {
+                        setInstagramMainMediaPreview({
+                            mediaType: videoUrl ? 'video' : 'image',
+                            imageUrl: imageUrl,
+                            videoUrl: videoUrl
+                        });
                     } else {
-                        // Se nao conseguiu imagem, mostrar area de upload
-                        document.getElementById('instagramImagePreviewContainer').style.display = 'none';
-                        document.getElementById('instagramImageUploadArea').style.display = 'block';
+                        // Se nao conseguiu midia, mostrar area de upload
+                        setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
                     }
                     
                     loading.style.display = 'none';
@@ -6286,6 +6823,7 @@
                     
                 } catch (error) {
                     console.error('[Admin] Erro ao extrair noticia do Instagram:', error);
+                    setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
                     // Mesmo com erro, mostrar o formulario para preenchimento manual
                     loading.style.display = 'none';
                     preview.style.display = 'block';
@@ -6296,6 +6834,8 @@
         async function saveInstagramNews() {
             const captionContent = document.getElementById('instagramNewsCaption').value.trim();
             const image = document.getElementById('instagramNewsImageUrl').value;
+            const videoUrl = document.getElementById('instagramNewsVideoUrl')?.value || '';
+            const mediaType = (document.getElementById('instagramNewsMediaType')?.value || 'image') === 'video' ? 'video' : 'image';
             const category = document.getElementById('instagramNewsCategory').value;
             const instagramUrl = document.getElementById('instagramNewsUrl').value.trim();
             const likes = parseInt(document.getElementById('instagramLikesCount').value) || 0;
@@ -6308,11 +6848,20 @@
                 profileImage: instagramNewsData.profileImage || '',
                 description: captionContent
             }, instagramUrl);
+            const officialProfile = normalizeInstagramProfileSettingsAdmin(instagramProfileSettingsAdmin || {});
+            const finalProfileUsername = officialProfile.username || instagramMeta.username || '';
+            const finalProfileDisplayName = officialProfile.displayName || instagramMeta.displayName || finalProfileUsername || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName;
+            const finalProfileImage = officialProfile.profileImage || instagramMeta.profileImage || '';
             
             let categoryName = document.querySelector(`#instagramNewsCategory option[value="${category}"]`).textContent;
             categoryName = categoryName.replace(/[^\w\s]/g, '').trim();
             
-            if (!image) {
+            if (mediaType === 'video' && !videoUrl) {
+                showModal('Atencao', 'O video do post e obrigatorio. Faca upload do video.', 'warning');
+                return;
+            }
+
+            if (mediaType === 'image' && !image) {
                 showModal('Atencao', 'A imagem e obrigatoria. Faca upload da imagem do post.', 'warning');
                 return;
             }
@@ -6343,7 +6892,7 @@
             
             // Verificar tamanho estimado do documento (limite 1MB = 1.048.576 bytes)
             const estimatedSize = JSON.stringify({
-                title, captionContent, image, gallery, instagramUrl
+                title, captionContent, image, videoUrl, mediaType, gallery, instagramUrl
             }).length;
             
             console.log(`[Admin] Tamanho estimado do documento: ${Math.round(estimatedSize/1024)}KB`);
@@ -6363,6 +6912,8 @@
                 excerpt: captionContent.substring(0, 200) + (captionContent.length > 200 ? '...' : ''),
                 content: captionContent,
                 image: image || 'https://via.placeholder.com/800x400?text=Sem+Imagem',
+                instagramMediaType: mediaType,
+                instagramVideoUrl: mediaType === 'video' ? videoUrl : '',
                 category,
                 categoryName,
                 date: new Date().toISOString(),
@@ -6373,9 +6924,11 @@
                 source: 'Instagram',
                 instagramLikes: likes,
                 instagramComments: comments,
-                instagramUsername: instagramMeta.username || '',
-                instagramDisplayName: instagramMeta.displayName || instagramMeta.username || '',
-                instagramProfileImage: instagramMeta.profileImage || '',
+                instagramUsername: finalProfileUsername,
+                instagramDisplayName: finalProfileDisplayName,
+                instagramProfileImage: finalProfileImage,
+                instagramCollaborators: Array.isArray(instagramMeta.collaborators) ? instagramMeta.collaborators : [],
+                instagramHasCollaborator: Boolean(instagramMeta.hasAdditionalCollaborator),
                 instagramMetaUpdatedAt: new Date().toISOString(),
                 gallery: gallery, // Galeria de fotos/videos adicionais
                 views: 0,
@@ -6409,77 +6962,330 @@
             }
         }
         
-        // Remover imagem do Instagram
+        const MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES = 15 * 1024 * 1024;
+
+        function setInstagramMainMediaPreview({ mediaType = 'image', imageUrl = '', videoUrl = '' } = {}) {
+            const previewContainer = document.getElementById('instagramImagePreviewContainer');
+            const uploadArea = document.getElementById('instagramImageUploadArea');
+            const imageEl = document.getElementById('instagramNewsImage');
+            const videoEl = document.getElementById('instagramNewsVideo');
+            const imageInput = document.getElementById('instagramNewsImageUrl');
+            const videoInput = document.getElementById('instagramNewsVideoUrl');
+            const mediaTypeInput = document.getElementById('instagramNewsMediaType');
+
+            if (!previewContainer || !uploadArea || !imageEl || !videoEl || !imageInput || !videoInput || !mediaTypeInput) return;
+
+            if (mediaType === 'video' && videoUrl) {
+                imageEl.style.display = 'none';
+                imageEl.src = imageUrl || '';
+                videoEl.style.display = 'block';
+                videoEl.src = videoUrl;
+                previewContainer.style.display = 'block';
+                uploadArea.style.display = 'none';
+                imageInput.value = imageUrl || '';
+                videoInput.value = videoUrl;
+                mediaTypeInput.value = 'video';
+                instagramNewsData.image = imageUrl || '';
+                instagramNewsData.video = videoUrl;
+                instagramNewsData.mediaType = 'video';
+                return;
+            }
+
+            if (imageUrl) {
+                imageEl.style.display = 'block';
+                imageEl.src = imageUrl;
+                videoEl.style.display = 'none';
+                videoEl.pause();
+                videoEl.src = '';
+                previewContainer.style.display = 'block';
+                uploadArea.style.display = 'none';
+                imageInput.value = imageUrl;
+                videoInput.value = '';
+                mediaTypeInput.value = 'image';
+                instagramNewsData.image = imageUrl;
+                instagramNewsData.video = '';
+                instagramNewsData.mediaType = 'image';
+                return;
+            }
+
+            imageEl.src = '';
+            videoEl.pause();
+            videoEl.src = '';
+            imageEl.style.display = 'none';
+            videoEl.style.display = 'none';
+            previewContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+            imageInput.value = '';
+            videoInput.value = '';
+            mediaTypeInput.value = 'image';
+            instagramNewsData.image = '';
+            instagramNewsData.video = '';
+            instagramNewsData.mediaType = 'image';
+        }
+
         function removeInstagramImage() {
-            document.getElementById('instagramNewsImage').src = '';
-            document.getElementById('instagramImagePreviewContainer').style.display = 'none';
-            document.getElementById('instagramImageUploadArea').style.display = 'block';
-            document.getElementById('instagramNewsImageUrl').value = '';
+            setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
             const fileInput = document.getElementById('instagramImageUpload');
             if (fileInput) fileInput.value = '';
-            instagramNewsData.image = '';
+        }
+
+        async function dataUrlToFile(dataUrl, filename = 'image.jpg') {
+            const response = await fetch(dataUrl);
+            const blob = await response.blob();
+            return new File([blob], filename, { type: blob.type || 'image/jpeg', lastModified: Date.now() });
+        }
+
+        function getSupportedVideoMimeType() {
+            if (typeof MediaRecorder === 'undefined') return '';
+            const candidates = [
+                'video/webm;codecs=vp9,opus',
+                'video/webm;codecs=vp8,opus',
+                'video/webm'
+            ];
+            return candidates.find(type => MediaRecorder.isTypeSupported(type)) || '';
+        }
+
+        async function generateVideoThumbnailDataUrl(file, maxWidth = 720, maxHeight = 1280) {
+            return new Promise((resolve, reject) => {
+                const url = URL.createObjectURL(file);
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.muted = true;
+                video.playsInline = true;
+                video.src = url;
+
+                const cleanup = () => {
+                    URL.revokeObjectURL(url);
+                    video.src = '';
+                };
+
+                video.onloadedmetadata = () => {
+                    let width = video.videoWidth || 720;
+                    let height = video.videoHeight || 1280;
+                    const ratio = Math.min(maxWidth / width, maxHeight / height, 1);
+                    width = Math.max(1, Math.floor(width * ratio));
+                    height = Math.max(1, Math.floor(height * ratio));
+
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+
+                    const captureFrame = () => {
+                        try {
+                            ctx.drawImage(video, 0, 0, width, height);
+                            const data = canvas.toDataURL('image/jpeg', 0.72);
+                            cleanup();
+                            resolve(data);
+                        } catch (error) {
+                            cleanup();
+                            reject(error);
+                        }
+                    };
+
+                    if (video.duration && Number.isFinite(video.duration) && video.duration > 0.3) {
+                        video.currentTime = Math.min(0.3, Math.max(0.01, video.duration / 4));
+                    } else {
+                        captureFrame();
+                    }
+
+                    video.onseeked = captureFrame;
+                };
+
+                video.onerror = () => {
+                    cleanup();
+                    reject(new Error('Nao foi possivel gerar miniatura do video'));
+                };
+            });
+        }
+
+        async function compressVideoToTargetSize(file, maxBytes = MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+            if (!(file instanceof File)) return file;
+            if (file.size <= maxBytes) return file;
+
+            const mimeType = getSupportedVideoMimeType();
+            if (!mimeType || typeof MediaRecorder === 'undefined') {
+                throw new Error('Seu navegador nao suporta compressao automatica de video');
+            }
+
+            return new Promise((resolve, reject) => {
+                const sourceUrl = URL.createObjectURL(file);
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.muted = true;
+                video.playsInline = true;
+                video.src = sourceUrl;
+
+                let recorder = null;
+                let stopTimer = null;
+                const chunks = [];
+
+                const cleanup = () => {
+                    if (stopTimer) {
+                        clearTimeout(stopTimer);
+                        stopTimer = null;
+                    }
+                    if (recorder && recorder.state !== 'inactive') {
+                        try { recorder.stop(); } catch (_e) {}
+                    }
+                    video.pause();
+                    video.src = '';
+                    URL.revokeObjectURL(sourceUrl);
+                };
+
+                video.onloadedmetadata = async () => {
+                    try {
+                        const duration = Number(video.duration) || 0;
+                        if (!Number.isFinite(duration) || duration <= 0) {
+                            cleanup();
+                            reject(new Error('Duracao do video invalida para compressao'));
+                            return;
+                        }
+
+                        const stream = video.captureStream ? video.captureStream() : (video.mozCaptureStream ? video.mozCaptureStream() : null);
+                        if (!stream) {
+                            cleanup();
+                            reject(new Error('captureStream nao suportado para compressao'));
+                            return;
+                        }
+
+                        const targetBits = Math.floor(maxBytes * 8 * 0.92);
+                        const audioBitsPerSecond = 64000;
+                        const videoBitsPerSecond = Math.max(180000, Math.floor(targetBits / duration) - audioBitsPerSecond);
+
+                        recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond, audioBitsPerSecond });
+                        recorder.ondataavailable = (event) => {
+                            if (event.data && event.data.size > 0) chunks.push(event.data);
+                        };
+                        recorder.onerror = () => {
+                            cleanup();
+                            reject(new Error('Falha ao comprimir video no navegador'));
+                        };
+                        recorder.onstop = () => {
+                            const compressedBlob = new Blob(chunks, { type: mimeType });
+                            const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
+                            const compressedFile = new File(
+                                [compressedBlob],
+                                `${file.name.replace(/\.[^.]+$/, '')}-compressed.${ext}`,
+                                { type: compressedBlob.type || mimeType, lastModified: Date.now() }
+                            );
+                            cleanup();
+                            resolve(compressedFile);
+                        };
+
+                        await video.play();
+                        recorder.start(1000);
+                        stopTimer = setTimeout(() => {
+                            if (recorder && recorder.state !== 'inactive') recorder.stop();
+                        }, Math.ceil(duration * 1000) + 800);
+                        video.onended = () => {
+                            if (recorder && recorder.state !== 'inactive') recorder.stop();
+                        };
+                    } catch (error) {
+                        cleanup();
+                        reject(error);
+                    }
+                };
+
+                video.onerror = () => {
+                    cleanup();
+                    reject(new Error('Nao foi possivel abrir o video para compressao'));
+                };
+            });
         }
 
         async function handleInstagramImageUpload(event) {
-            const file = event.target.files[0];
+            const file = event?.target?.files?.[0];
             if (!file) return;
-            
-            // Limite de 10MB para Base64
-            if (file.size > 10 * 1024 * 1024) {
-                showModal('Erro', 'Imagem muito grande. Maximo 10MB.', 'error');
+
+            const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/ogg'];
+            const isImage = file.type.startsWith('image/');
+            const isVideo = file.type.startsWith('video/');
+
+            if (!isImage && !isVideo) {
+                showModal('Erro', 'Tipo de arquivo nao suportado. Use imagem ou video.', 'error');
                 return;
             }
-            
-            // Validar tipo de arquivo
-            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
-            if (!validTypes.includes(file.type)) {
-                showModal('Erro', 'Tipo de arquivo nao suportado. Use JPG, PNG, GIF, WebP ou MP4.', 'error');
+
+            if (isImage && !validImageTypes.includes(file.type)) {
+                showModal('Erro', 'Imagem invalida. Use JPG, PNG, GIF ou WebP.', 'error');
                 return;
             }
-            
-            // Mostrar loading
+
+            if (isVideo && !validVideoTypes.includes(file.type)) {
+                showModal('Erro', 'Video invalido. Use MP4, WEBM, MOV, AVI ou OGG.', 'error');
+                return;
+            }
+
             const uploadArea = document.getElementById('instagramImageUploadArea');
             const originalContent = uploadArea.innerHTML;
-            uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo imagem...</p></div>';
-            
+            uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Processando midia...</p></div>';
+
             try {
-                // Comprimir imagem antes de salvar (capa pode ser um pouco maior)
-                let base64Data;
-                if (file.type.startsWith('image/')) {
-                    base64Data = await compressImage(file, 800, 800, 0.7);
+                if (!r2Client) initR2Client();
+
+                if (isImage) {
+                    if (file.size > 12 * 1024 * 1024) {
+                        throw new Error('Imagem muito grande. Maximo 12MB.');
+                    }
+
+                    const compressedDataUrl = await compressImage(file, 1280, 1280, 0.78);
+                    const uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-instagram.jpg`);
+                    const result = await r2Client.uploadFile(uploadFile, 'instagram');
+                    const imageUrl = result?.url || '';
+                    if (!imageUrl) throw new Error('Upload da imagem falhou');
+
+                    setInstagramMainMediaPreview({
+                        mediaType: 'image',
+                        imageUrl,
+                        videoUrl: ''
+                    });
                 } else {
-                    // Para videos, ler diretamente
-                    base64Data = await fileToBase64(file);
+                    if (file.size > 120 * 1024 * 1024) {
+                        throw new Error('Video muito grande para processar. Maximo recomendado: 120MB.');
+                    }
+
+                    let uploadVideoFile = file;
+                    if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                        uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo video para 15MB...</p></div>';
+                        uploadVideoFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
+                    }
+
+                    if (uploadVideoFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                        throw new Error('Nao foi possivel comprimir o video para no maximo 15MB.');
+                    }
+
+                    uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando video...</p></div>';
+                    const result = await r2Client.uploadFile(uploadVideoFile, 'instagram');
+                    const videoUrl = result?.url || '';
+                    if (!videoUrl) throw new Error('Upload do video falhou');
+
+                    let thumbnailUrl = '';
+                    try {
+                        thumbnailUrl = await generateVideoThumbnailDataUrl(uploadVideoFile);
+                    } catch (_thumbError) {
+                        thumbnailUrl = '';
+                    }
+
+                    setInstagramMainMediaPreview({
+                        mediaType: 'video',
+                        imageUrl: thumbnailUrl,
+                        videoUrl
+                    });
                 }
-                
-                console.log(`[Admin] Tamanho da imagem de capa: ${Math.round(base64Data.length/1024)}KB`);
-                
-                // Verificar tamanho do Base64 (limite de 400KB para imagem de capa)
-                if (base64Data.length > 400 * 1024) {
-                    uploadArea.innerHTML = originalContent;
-                    showModal('Erro', `A imagem e muito grande (${Math.round(base64Data.length/1024)}KB). Tente uma imagem menor ou mais compacta.`, 'error');
-                    return;
-                }
-                
-                // Sucesso - mostrar imagem
-                document.getElementById('instagramNewsImage').src = base64Data;
-                document.getElementById('instagramImagePreviewContainer').style.display = 'block';
-                document.getElementById('instagramImageUploadArea').style.display = 'none';
-                document.getElementById('instagramNewsImageUrl').value = base64Data;
-                instagramNewsData.image = base64Data;
-                
-                // Mostrar o preview do formulario se ainda nao estiver visivel
+
                 const preview = document.getElementById('instagramNewsPreview');
-                if (preview.style.display === 'none') {
+                if (preview && preview.style.display === 'none') {
                     preview.style.display = 'block';
                 }
-                
-                console.log('[Admin] Imagem processada com sucesso (Base64 comprimido)');
-                
             } catch (error) {
-                console.error('[Admin] Erro ao processar imagem:', error);
+                console.error('[Admin] Erro ao processar midia do Instagram:', error);
+                showModal('Erro', 'Erro ao processar a midia: ' + (error.message || 'Tente novamente.'), 'error');
+            } finally {
                 uploadArea.innerHTML = originalContent;
-                showModal('Erro', 'Erro ao processar a imagem: ' + (error.message || 'Tente novamente.'), 'error');
+                const fileInput = document.getElementById('instagramImageUpload');
+                if (fileInput) fileInput.value = '';
             }
         }
 
@@ -6504,58 +7310,81 @@
             
             const uploadArea = document.getElementById('instagramGalleryUploadArea');
             const originalContent = uploadArea.innerHTML;
-            
-            for (const file of filesToProcess) {
-                // Limite de 5MB por arquivo na galeria
-                if (file.size > 5 * 1024 * 1024) {
-                    showModal('Erro', `Arquivo "${file.name}" muito grande. Maximo 5MB por arquivo na galeria.`, 'error');
-                    continue;
-                }
-                
-                // Validar tipo de arquivo
-                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm'];
-                if (!validTypes.includes(file.type)) {
-                    showModal('Erro', `Tipo de arquivo nao suportado: "${file.name}". Use JPG, PNG, GIF, WebP, MP4 ou WebM.`, 'error');
-                    continue;
-                }
-                
-                try {
-                    uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Processando ${file.name}...</p></div>`;
-                    
-                    const base64Data = await fileToBase64(file);
-                    
-                    console.log(`[Admin] Galeria - ${file.name}: ${Math.round(base64Data.length/1024)}KB`);
-                    
-                    // Verificar tamanho do Base64 (maximo 200KB por item na galeria)
-                    if (base64Data.length > 200 * 1024) {
-                        showModal('Erro', `Arquivo "${file.name}" muito grande (${Math.round(base64Data.length/1024)}KB). Tente uma imagem menor.`, 'error');
+
+            try {
+                if (!r2Client) initR2Client();
+
+                for (const file of filesToProcess) {
+                    // Validar tipo de arquivo
+                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+                    if (!validTypes.includes(file.type)) {
+                        showModal('Erro', `Tipo de arquivo nao suportado: "${file.name}". Use JPG, PNG, GIF, WebP, MP4, WebM ou MOV.`, 'error');
                         continue;
                     }
-                    
-                    // Adicionar Ã  galeria
-                    instagramGalleryData.push({
-                        type: file.type.startsWith('video') ? 'video' : 'image',
-                        url: base64Data,
-                        name: file.name
-                    });
-                    
-                } catch (error) {
-                    console.error('[Admin] Erro ao processar arquivo:', error);
-                    showModal('Erro', `Erro ao processar "${file.name}".`, 'error');
+
+                    const isVideo = file.type.startsWith('video/');
+                    if (isVideo && file.size > 120 * 1024 * 1024) {
+                        showModal('Erro', `Video "${file.name}" muito grande. Maximo 120MB para processamento.`, 'error');
+                        continue;
+                    }
+                    if (!isVideo && file.size > 12 * 1024 * 1024) {
+                        showModal('Erro', `Imagem "${file.name}" muito grande. Maximo 12MB.`, 'error');
+                        continue;
+                    }
+
+                    try {
+                        uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Processando ${file.name}...</p></div>`;
+
+                        let uploadFile = file;
+                        if (isVideo) {
+                            if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                                uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo ${file.name} para 15MB...</p></div>`;
+                                uploadFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
+                            }
+                            if (uploadFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                                showModal('Erro', `Nao foi possivel comprimir "${file.name}" para no maximo 15MB.`, 'error');
+                                continue;
+                            }
+                        } else {
+                            const compressedDataUrl = await compressImage(file, 1280, 1280, 0.75);
+                            uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-instagram-gallery.jpg`);
+                        }
+
+                        uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando ${file.name} para o R2...</p></div>`;
+
+                        const result = await r2Client.uploadFile(uploadFile, 'instagram');
+                        const mediaUrl = (result?.url || '').trim();
+                        if (!mediaUrl) {
+                            throw new Error('URL nao retornada pelo R2');
+                        }
+
+                        instagramGalleryData.push({
+                            type: isVideo ? 'video' : 'image',
+                            url: mediaUrl,
+                            name: file.name
+                        });
+                    } catch (error) {
+                        console.error('[Admin] Erro ao processar arquivo da galeria:', error);
+                        showModal('Erro', `Erro ao processar "${file.name}".`, 'error');
+                    }
                 }
+            } finally {
+                // Restaurar area de upload
+                uploadArea.innerHTML = originalContent;
             }
-            
-            // Restaurar area de upload
-            uploadArea.innerHTML = originalContent;
             
             // Atualizar preview
             updateInstagramGalleryPreview();
             
             // Atualizar input hidden
             document.getElementById('instagramGalleryUrls').value = JSON.stringify(instagramGalleryData);
+
+            if (event?.target) {
+                event.target.value = '';
+            }
         }
 
-        // Comprimir imagem antes de converter para Base64
+        // Comprimir imagem para upload otimizado
         async function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.6) {
             return new Promise((resolve, reject) => {
                 // Se nao for imagem, retornar o arquivo original
@@ -6598,22 +7427,6 @@
                 reader.onload = (e) => {
                     img.src = e.target.result;
                 };
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // Converter arquivo para Base64 (com compressao para imagens)
-        async function fileToBase64(file) {
-            // Se for imagem, comprimir primeiro (tamanho menor para galeria)
-            if (file.type.startsWith('image/')) {
-                return await compressImage(file, 500, 500, 0.5);
-            }
-            
-            // Para videos, ler diretamente
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = (e) => resolve(e.target.result);
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
             });
@@ -6684,12 +7497,23 @@
                 
                 const imagePreview = document.getElementById('instagramNewsImage');
                 if (imagePreview) imagePreview.src = '';
+                if (imagePreview) imagePreview.style.display = 'block';
+                const videoPreview = document.getElementById('instagramNewsVideo');
+                if (videoPreview) {
+                    videoPreview.pause();
+                    videoPreview.src = '';
+                    videoPreview.style.display = 'none';
+                }
                 
                 const imagePreviewContainer = document.getElementById('instagramImagePreviewContainer');
                 if (imagePreviewContainer) imagePreviewContainer.style.display = 'none';
                 
                 const imageUrlInput = document.getElementById('instagramNewsImageUrl');
                 if (imageUrlInput) imageUrlInput.value = '';
+                const videoUrlInput = document.getElementById('instagramNewsVideoUrl');
+                if (videoUrlInput) videoUrlInput.value = '';
+                const mediaTypeInput = document.getElementById('instagramNewsMediaType');
+                if (mediaTypeInput) mediaTypeInput.value = 'image';
                 
                 const preview = document.getElementById('instagramNewsPreview');
                 if (preview) preview.style.display = 'none';
