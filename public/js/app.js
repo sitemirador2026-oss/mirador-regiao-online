@@ -146,6 +146,22 @@ function parseInstagramCount(value) {
     return Math.max(0, Math.round(numeric * multiplier));
 }
 
+function pickBestInstagramCount(...values) {
+    const parsedValues = values
+        .map(value => (value == null ? null : parseInstagramCount(value)))
+        .filter(value => value != null);
+
+    if (parsedValues.length === 0) return 0;
+    const positive = parsedValues.find(value => value > 0);
+    return positive != null ? positive : parsedValues[0];
+}
+
+function isGenericInstagramDisplayName(value) {
+    if (!value) return true;
+    const clean = String(value).trim().toLowerCase();
+    return clean === 'instagram' || clean === '@instagram';
+}
+
 function extractInstagramUsernameFromUrl(url) {
     if (!url) return '';
     try {
@@ -164,6 +180,8 @@ function extractInstagramUsernameFromText(text) {
 
     const patterns = [
         /-\s*([a-z0-9._]{2,30})\s+on\b/i,
+        /\b([a-z0-9._]{2,30})\s+on\s+instagram\b/i,
+        /\(@([a-z0-9._]{2,30})\)/i,
         /\bby\s+([a-z0-9._]{2,30})\b/i,
         /@([a-z0-9._]{2,30})/i
     ];
@@ -226,7 +244,7 @@ function sanitizeInstagramDisplayName(value, fallbackHandle = '', description = 
     ].filter(Boolean);
 
     if (candidates.length > 0) return candidates[0];
-    return 'instagram';
+    return '';
 }
 
 function buildInstagramAvatarUrl(username, fallbackName = 'IG') {
@@ -264,8 +282,8 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
         extractInstagramUsernameFromUrl(instagramUrl)
     );
 
-    const likes = meta.likes != null ? parseInstagramCount(meta.likes) : (likesMatch ? parseInstagramCount(likesMatch[1]) : 0);
-    const comments = meta.comments != null ? parseInstagramCount(meta.comments) : (commentsMatch ? parseInstagramCount(commentsMatch[1]) : 0);
+    const likes = pickBestInstagramCount(meta.likes, likesMatch ? likesMatch[1] : null);
+    const comments = pickBestInstagramCount(meta.comments, commentsMatch ? commentsMatch[1] : null);
     const displayName = sanitizeInstagramDisplayName(
         meta.displayName || meta.authorName || username || '',
         username,
@@ -279,7 +297,7 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
         comments,
         username,
         displayName,
-        profileImage: cleanProfileImage || buildInstagramAvatarUrl(username || displayName || 'IG', displayName || 'IG')
+        profileImage: cleanProfileImage
     };
 }
 
@@ -324,8 +342,18 @@ async function fetchInstagramMeta(instagramUrl) {
     }
 
     const merged = {
-        likes: internalMeta?.likes ?? microlinkData?.likes ?? microlinkData?.like_count ?? microlinkData?.engagement?.likes,
-        comments: internalMeta?.comments ?? microlinkData?.comments ?? microlinkData?.comment_count ?? microlinkData?.engagement?.comments,
+        likes: pickBestInstagramCount(
+            internalMeta?.likes,
+            microlinkData?.likes,
+            microlinkData?.like_count,
+            microlinkData?.engagement?.likes
+        ),
+        comments: pickBestInstagramCount(
+            internalMeta?.comments,
+            microlinkData?.comments,
+            microlinkData?.comment_count,
+            microlinkData?.engagement?.comments
+        ),
         title: internalMeta?.title || microlinkData?.title || noembedData?.title || '',
         description: internalMeta?.description || microlinkData?.description || noembedData?.title || '',
         authorName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
@@ -1131,6 +1159,7 @@ function toggleInstagramViewAll() {
 
 // Atualizar estatísticas do Instagram (curtidas e comentários)
 async function updateInstagramStats(newsItems) {
+    const requestIntervalMs = 450;
     for (const news of newsItems) {
         if (news.instagramUrl) {
             try {
@@ -1141,6 +1170,7 @@ async function updateInstagramStats(newsItems) {
             } catch (e) {
                 console.log('[App] Erro ao buscar stats do Instagram:', e);
             }
+            await new Promise(resolve => setTimeout(resolve, requestIntervalMs));
         }
     }
 }
@@ -1154,8 +1184,8 @@ function createInstagramCard(news) {
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     
     // Usar likes e comments salvos com parse robusto
-    const likes = parseInstagramCount(news.instagramLikes || news.likes || 0);
-    const comments = parseInstagramCount(news.instagramComments || news.comments || 0);
+    const likes = pickBestInstagramCount(news.instagramLikes, news.likes, 0);
+    const comments = pickBestInstagramCount(news.instagramComments, news.comments, 0);
     const instagramUrl = news.instagramUrl || news.sourceUrl || '#';
     const rawContent = news.content || news.excerpt || '';
     const content = cleanInstagramCaptionForDisplay(rawContent) || rawContent;
@@ -1173,9 +1203,12 @@ function createInstagramCard(news) {
         profileMeta.username || '',
         rawContent,
         instagramUrl
-    );
+    ) || sanitizeInstagramHandle(news.instagramDisplayName || news.instagramUsername || '') || 'instagram';
     const fallbackAvatar = buildUiAvatarUrl(profileName);
-    const profileImage = sanitizeInstagramProfileImage(profileMeta.profileImage) || buildInstagramAvatarUrl(profileMeta.username || profileName, profileName);
+    const profileImage =
+        sanitizeInstagramProfileImage(profileMeta.profileImage) ||
+        sanitizeInstagramProfileImage(news.instagramProfileImage || '') ||
+        buildInstagramAvatarUrl(profileMeta.username || news.instagramUsername || profileName, profileName);
     const displayTitle = buildInstagramTitlePreview(news.title, content);
     
     // Verificar se tem galeria
@@ -1193,7 +1226,7 @@ function createInstagramCard(news) {
         timeStr,
         hasGallery,
         totalMedia,
-        instagramUsername: sanitizeInstagramHandle(profileMeta.username || profileName),
+        instagramUsername: sanitizeInstagramHandle(profileMeta.username || news.instagramUsername || profileName),
         instagramDisplayName: profileName,
         instagramProfileImage: profileImage,
         instagramAvatarFallback: fallbackAvatar,
@@ -1770,19 +1803,34 @@ function updateInstagramCardStats(newsId, stats) {
     const usernameEl = document.querySelector(`.instagram-card-username[data-id="${newsId}"]`);
     const profileImgEl = document.querySelector(`.instagram-profile-img[data-id="${newsId}"]`);
     
-    if (likesEl && stats.likes != null) {
-        likesEl.textContent = formatNumber(stats.likes);
+    const current = instagramPostsData[newsId] || {};
+    const currentLikes = pickBestInstagramCount(current.likes, current.instagramLikes, current.rawLikes, 0);
+    const currentComments = pickBestInstagramCount(current.comments, current.instagramComments, current.rawComments, 0);
+    const incomingLikes = stats && stats.likes != null ? parseInstagramCount(stats.likes) : 0;
+    const incomingComments = stats && stats.comments != null ? parseInstagramCount(stats.comments) : 0;
+    const finalLikesValue = incomingLikes > 0 ? incomingLikes : currentLikes;
+    const finalCommentsValue = incomingComments > 0 ? incomingComments : currentComments;
+
+    if (likesEl) {
+        likesEl.textContent = formatNumber(finalLikesValue);
     }
-    if (commentsEl && stats.comments != null) {
-        commentsEl.textContent = formatNumber(stats.comments);
+    if (commentsEl) {
+        commentsEl.textContent = formatNumber(finalCommentsValue);
     }
 
-    const current = instagramPostsData[newsId] || {};
+    const safeStatsName = isGenericInstagramDisplayName(stats?.displayName) ? '' : (stats?.displayName || '');
+    const safeStatsUsername = sanitizeInstagramHandle(stats?.username || '');
+    const safeCurrentUsername = sanitizeInstagramHandle(current.instagramUsername || current.instagramDisplayName || '');
+    const safeCurrentName = isGenericInstagramDisplayName(current.instagramDisplayName) ? '' : (current.instagramDisplayName || '');
+    const mergedProfileImage =
+        sanitizeInstagramProfileImage(stats?.profileImage || '') ||
+        sanitizeInstagramProfileImage(current.instagramProfileImage || '');
+
     const normalized = normalizeInstagramMeta({
         ...stats,
-        username: stats.username || current.instagramUsername,
-        displayName: stats.displayName || current.instagramDisplayName,
-        profileImage: stats.profileImage || current.instagramProfileImage,
+        username: safeStatsUsername || safeCurrentUsername,
+        displayName: safeStatsName || safeCurrentName || safeCurrentUsername,
+        profileImage: mergedProfileImage,
         description: current.content || '',
         title: current.title || ''
     }, current.instagramUrl || '');
@@ -1792,9 +1840,12 @@ function updateInstagramCardStats(newsId, stats) {
         normalized.username || '',
         current.content || '',
         current.instagramUrl || ''
-    );
+    ) || safeCurrentName || safeCurrentUsername || 'instagram';
     const fallbackAvatar = buildUiAvatarUrl(finalName);
-    const finalProfileImage = sanitizeInstagramProfileImage(normalized.profileImage) || buildInstagramAvatarUrl(normalized.username || finalName, finalName);
+    const finalProfileImage =
+        sanitizeInstagramProfileImage(normalized.profileImage) ||
+        sanitizeInstagramProfileImage(current.instagramProfileImage || '') ||
+        buildInstagramAvatarUrl(normalized.username || safeCurrentUsername || finalName, finalName);
 
     if (usernameEl) {
         usernameEl.textContent = finalName;
@@ -1811,9 +1862,9 @@ function updateInstagramCardStats(newsId, stats) {
     if (instagramPostsData[newsId]) {
         instagramPostsData[newsId] = {
             ...instagramPostsData[newsId],
-            likes: stats.likes != null ? stats.likes : instagramPostsData[newsId].likes,
-            comments: stats.comments != null ? stats.comments : instagramPostsData[newsId].comments,
-            instagramUsername: sanitizeInstagramHandle(normalized.username || instagramPostsData[newsId].instagramUsername),
+            likes: finalLikesValue,
+            comments: finalCommentsValue,
+            instagramUsername: sanitizeInstagramHandle(normalized.username || safeCurrentUsername || instagramPostsData[newsId].instagramUsername),
             instagramDisplayName: finalName,
             instagramProfileImage: finalProfileImage
         };
