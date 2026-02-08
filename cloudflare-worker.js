@@ -58,7 +58,7 @@ async function getSignedHeaders(method, path, queryString, env) {
   const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
   const amzDate = now.toISOString().slice(0, 19).replace(/[-:]/g, '') + 'Z';
   
-  const region = 'auto';
+  const region = 'us-east-1';
   const service = 's3';
   
   // Host
@@ -83,7 +83,7 @@ async function getSignedHeaders(method, path, queryString, env) {
   ].join('\n');
   
   // String to Sign
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const credentialScope = `${dateStamp}/us-east-1/${service}/aws4_request`;
   const canonicalRequestHash = await sha256(canonicalRequest);
   
   const stringToSign = [
@@ -95,7 +95,7 @@ async function getSignedHeaders(method, path, queryString, env) {
   
   // Signing Key
   const kDate = await hmacSHA256(`AWS4${secretKey}`, dateStamp);
-  const kRegion = await hmacSHA256(kDate, region);
+  const kRegion = await hmacSHA256(kDate, 'us-east-1');
   const kService = await hmacSHA256(kRegion, service);
   const kSigning = await hmacSHA256(kService, 'aws4_request');
   
@@ -327,7 +327,7 @@ export default {
         ].join('\n');
         
         // String to Sign
-        const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+        const credentialScope = `${dateStamp}/us-east-1/s3/aws4_request`;
         const canonicalRequestHash = await sha256(canonicalRequest);
         
         const stringToSign = [
@@ -339,7 +339,7 @@ export default {
         
         // Signing Key
         const kDate = await hmacSHA256(`AWS4${secretKey}`, dateStamp);
-        const kRegion = await hmacSHA256(kDate, 'auto');
+        const kRegion = await hmacSHA256(kDate, 'us-east-1');
         const kService = await hmacSHA256(kRegion, 's3');
         const kSigning = await hmacSHA256(kService, 'aws4_request');
         
