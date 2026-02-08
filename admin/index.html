@@ -2329,7 +2329,7 @@
                     </div>
 
                     <!-- 3. Firebase -->
-                    <div class="content-section">
+                    <div id="firebaseStorageSection" class="content-section">
                         <div class="section-header">
                             <h2 class="section-title">Firebase</h2>
                         </div>
@@ -2343,7 +2343,7 @@
                             </div>
                             <div class="stat-card success">
                                 <div class="stat-header">
-                                    <span class="stat-trend">Notícias</span>
+                                    <span class="stat-trend">Noticias</span>
                                 </div>
                                 <div class="stat-value" id="newsCount">--</div>
                                 <div class="stat-label">Cadastradas</div>
@@ -2364,23 +2364,52 @@
                             </div>
                         </div>
                         <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem; font-weight: 600;">
+                                Detalhes das colecoes
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.75rem;">
+                                <div><strong>News:</strong> <span id="newsCollectionSize">--</span></div>
+                                <div><strong>Stories:</strong> <span id="storiesCollectionSize">--</span></div>
+                                <div><strong>Settings:</strong> <span id="settingsCollectionSize">--</span></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                                Distribuicao por colecao
+                            </div>
+                            <div style="display: grid; gap: 0.75rem;">
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                                        <span>News</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                        <div id="newsProgressBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                                        <span>Stories</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                        <div id="storiesProgressBar" style="width: 0%; height: 100%; background: var(--success); transition: width 0.3s;"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="display: flex; justify-content: space-between; font-size: 0.8125rem; margin-bottom: 0.35rem;">
+                                        <span>Settings</span>
+                                    </div>
+                                    <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                        <div id="settingsProgressBar" style="width: 0%; height: 100%; background: var(--warning); transition: width 0.3s;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
                             <div style="font-size: 0.875rem; color: var(--text-secondary);">
                                 <div><strong>Projeto:</strong> sitemirador-fb33d</div>
                                 <div><strong>Auth:</strong> Ativo (login admin)</div>
-                                <div><strong>Função:</strong> Dados textuais + Autenticação</div>
+                                <div><strong>Funcao:</strong> Dados textuais + autenticacao</div>
                             </div>
-                        </div>
-                    </div>
-                            <div class="stat-header">
-                                <div class="stat-icon info">
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 01-2 2v4a2 2 0 012 2h14a2 2 0 012-2v-4a2 2 0 01-2-2m-2-4h.01M17 16h.01"/>
-                                    </svg>
-                                </div>
-                                <span class="stat-trend">Render</span>
-                            </div>
-                            <div class="stat-value" id="renderStatus">Online</div>
-                            <div class="stat-label">Status do servidor</div>
                         </div>
                     </div>
 
@@ -3837,10 +3866,25 @@
 
         // Carregar informações de armazenamento
         async function loadStorageInfo() {
+            const setText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = value;
+            };
+
+            const setHTML = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = value;
+            };
+
+            const setWidth = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.style.width = value;
+            };
+
             // Mostrar loading
-            document.getElementById('firestoreSize').innerText = '...';
-            document.getElementById('newsCount').innerText = '...';
-            document.getElementById('imagesSize').innerText = '...';
+            setText('firestoreSize', '...');
+            setText('newsCount', '...');
+            setText('imagesSize', '...');
 
             const deniedCollections = [];
 
@@ -3914,28 +3958,22 @@
                 const availableSpace = Math.max(freePlanLimit - totalSize, 0);
 
                 // Atualizar cards principais
-                document.getElementById('firestoreSize').innerHTML =
-                    `${formatBytes(totalSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${usedPercent}% de 1GB</small>`;
-                document.getElementById('newsCount').innerHTML =
-                    `${newsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${formatBytes(newsSize)}</small>`;
-                document.getElementById('imagesSize').innerHTML =
-                    `${formatBytes(imagesSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${imagesCount} imagens</small>`;
+                setHTML('firestoreSize',
+                    `${formatBytes(totalSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${usedPercent}% de 1GB</small>`);
+                setHTML('newsCount',
+                    `${newsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${formatBytes(newsSize)}</small>`);
+                setHTML('imagesSize',
+                    `${formatBytes(imagesSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${imagesCount} imagens</small>`);
 
                 // Atualizar detalhes
-                document.getElementById('newsCollectionSize').innerText =
-                    `${formatBytes(newsSize)} (${newsData.length} docs)`;
-                document.getElementById('storiesCollectionSize').innerText =
-                    `${formatBytes(storiesSize)} (${storiesData.length} docs)`;
-                document.getElementById('settingsCollectionSize').innerText =
-                    `${formatBytes(settingsSize)} (${settingsData.length} docs)`;
+                setText('newsCollectionSize', `${formatBytes(newsSize)} (${newsData.length} docs)`);
+                setText('storiesCollectionSize', `${formatBytes(storiesSize)} (${storiesData.length} docs)`);
+                setText('settingsCollectionSize', `${formatBytes(settingsSize)} (${settingsData.length} docs)`);
 
                 // Atualizar barras de progresso
-                document.getElementById('newsProgressBar').style.width =
-                    `${Math.min((newsSize / freePlanLimit) * 100, 100)}%`;
-                document.getElementById('storiesProgressBar').style.width =
-                    `${Math.min((storiesSize / freePlanLimit) * 100, 100)}%`;
-                document.getElementById('settingsProgressBar').style.width =
-                    `${Math.min((settingsSize / freePlanLimit) * 100, 100)}%`;
+                setWidth('newsProgressBar', `${Math.min((newsSize / freePlanLimit) * 100, 100)}%`);
+                setWidth('storiesProgressBar', `${Math.min((storiesSize / freePlanLimit) * 100, 100)}%`);
+                setWidth('settingsProgressBar', `${Math.min((settingsSize / freePlanLimit) * 100, 100)}%`);
 
                 // Atualizar informações adicionais
                 updateStorageInfo(totalSize, availableSpace, imagesSize);
@@ -3955,8 +3993,9 @@
                             'Sem permissao para ler colecoes no Firestore. Verifique as regras e o login admin.'
                         );
                     } else {
-                        showStorageError(
-                            `Algumas colecoes nao puderam ser lidas (${deniedCollections.join(', ')}). Exibindo dados disponiveis/cache.`
+                        clearStorageError();
+                        console.warn(
+                            `[Admin] Colecoes sem permissao: ${deniedCollections.join(', ')}. Exibindo dados disponiveis.`
                         );
                     }
                 }
@@ -3972,9 +4011,9 @@
                 });
             } catch (error) {
                 console.error('[Admin] Erro ao carregar storage:', error);
-                document.getElementById('firestoreSize').innerHTML = 'Erro<br><small style="font-size: 0.75rem;">Falha de leitura</small>';
-                document.getElementById('newsCount').innerText = '--';
-                document.getElementById('imagesSize').innerText = '--';
+                setHTML('firestoreSize', 'Erro<br><small style="font-size: 0.75rem;">Falha de leitura</small>');
+                setText('newsCount', '--');
+                setText('imagesSize', '--');
                 showStorageError('Erro ao processar os dados de armazenamento.');
             }
 
@@ -3984,7 +4023,8 @@
 
         // Atualizar informações de armazenamento na UI
         function updateStorageInfo(used, available, imagesSize) {
-            const infoSection = document.querySelector('#storagePage .content-section');
+            const infoSection = document.getElementById('firebaseStorageSection');
+            if (!infoSection) return;
             
             // Remover seção anterior se existir
             const existingInfo = document.getElementById('storageUsageInfo');
@@ -4043,7 +4083,7 @@
 
         // Mostrar erro de armazenamento com link direto
         function showStorageError(customMessage) {
-            const infoSection = document.querySelector('#storagePage .content-section');
+            const infoSection = document.getElementById('firebaseStorageSection');
             if (!infoSection) return;
 
             clearStorageError();
