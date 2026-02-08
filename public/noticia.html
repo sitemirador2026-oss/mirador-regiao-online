@@ -491,6 +491,21 @@
             }
         }
         
+        async function incrementNewsViews(newsId) {
+            if (!newsId) return;
+            try {
+                await db.collection('news').doc(newsId).update({
+                    views: firebase.firestore.FieldValue.increment(1)
+                });
+            } catch (error) {
+                if (error && error.code === 'permission-denied') {
+                    console.warn('[Views] Permissao negada para incrementar views. Atualize as regras do Firestore para permitir update apenas do campo views.');
+                    return;
+                }
+                console.warn('[Views] Falha ao incrementar views:', error);
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', async function () {
             // Carregar configurações do Firebase
             const siteName = await loadAndApplySettings();
@@ -639,14 +654,8 @@
             
             container.innerHTML = html;
             
-            // Incrementar visualizações
-            try {
-                await db.collection('news').doc(newsId).update({
-                    views: firebase.firestore.FieldValue.increment(1)
-                });
-            } catch (e) {
-                console.log('Erro ao incrementar views:', e);
-            }
+            // Incrementar visualizacoes
+            void incrementNewsViews(newsId);
         });
     </script>
 </body>

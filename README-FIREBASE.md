@@ -1,13 +1,13 @@
-# 🔧 Configuração do Firebase - Resolução de Problemas
+﻿# ðŸ”§ ConfiguraÃ§Ã£o do Firebase - ResoluÃ§Ã£o de Problemas
 
-## ❌ Problema
-As configurações do painel admin NÃO estão aparecendo no site público.
+## âŒ Problema
+As configuraÃ§Ãµes do painel admin NÃƒO estÃ£o aparecendo no site pÃºblico.
 
-## ✅ Solução
+## âœ… SoluÃ§Ã£o
 
-### 1. ATUALIZAR REGRAS DE SEGURANÇA DO FIREBASE
+### 1. ATUALIZAR REGRAS DE SEGURANÃ‡A DO FIREBASE
 
-O site público está em **mirador-web.onrender.com** e o admin em **mirador-admin.onrender.com** (domínios diferentes). Por isso, o site PRECISA ter permissão para LER as configurações do Firebase.
+O site pÃºblico estÃ¡ em **mirador-web.onrender.com** e o admin em **mirador-admin.onrender.com** (domÃ­nios diferentes). Por isso, o site PRECISA ter permissÃ£o para LER as configuraÃ§Ãµes do Firebase.
 
 #### Passo a passo:
 
@@ -15,22 +15,32 @@ O site público está em **mirador-web.onrender.com** e o admin em **mirador-adm
 2. Selecione o projeto: **sitemirador-fb33d**
 3. No menu lateral, clique em **"Firestore Database"**
 4. Clique na aba **"Regras"**
-5. Substitua TUDO pelo código abaixo:
+5. Substitua TUDO pelo cÃ³digo abaixo:
 
 ```
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Permitir leitura pública de notícias
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'sitemirador2026@gmail.com';
+    }
+
+    function isOnlyViewIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['views'])
+        && request.resource.data.views is int
+        && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
+    }
+
     match /news/{newsId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || isOnlyViewIncrement();
     }
-    
-    // Permitir leitura pública de configurações
+
     match /settings/{settingId} {
-      allow read: if true;  // IMPORTANTE!
-      allow write: if request.auth != null;
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }
@@ -42,9 +52,9 @@ service cloud.firestore {
 
 Depois de atualizar as regras, limpe o cache:
 
-#### No site público:
+#### No site pÃºblico:
 1. Aperte **F12** (abre console)
-2. Clique com botão direito no botão de atualizar (🔄)
+2. Clique com botÃ£o direito no botÃ£o de atualizar (ðŸ”„)
 3. Selecione **"Esvaziar cache e atualizar"**
 
 OU
@@ -55,67 +65,91 @@ OU
 ### 3. TESTAR
 
 1. Abra o painel admin: https://mirador-admin.onrender.com
-2. Faça login
-3. Vá em **"Configurações"**
+2. FaÃ§a login
+3. VÃ¡ em **"ConfiguraÃ§Ãµes"**
 4. Altere uma cor (ex: mude o azul para vermelho #ff0000)
-5. Clique em **"Salvar Alterações"**
-6. Abra o site público: https://mirador-web.onrender.com
+5. Clique em **"Salvar AlteraÃ§Ãµes"**
+6. Abra o site pÃºblico: https://mirador-web.onrender.com
 7. Aperte **F12** e verifique o console
-8. Você deve ver: `[Firebase DB] Cores atualizadas: {...}`
+8. VocÃª deve ver: `[Firebase DB] Cores atualizadas: {...}`
 
-### 4. SE AINDA NÃO FUNCIONAR
+### 4. SE AINDA NÃƒO FUNCIONAR
 
-Abra o console do navegador (F12) no site público e verifique se aparece:
+Abra o console do navegador (F12) no site pÃºblico e verifique se aparece:
 
 ```
-[Firebase DB] v2.1 - Script carregado
-[Firebase DB] v2.1 - Pronto!
-[Firebase DB] Cores atualizadas: {...}
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email == 'sitemirador2026@gmail.com';
+    }
+
+    function isOnlyViewIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['views'])
+        && request.resource.data.views is int
+        && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || isOnlyViewIncrement();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}
 ```
 
-Se aparecer erro de **"permission-denied"**, as regras do Firebase não foram atualizadas corretamente.
+Se aparecer erro de **"permission-denied"**, as regras do Firebase nÃ£o foram atualizadas corretamente.
 
-Se não aparecer nada, o cache do navegador está impedindo o carregamento dos novos arquivos.
+Se nÃ£o aparecer nada, o cache do navegador estÃ¡ impedindo o carregamento dos novos arquivos.
 
 ---
 
-## 🔍 O que foi implementado
+## ðŸ” O que foi implementado
 
 ### No Admin (mirador-admin.onrender.com):
-- ✅ Salva cores no Firebase: `db.collection('settings').doc('colors')`
-- ✅ Salva marca no Firebase: `db.collection('settings').doc('brand')`
-- ✅ Logs detalhados no console
+- âœ… Salva cores no Firebase: `db.collection('settings').doc('colors')`
+- âœ… Salva marca no Firebase: `db.collection('settings').doc('brand')`
+- âœ… Logs detalhados no console
 
-### No Site Público (mirador-web.onrender.com):
-- ✅ Listeners em tempo real (onSnapshot)
-- ✅ Quando o admin salva, o site atualiza automaticamente
-- ✅ Fallback para localStorage se Firebase falhar
-- ✅ Cache-busting nos arquivos JS (v2)
-- ✅ Logs detalhados no console
+### No Site PÃºblico (mirador-web.onrender.com):
+- âœ… Listeners em tempo real (onSnapshot)
+- âœ… Quando o admin salva, o site atualiza automaticamente
+- âœ… Fallback para localStorage se Firebase falhar
+- âœ… Cache-busting nos arquivos JS (v2)
+- âœ… Logs detalhados no console
 
 ---
 
-## 🚨 ERROS COMUNS
+## ðŸš¨ ERROS COMUNS
 
 ### "permission-denied"
-**Significado:** As regras de segurança do Firebase não permitem leitura pública.
-**Solução:** Atualize as regras conforme o passo 1 acima.
+**Significado:** As regras de seguranÃ§a do Firebase nÃ£o permitem leitura pÃºblica.
+**SoluÃ§Ã£o:** Atualize as regras conforme o passo 1 acima.
 
 ### Nada acontece (sem logs no console)
-**Significado:** O navegador está usando arquivos em cache.
-**Solução:** Limpe o cache (Ctrl + Shift + R) ou use modo anônimo (Ctrl + Shift + N).
+**Significado:** O navegador estÃ¡ usando arquivos em cache.
+**SoluÃ§Ã£o:** Limpe o cache (Ctrl + Shift + R) ou use modo anÃ´nimo (Ctrl + Shift + N).
 
 ### "Firebase DB v2.0" em vez de "v2.1"
-**Significado:** O arquivo JS antigo ainda está em cache.
-**Solução:** Limpe o cache completamente ou espere alguns minutos.
+**Significado:** O arquivo JS antigo ainda estÃ¡ em cache.
+**SoluÃ§Ã£o:** Limpe o cache completamente ou espere alguns minutos.
 
 ---
 
-## 📞 Suporte
+## ðŸ“ž Suporte
 
-Se mesmo após seguir todos os passos não funcionar:
+Se mesmo apÃ³s seguir todos os passos nÃ£o funcionar:
 
-1. Abra o site público
+1. Abra o site pÃºblico
 2. Aperte F12 (console)
 3. Tire um print da tela
-4. Envie para análise
+4. Envie para anÃ¡lise
+

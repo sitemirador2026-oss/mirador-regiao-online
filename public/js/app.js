@@ -91,6 +91,21 @@ function getDomainFromUrl(url) {
     }
 }
 
+async function trackNewsView(newsId) {
+    if (!newsId) return;
+    try {
+        await db.collection('news').doc(newsId).update({
+            views: firebase.firestore.FieldValue.increment(1)
+        });
+    } catch (error) {
+        if (error && error.code === 'permission-denied') {
+            console.warn('[Views] Permissao negada para incrementar views do post:', newsId);
+            return;
+        }
+        console.warn('[Views] Falha ao incrementar views do post:', newsId, error);
+    }
+}
+
 // Obter logo do site configurada no admin
 function getSiteLogo() {
     const brandSettings = localStorage.getItem('publicSiteBrand');
@@ -1019,6 +1034,9 @@ let expandedCardId = null;
 function openInstagramModal(newsId) {
     const post = instagramPostsData[newsId];
     if (!post) return;
+
+    // Cada abertura do post conta como uma visualizacao
+    void trackNewsView(newsId);
     
     // Se já tem um card expandido, fechar ele primeiro
     if (expandedCardId && expandedCardId !== newsId) {

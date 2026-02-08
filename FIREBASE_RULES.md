@@ -1,81 +1,84 @@
-# Regras de Segurança do Firebase
+# Firebase Rules (Firestore + Storage)
 
-## Firestore Database Rules
+Use estas regras no Firebase Console para:
+- manter leitura publica de noticias/configuracoes;
+- manter escrita administrativa no painel;
+- permitir que o site publico incremente somente `views` ao abrir noticia/post.
 
-Para que todas as funcionalidades funcionem corretamente, atualize as regras de segurança do Firestore no console do Firebase:
+## Firestore Rules
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Notícias - leitura pública, escrita apenas autenticada
-    match /news/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    function isSignedIn() {
+      return request.auth != null;
     }
-    
-    // Stories ativos - leitura pública, escrita apenas autenticada
-    match /stories/{document} {
-      allow read: if true;
-      allow write: if request.auth != null;
+
+    function isAdmin() {
+      return isSignedIn() &&
+        request.auth.token.email == 'sitemirador2026@gmail.com';
     }
-    
-    // Stories arquivados - apenas admins autenticados
-    match /storiesArchive/{document} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null;
+
+    function isOnlyViewIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['views']) &&
+        request.resource.data.views is int &&
+        request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
     }
-    
-    // Configurações - leitura pública, escrita apenas autenticada
-    match /settings/{document} {
+
+    match /news/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || isOnlyViewIncrement();
     }
-    
-    // Categorias - leitura pública, escrita apenas autenticada
-    match /categories/{document} {
+
+    match /settings/{docId} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    match /categories/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /stories/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /storiesArchive/{docId} {
+      allow read, write: if isAdmin();
     }
   }
 }
 ```
 
-## Firebase Storage Rules
+## Storage Rules (opcional)
 
-Para permitir upload de imagens e vídeos para stories:
+Se nao usa Firebase Storage no plano atual, pode ignorar.
 
 ```javascript
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    match /stories/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null 
-                   && request.resource.size < 50 * 1024 * 1024
-                   && (request.resource.contentType.matches('image/.*') 
-                       || request.resource.contentType.matches('video/.*'));
-    }
-    
-    match /news/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    match /{allPaths=**} {
+      allow read, write: if false;
     }
   }
 }
 ```
 
-## Como aplicar:
+## Como aplicar
 
-1. Acesse o [Console do Firebase](https://console.firebase.google.com/)
-2. Selecione seu projeto
-3. Vá em "Firestore Database" > "Regras"
-4. Cole o código das regras do Firestore
-5. Clique em "Publicar"
-6. Vá em "Storage" > "Regras"
-7. Cole o código das regras do Storage
-8. Clique em "Publicar"
+1. Firebase Console -> Firestore Database -> Regras.
+2. Cole as regras de Firestore acima.
+3. Clique em `Publicar`.
+4. (Opcional) Firebase Console -> Storage -> Regras.
+5. Cole as regras de Storage e publique.
 
----
+## Observacao
 
-**Nota:** As regras acima permitem que qualquer usuário autenticado (logado no painel admin) possa criar, editar e excluir conteúdo. Se precisar de regras mais restritivas (apenas usuários específicos), entre em contato.
+- Com estas regras, visitantes NAO podem editar noticia.
+- Visitantes so conseguem incrementar `views` em +1 por requisicao.
+- O painel admin continua com controle total via usuario admin.
