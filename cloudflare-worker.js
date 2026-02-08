@@ -147,10 +147,19 @@ export default {
         }
         
         // Validar tipo
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
-        if (!allowedTypes.includes(file.type)) {
+        const allowedTypes = [
+          'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 
+          'image/bmp', 'image/svg+xml', 'image/x-icon', 'image/vnd.microsoft.icon',
+          'video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'
+        ];
+        
+        // Normalizar tipo MIME
+        let fileType = file.type.toLowerCase();
+        if (fileType === 'image/jpg') fileType = 'image/jpeg';
+        
+        if (!allowedTypes.includes(fileType)) {
           return new Response(
-            JSON.stringify({ error: 'Tipo não suportado' }),
+            JSON.stringify({ error: `Tipo não suportado: ${file.type}` }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }

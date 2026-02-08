@@ -544,6 +544,8 @@
         .page-content {
             padding: 2rem;
             max-width: 1400px;
+            position: relative;
+            z-index: 1;
         }
 
         .page-header {
@@ -3897,8 +3899,41 @@
         function showAdmin() {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
-            loadDashboard();
             updateUserInfo();
+            
+            // Restaurar página salva ou ir para dashboard
+            restoreLastPage();
+        }
+
+        // Restaurar última página visitada
+        function restoreLastPage() {
+            const savedPage = localStorage.getItem('adminCurrentPage');
+            const pageMap = {
+                'dashboard': { id: 'dashboardPage', index: 0 },
+                'news': { id: 'newsPage', index: 1 },
+                'instagram': { id: 'instagramPage', index: 2 },
+                'importNews': { id: 'importNewsPage', index: 3 },
+                'categories': { id: 'categoriesPage', index: 4 },
+                'media': { id: 'mediaPage', index: 5 },
+                'storage': { id: 'storagePage', index: 6 },
+                'migration': { id: 'migrationPage', index: 7 },
+                'settings': { id: 'settingsPage', index: 8 },
+                'users': { id: 'dashboardPage', index: 8 }
+            };
+
+            if (savedPage && pageMap[savedPage] && savedPage !== 'dashboard') {
+                // Encontrar o elemento do nav correspondente
+                const navItems = document.querySelectorAll('.nav-item');
+                const pageInfo = pageMap[savedPage];
+                
+                if (navItems[pageInfo.index]) {
+                    showPage(savedPage, navItems[pageInfo.index]);
+                    return;
+                }
+            }
+            
+            // Padrão: carregar dashboard
+            loadDashboard();
         }
 
         // Atualizar informações do usuário logado
@@ -3925,6 +3960,9 @@
 
         // Navegação entre páginas
         function showPage(pageName, element) {
+            // Salvar página atual no localStorage
+            localStorage.setItem('adminCurrentPage', pageName);
+
             // Esconder todas as páginas
             document.querySelectorAll('.page-content').forEach(page => {
                 page.style.display = 'none';
@@ -7159,14 +7197,21 @@
         // Upload de base64 para R2
         async function uploadBase64ToR2(base64String, prefix, r2Client) {
             try {
-                // Extrair mime type e dados
-                const match = base64String.match(/^data:(image\/\w+);base64,(.+)$/);
+                // Extrair mime type e dados (aceita image/* e video/*)
+                const match = base64String.match(/^data:((?:image|video)\/[\w+.-]+);base64,(.+)$/);
                 if (!match) {
                     return { success: false, error: 'Formato base64 inválido' };
                 }
 
-                const [, mimeType, base64Data] = match;
-                const ext = mimeType.split('/')[1];
+                let [, mimeType, base64Data] = match;
+                
+                // Normalizar tipo MIME
+                mimeType = mimeType.toLowerCase();
+                if (mimeType === 'image/jpg') mimeType = 'image/jpeg';
+                if (mimeType === 'image/pjpeg') mimeType = 'image/jpeg';
+                if (mimeType === 'image/x-png') mimeType = 'image/png';
+                
+                const ext = mimeType.split('/')[1].replace(/[^a-z0-9]/g, '');
                 const filename = `${prefix}_${Date.now()}.${ext}`;
 
                 // Converter base64 para Blob
