@@ -50,6 +50,10 @@ async function getSignedHeaders(method, path, queryString, env) {
     throw new Error('Credenciais R2 não configuradas');
   }
   
+  // Log para debug (remover em produção)
+  console.log('Access Key:', accessKeyId.substring(0, 10) + '...');
+  console.log('Secret Key length:', secretKey.length);
+  
   const now = new Date();
   const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
   const amzDate = now.toISOString().slice(0, 19).replace(/[-:]/g, '') + 'Z';
@@ -147,6 +151,8 @@ export default {
           headers: signedHeaders
         });
         
+        const responseText = await r2Response.text();
+        
         return new Response(
           JSON.stringify({
             status: 'online',
@@ -158,6 +164,10 @@ export default {
               status: r2Response.status,
               bucket: R2_CONFIG.bucketName,
               publicUrl: R2_CONFIG.publicUrl
+            },
+            debug: {
+              headers: signedHeaders,
+              response: responseText.substring(0, 200)
             }
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
