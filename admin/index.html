@@ -1567,6 +1567,23 @@
         .modal-btn-secondary:hover {
             background: var(--border);
         }
+
+        /* ========================================
+           MIGRATION PAGE - Fix Layout
+           ======================================== */
+        #migrationPage {
+            position: relative !important;
+            z-index: 1 !important;
+            margin-left: 0 !important;
+            padding-left: 2rem !important;
+        }
+        
+        #migrationPage .page-header,
+        #migrationPage .stats-grid,
+        #migrationPage .content-section {
+            position: relative !important;
+            z-index: 1 !important;
+        }
     </style>
 </head>
 
@@ -3530,7 +3547,7 @@
                 </div>
 
                 <!-- MIGRATION PAGE - Firebase → R2 -->
-                <div id="migrationPage" class="page-content" style="display: none; position: relative; z-index: 1;">
+                <div id="migrationPage" class="page-content" style="display: none;">
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Migração Firebase → R2</h1>
