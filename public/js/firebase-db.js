@@ -342,10 +342,19 @@ function applyLayout(layout) {
     if (!layout) return;
     
     const cardsPerRow = layout.cardsPerRow || 3;
+    const instagramPostsVisible = Math.max(1, Math.min(12, Number(layout.instagramPostsVisible) || 4));
     const root = document.documentElement;
     
     root.style.setProperty('--news-columns', cardsPerRow.toString());
-    console.log('[Aplicar Layout] Cards por linha:', cardsPerRow);
+    root.style.setProperty('--instagram-columns', instagramPostsVisible.toString());
+    window.publicSiteLayoutConfig = {
+        cardsPerRow,
+        instagramPostsVisible
+    };
+    window.dispatchEvent(new CustomEvent('public-layout-updated', {
+        detail: window.publicSiteLayoutConfig
+    }));
+    console.log('[Aplicar Layout] Cards por linha:', cardsPerRow, '| Instagram visiveis:', instagramPostsVisible);
 }
 
 // Carregar layout do Firebase

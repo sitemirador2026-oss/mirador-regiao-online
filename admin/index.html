@@ -3227,6 +3227,14 @@
                                 </div>
                             </div>
 
+                            <div class="layout-input-group">
+                                <label for="instagramPostsVisible">Posts visiveis do Instagram:</label>
+                                <div class="layout-input-wrapper">
+                                    <input type="number" id="instagramPostsVisible" class="layout-input" value="4" min="1" max="12" onchange="updateLayoutPreview()">
+                                    <span class="layout-unit">posts</span>
+                                </div>
+                            </div>
+
                             <div id="layoutPreviewGrid" class="layout-preview-grid" style="grid-template-columns: repeat(3, 1fr);">
                                 <div class="layout-preview-card"></div>
                                 <div class="layout-preview-card"></div>
@@ -4758,10 +4766,14 @@
         
         function updateLayoutPreview() {
             const cardsPerRow = parseInt(document.getElementById('cardsPerRow').value) || 3;
+            const instagramPostsVisible = parseInt(document.getElementById('instagramPostsVisible')?.value) || 4;
             const previewGrid = document.getElementById('layoutPreviewGrid');
             
             // Limitar entre 1 e 6
             const validCards = Math.max(1, Math.min(6, cardsPerRow));
+            const validInstagramPosts = Math.max(1, Math.min(12, instagramPostsVisible));
+            const instagramInput = document.getElementById('instagramPostsVisible');
+            if (instagramInput) instagramInput.value = validInstagramPosts;
             
             // Atualizar grid do preview
             previewGrid.style.gridTemplateColumns = `repeat(${validCards}, 1fr)`;
@@ -4775,10 +4787,13 @@
 
         async function saveLayout() {
             const cardsPerRow = parseInt(document.getElementById('cardsPerRow').value) || 3;
+            const instagramPostsVisible = parseInt(document.getElementById('instagramPostsVisible')?.value) || 4;
             const validCards = Math.max(1, Math.min(6, cardsPerRow));
+            const validInstagramPosts = Math.max(1, Math.min(12, instagramPostsVisible));
             
             const layoutConfig = {
                 cardsPerRow: validCards,
+                instagramPostsVisible: validInstagramPosts,
                 updatedAt: new Date().toISOString()
             };
             
@@ -4797,8 +4812,14 @@
                 const doc = await db.collection('settings').doc('layout').get();
                 if (doc.exists) {
                     const cardsPerRow = doc.data().cardsPerRow || 3;
+                    const instagramPostsVisible = doc.data().instagramPostsVisible || 4;
                     document.getElementById('cardsPerRow').value = cardsPerRow;
+                    const instagramInput = document.getElementById('instagramPostsVisible');
+                    if (instagramInput) instagramInput.value = instagramPostsVisible;
                     updateLayoutPreview();
+                } else {
+                    const instagramInput = document.getElementById('instagramPostsVisible');
+                    if (instagramInput) instagramInput.value = 4;
                 }
             } catch (error) {
                 console.log('[Admin] Erro ao carregar layout:', error);
@@ -5923,11 +5944,11 @@
             // Remove padrÃµes comuns de metadados do Instagram
             let cleaned = text
                 // Remove "X likes, Y comments - username on Date:"
-                .replace(/^\d+\s*likes?,?\s*\d*\s*comments?\s*-\s*[^\s:]+\s+on\s+[^:]+:/i, '')
+                .replace(/^\s*["']?\s*[\d.,kmb]+\s*likes?,?\s*[\d.,kmb]*\s*comments?\s*-\s*[a-z0-9._]{2,30}\s+on\s+[^:]+:?\s*/i, '')
                 // Remove "username on Date:"
-                .replace(/^[^\s:]+\s+on\s+[^:]+:/i, '')
+                .replace(/^\s*["']?\s*[a-z0-9._]{2,30}\s+on\s+[^:]+:?\s*/i, '')
                 // Remove aspas no inicio e fim
-                .replace(/^["']|["']$/g, '')
+                .replace(/^\s*["']+|["']+\s*$/g, '')
                 // Remove hashtags no final (opcional - mantem por enquanto)
                 // .replace(/#\w+/g, '')
                 // Remove multiplos espacos
@@ -5959,6 +5980,246 @@
             return truncated + '...';
         }
 
+        function parseInstagramCountValue(value) {
+            if (typeof value === 'number' && Number.isFinite(value)) return Math.max(0, Math.round(value));
+            if (typeof value !== 'string') return 0;
+
+            const raw = value.trim().toLowerCase();
+            if (!raw) return 0;
+
+            const compact = raw.match(/([\d.,]+)\s*(k|m|b|mil|mi)?/i);
+            if (!compact) {
+                const digitsOnly = raw.replace(/[^\d]/g, '');
+                return digitsOnly ? parseInt(digitsOnly, 10) : 0;
+            }
+
+            const numPart = compact[1].replace(/\s/g, '');
+            let numeric = 0;
+            if (numPart.includes('.') && numPart.includes(',')) {
+                numeric = Number(numPart.replace(/\./g, '').replace(',', '.'));
+            } else if (numPart.includes(',') && !numPart.includes('.')) {
+                const maybeDecimal = numPart.split(',')[1];
+                if (maybeDecimal && maybeDecimal.length <= 2) {
+                    numeric = Number(numPart.replace(',', '.'));
+                } else {
+                    numeric = Number(numPart.replace(/,/g, ''));
+                }
+            } else {
+                numeric = Number(numPart.replace(/[^\d.]/g, ''));
+            }
+
+            if (!Number.isFinite(numeric)) return 0;
+
+            const suffix = (compact[2] || '').toLowerCase();
+            const multiplier =
+                suffix === 'k' || suffix === 'mil' ? 1000 :
+                suffix === 'm' || suffix === 'mi' ? 1000000 :
+                suffix === 'b' ? 1000000000 :
+                1;
+
+            return Math.max(0, Math.round(numeric * multiplier));
+        }
+
+        function extractInstagramUsernameFromUrlAdmin(url) {
+            if (!url) return '';
+            try {
+                const parsed = new URL(url);
+                const first = parsed.pathname.split('/').filter(Boolean)[0] || '';
+                const reserved = ['p', 'reel', 'tv', 'stories', 'explore', 'accounts'];
+                if (!first || reserved.includes(first.toLowerCase())) return '';
+                return first.replace(/^@/, '');
+            } catch (_e) {
+                return '';
+            }
+        }
+
+        function extractInstagramUsernameFromTextAdmin(text) {
+            if (!text || typeof text !== 'string') return '';
+
+            const patterns = [
+                /-\s*([a-z0-9._]{2,30})\s+on\b/i,
+                /\bby\s+([a-z0-9._]{2,30})\b/i,
+                /@([a-z0-9._]{2,30})/i
+            ];
+
+            for (const pattern of patterns) {
+                const match = text.match(pattern);
+                if (match && match[1]) return match[1];
+            }
+            return '';
+        }
+
+        function buildInstagramAvatarUrlAdmin(username, fallbackName = 'IG') {
+            const clean = (username || '').replace(/^@/, '').trim();
+            if (!clean) {
+                return `https://ui-avatars.com/api/?name=${encodeURIComponent(fallbackName)}&background=E4405F&color=fff`;
+            }
+            return `https://unavatar.io/instagram/${encodeURIComponent(clean)}`;
+        }
+
+        function sanitizeInstagramHandleAdmin(value) {
+            if (value == null) return '';
+            const text = String(value).trim().replace(/^@/, '');
+            if (!text) return '';
+
+            const match = text.match(/[a-z0-9._]{2,30}/i);
+            const handle = (match && match[0]) ? match[0] : '';
+            if (!handle) return '';
+
+            const blocked = ['instagram', 'undefined', 'null', 'nan', 'profile', 'user'];
+            if (blocked.includes(handle.toLowerCase())) return '';
+            return handle;
+        }
+
+        function sanitizeInstagramProfileImageAdmin(url) {
+            if (!url || typeof url !== 'string') return '';
+            const clean = url.trim();
+            if (!clean) return '';
+            const blockedParts = ['favicon', 'apple-touch-icon', 'static/images/ico', 'default_'];
+            if (blockedParts.some(part => clean.toLowerCase().includes(part))) return '';
+            return clean;
+        }
+
+        function sanitizeInstagramDisplayNameAdmin(value, fallbackHandle = '', description = '', instagramUrl = '') {
+            const raw = (value == null ? '' : String(value)).trim();
+            const cleanedRaw = cleanInstagramText(raw);
+
+            const candidates = [
+                sanitizeInstagramHandleAdmin(cleanedRaw),
+                sanitizeInstagramHandleAdmin(fallbackHandle),
+                sanitizeInstagramHandleAdmin(extractInstagramUsernameFromTextAdmin(description)),
+                sanitizeInstagramHandleAdmin(extractInstagramUsernameFromUrlAdmin(instagramUrl))
+            ].filter(Boolean);
+
+            if (candidates.length > 0) return candidates[0];
+            return 'instagram';
+        }
+
+        function normalizeInstagramMetaAdmin(meta = {}, instagramUrl = '') {
+            const textBlob = [
+                meta.description,
+                meta.title,
+                meta.authorName,
+                meta.author
+            ].filter(Boolean).join(' | ');
+
+            const likesMatch = textBlob.match(/([\d.,kmb]+)\s+likes?/i);
+            const commentsMatch = textBlob.match(/([\d.,kmb]+)\s+comments?/i);
+
+            const username = sanitizeInstagramHandleAdmin(
+                meta.username ||
+                extractInstagramUsernameFromUrlAdmin(meta.authorUrl || '') ||
+                extractInstagramUsernameFromTextAdmin(textBlob) ||
+                extractInstagramUsernameFromUrlAdmin(instagramUrl)
+            );
+
+            const likes = meta.likes != null ? parseInstagramCountValue(meta.likes) : (likesMatch ? parseInstagramCountValue(likesMatch[1]) : 0);
+            const comments = meta.comments != null ? parseInstagramCountValue(meta.comments) : (commentsMatch ? parseInstagramCountValue(commentsMatch[1]) : 0);
+            const displayName = sanitizeInstagramDisplayNameAdmin(
+                meta.displayName || meta.authorName || username || '',
+                username,
+                textBlob,
+                instagramUrl
+            );
+            const cleanProfileImage = sanitizeInstagramProfileImageAdmin(meta.profileImage || '');
+
+            return {
+                likes,
+                comments,
+                username,
+                displayName,
+                profileImage: cleanProfileImage || buildInstagramAvatarUrlAdmin(username || displayName || 'IG', displayName || 'IG')
+            };
+        }
+
+        async function fetchInstagramMetaForAdmin(url) {
+            let internalMeta = null;
+            let microlinkData = null;
+            let jsonlinkData = null;
+            let noembedData = null;
+
+            const encodedUrl = encodeURIComponent(url);
+            const workerBaseUrl = (typeof getWorkerBaseUrl === 'function')
+                ? getWorkerBaseUrl().replace(/\/$/, '')
+                : 'https://mirador-r2.sitemirador2026.workers.dev';
+            const metaEndpoints = [
+                `/api/instagram/meta?url=${encodedUrl}`,
+                `${workerBaseUrl}/api/instagram/meta?url=${encodedUrl}`
+            ];
+
+            for (const endpoint of metaEndpoints) {
+                try {
+                    const response = await fetch(endpoint);
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    if (payload && payload.success) {
+                        internalMeta = payload;
+                        break;
+                    }
+                } catch (_internalError) {}
+            }
+
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(url)}`, {
+                    signal: controller.signal,
+                    headers: { 'Accept': 'application/json' }
+                });
+                clearTimeout(timeoutId);
+                if (response.ok) {
+                    const payload = await response.json();
+                    microlinkData = payload?.data || null;
+                }
+            } catch (apiError) {
+                console.log('[Admin] Microlink API falhou:', apiError.message);
+            }
+
+            if (!microlinkData) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 8000);
+                    const response = await fetch(`https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`, {
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    if (response.ok) {
+                        jsonlinkData = await response.json();
+                    }
+                } catch (jsonError) {
+                    console.log('[Admin] JSONLink falhou:', jsonError.message);
+                }
+            }
+
+            if (!microlinkData && !jsonlinkData) {
+                try {
+                    const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(url)}`);
+                    if (response.ok) {
+                        noembedData = await response.json();
+                    }
+                } catch (_e) {}
+            }
+
+            const merged = {
+                image: internalMeta?.image || microlinkData?.image?.url || microlinkData?.image || (jsonlinkData?.images && jsonlinkData.images[0]) || '',
+                title: internalMeta?.title || microlinkData?.title || jsonlinkData?.meta?.title || noembedData?.title || '',
+                description: internalMeta?.description || microlinkData?.description || jsonlinkData?.meta?.description || noembedData?.title || '',
+                likes: internalMeta?.likes ?? microlinkData?.likes ?? microlinkData?.like_count ?? microlinkData?.engagement?.likes,
+                comments: internalMeta?.comments ?? microlinkData?.comments ?? microlinkData?.comment_count ?? microlinkData?.engagement?.comments,
+                authorName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
+                authorUrl: microlinkData?.author?.url || '',
+                username: internalMeta?.username || microlinkData?.author?.username || '',
+                profileImage: internalMeta?.profileImage || microlinkData?.author?.image?.url || microlinkData?.author?.avatar || '',
+                displayName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || ''
+            };
+
+            const normalized = normalizeInstagramMetaAdmin(merged, url);
+            return {
+                ...merged,
+                ...normalized
+            };
+        }
+
         async function extractInstagramNewsData(e) {
             setTimeout(async () => {
                 const target = e.target || document.getElementById('instagramNewsUrl');
@@ -5977,68 +6238,33 @@
                 let description = '';
                 
                 try {
-                    // Tentar extrair usando Microlink API
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 10000);
-                        
-                        const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
-                        const response = await fetch(microlinkUrl, { 
-                            signal: controller.signal,
-                            headers: {
-                                'Accept': 'application/json'
-                            }
-                        });
-                        clearTimeout(timeoutId);
-                        
-                        // Verificar se a resposta e JSON valido
-                        const contentType = response.headers.get('content-type');
-                        if (contentType && contentType.includes('application/json')) {
-                            const data = await response.json();
-                            
-                            if (data.status === 'success' && data.data) {
-                                imageUrl = data.data.image?.url || '';
-                                title = data.data.title || '';
-                                description = data.data.description || '';
-                            }
-                        }
-                    } catch (apiError) {
-                        console.log('[Admin] Microlink API falhou:', apiError.message);
-                    }
-                    
-                    // Tentar JSONLink como fallback
-                    if (!imageUrl && !description) {
-                        try {
-                            const controller = new AbortController();
-                            const timeoutId = setTimeout(() => controller.abort(), 8000);
-                            
-                            const jsonlinkUrl = `https://jsonlink.io/api/extract?url=${encodeURIComponent(url)}`;
-                            const response = await fetch(jsonlinkUrl, { signal: controller.signal });
-                            clearTimeout(timeoutId);
-                            
-                            if (response.ok) {
-                                const data = await response.json();
-                                if (data.meta) {
-                                    title = data.meta.title || '';
-                                    description = data.meta.description || '';
-                                    if (data.images && data.images.length > 0) {
-                                        imageUrl = data.images[0];
-                                    }
-                                }
-                            }
-                        } catch (jsonError) {
-                            console.log('[Admin] JSONLink falhou:', jsonError.message);
-                        }
-                    }
+                    const extracted = await fetchInstagramMetaForAdmin(url);
+                    imageUrl = extracted.image || '';
+                    title = extracted.title || '';
+                    description = extracted.description || '';
                     
                     // Processar dados extraidos (ou usar valores padrao se vazio)
                     const cleanedContent = cleanInstagramText(description || '');
-                    const finalTitle = title || generateTitleFromText(cleanedContent) || 'Post do Instagram';
+                    const cleanedTitle = cleanInstagramText(title || '');
+                    const finalTitle = cleanedTitle || generateTitleFromText(cleanedContent) || 'Post do Instagram';
                     
                     instagramNewsData.image = imageUrl;
                     instagramNewsData.title = finalTitle;
                     instagramNewsData.content = cleanedContent;
                     instagramNewsData.url = url;
+                    instagramNewsData.username = sanitizeInstagramHandleAdmin(extracted.username || '');
+                    instagramNewsData.displayName = sanitizeInstagramDisplayNameAdmin(
+                        extracted.displayName || extracted.username || '',
+                        extracted.username || '',
+                        cleanedContent,
+                        url
+                    );
+                    instagramNewsData.profileImage = sanitizeInstagramProfileImageAdmin(extracted.profileImage || '');
+
+                    const likesInput = document.getElementById('instagramLikesCount');
+                    const commentsInput = document.getElementById('instagramCommentsCount');
+                    if (likesInput) likesInput.value = (extracted.likes ?? 0).toString();
+                    if (commentsInput) commentsInput.value = (extracted.comments ?? 0).toString();
                     
                     // Preencher formulario (apenas legenda - titulo e gerado automaticamente da legenda)
                     document.getElementById('instagramNewsCaption').value = cleanedContent;
@@ -6074,6 +6300,14 @@
             const instagramUrl = document.getElementById('instagramNewsUrl').value.trim();
             const likes = parseInt(document.getElementById('instagramLikesCount').value) || 0;
             const comments = parseInt(document.getElementById('instagramCommentsCount').value) || 0;
+            const instagramMeta = normalizeInstagramMetaAdmin({
+                likes,
+                comments,
+                username: instagramNewsData.username || '',
+                displayName: instagramNewsData.displayName || '',
+                profileImage: instagramNewsData.profileImage || '',
+                description: captionContent
+            }, instagramUrl);
             
             let categoryName = document.querySelector(`#instagramNewsCategory option[value="${category}"]`).textContent;
             categoryName = categoryName.replace(/[^\w\s]/g, '').trim();
@@ -6139,6 +6373,10 @@
                 source: 'Instagram',
                 instagramLikes: likes,
                 instagramComments: comments,
+                instagramUsername: instagramMeta.username || '',
+                instagramDisplayName: instagramMeta.displayName || instagramMeta.username || '',
+                instagramProfileImage: instagramMeta.profileImage || '',
+                instagramMetaUpdatedAt: new Date().toISOString(),
                 gallery: gallery, // Galeria de fotos/videos adicionais
                 views: 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
