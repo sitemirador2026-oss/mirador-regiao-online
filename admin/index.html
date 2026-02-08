@@ -1670,6 +1670,13 @@
                             </svg>
                             Contas/Armazenamento
                         </a>
+                        <a href="#" class="nav-item" onclick="showPage('migration', this); return false;">
+                            <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            Migração Firebase → R2
+                            <span class="nav-badge" id="migrationBadge" style="background: var(--warning); display: none;">!</span>
+                        </a>
                     </div>
 
                     <div class="nav-section">
@@ -3519,6 +3526,304 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- MIGRATION PAGE - Firebase → R2 -->
+                <div id="migrationPage" class="page-content" style="display: none;">
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Migração Firebase → R2</h1>
+                            <p class="page-subtitle">Migre imagens e vídeos do Firebase para o Cloudflare R2</p>
+                        </div>
+                        <button class="btn btn-secondary" onclick="checkMigrationStatus()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            Verificar Status
+                        </button>
+                    </div>
+
+                    <!-- Status Cards -->
+                    <div class="stats-grid" style="margin-bottom: 2rem;">
+                        <div class="stat-card warning">
+                            <div class="stat-header">
+                                <div class="stat-icon warning">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value" id="migrationPendingCount">--</div>
+                            <div class="stat-label">Pendentes de Migração</div>
+                        </div>
+                        <div class="stat-card success">
+                            <div class="stat-header">
+                                <div class="stat-icon success">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value" id="migrationCompletedCount">--</div>
+                            <div class="stat-label">Já Migradas</div>
+                        </div>
+                        <div class="stat-card info">
+                            <div class="stat-header">
+                                <div class="stat-icon info">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value" id="migrationTotalSize">--</div>
+                            <div class="stat-label">Tamanho Total</div>
+                        </div>
+                        <div class="stat-card primary">
+                            <div class="stat-header">
+                                <div class="stat-icon primary">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="stat-value" id="migrationR2Files">--</div>
+                            <div class="stat-label">Arquivos no R2</div>
+                        </div>
+                    </div>
+
+                    <!-- Migration Action -->
+                    <div class="content-section" style="margin-bottom: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">🚀 Iniciar Migração</h2>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <div id="migrationReady" style="display: none;">
+                                <div style="background: linear-gradient(135deg, var(--success-light) 0%, #f0fdf4 100%); border: 1px solid var(--success); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div style="width: 48px; height: 48px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Tudo pronto!</h3>
+                                            <p style="color: var(--text-secondary); font-size: 0.9375rem;">Não há imagens pendentes de migração. Todas as notícias estão usando o Cloudflare R2.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="migrationPending" style="display: none;">
+                                <div style="background: linear-gradient(135deg, var(--warning-light) 0%, #fffbeb 100%); border: 1px solid var(--warning); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 1.5rem;">
+                                    <div style="display: flex; align-items: flex-start; gap: 1rem;">
+                                        <div style="width: 48px; height: 48px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                            </svg>
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem;">Migração necessária</h3>
+                                            <p style="color: var(--text-secondary); font-size: 0.9375rem; margin-bottom: 1rem;">Existem <strong id="pendingCountText">0</strong> notícias com imagens no Firebase que devem ser migradas para o R2.</p>
+                                            <div style="background: white; border-radius: var(--radius); padding: 1rem; font-size: 0.875rem; color: var(--text-secondary);">
+                                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                                    <svg width="16" height="16" fill="none" stroke="var(--info)" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    <strong>O que será feito:</strong>
+                                                </div>
+                                                <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+                                                    <li>As imagens em base64 serão convertidas para arquivos</li>
+                                                    <li>Os arquivos serão enviados para o Cloudflare R2</li>
+                                                    <li>As notícias serão atualizadas com as novas URLs</li>
+                                                    <li>O processo pode levar alguns minutos dependendo da quantidade</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button class="btn btn-primary" onclick="startMigrationProcess()" id="btnStartMigration" style="width: 100%; padding: 1rem; font-size: 1rem;">
+                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                                    </svg>
+                                    Iniciar Migração Agora
+                                </button>
+                            </div>
+
+                            <div id="migrationLoading" style="display: none; text-align: center; padding: 3rem;">
+                                <div style="width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+                                <p style="font-size: 1rem; font-weight: 500; color: var(--text-primary);">Verificando status...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Section -->
+                    <div id="migrationProgressSection" class="content-section" style="display: none; margin-bottom: 2rem;">
+                        <div class="section-header">
+                            <h2 class="section-title">⏳ Progresso da Migração</h2>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <div style="margin-bottom: 2rem;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                    <span style="font-weight: 500; color: var(--text-primary);">Progresso Geral</span>
+                                    <span style="font-weight: 600; color: var(--primary);" id="progressPercent">0%</span>
+                                </div>
+                                <div style="width: 100%; height: 12px; background: var(--bg-secondary); border-radius: 6px; overflow: hidden;">
+                                    <div id="progressBar" style="width: 0%; height: 100%; background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%); transition: width 0.3s ease; border-radius: 6px;"></div>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                                <div style="text-align: center; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius);">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);" id="progressTotal">0</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total</div>
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: var(--success-light); border-radius: var(--radius);">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="progressSuccess">0</div>
+                                    <div style="font-size: 0.75rem; color: var(--success); text-transform: uppercase;">Sucesso</div>
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: var(--warning-light); border-radius: var(--radius);">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="progressSkipped">0</div>
+                                    <div style="font-size: 0.75rem; color: var(--warning); text-transform: uppercase;">Puladas</div>
+                                </div>
+                                <div style="text-align: center; padding: 1rem; background: var(--danger-light); border-radius: var(--radius);">
+                                    <div style="font-size: 1.5rem; font-weight: 700; color: var(--danger);" id="progressErrors">0</div>
+                                    <div style="font-size: 0.75rem; color: var(--danger); text-transform: uppercase;">Erros</div>
+                                </div>
+                            </div>
+
+                            <div style="background: var(--bg-sidebar); border-radius: var(--radius); padding: 1rem; max-height: 300px; overflow-y: auto;">
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; font-weight: 600;">Log de Atividades</div>
+                                <div id="migrationLog" style="font-family: monospace; font-size: 0.8125rem; line-height: 1.6; color: var(--text-sidebar);">
+                                    <!-- Logs serão inseridos aqui -->
+                                </div>
+                            </div>
+
+                            <button class="btn btn-secondary" onclick="cancelMigration()" id="btnCancelMigration" style="margin-top: 1.5rem; width: 100%;">
+                                Cancelar Migração
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Migration Result -->
+                    <div id="migrationResultSection" class="content-section" style="display: none;">
+                        <div class="section-header">
+                            <h2 class="section-title">✅ Resultado da Migração</h2>
+                        </div>
+                        <div style="padding: 2rem;">
+                            <div id="migrationSuccessResult" style="display: none;">
+                                <div style="text-align: center; padding: 2rem; background: var(--success-light); border-radius: var(--radius-lg); border: 1px solid var(--success);">
+                                    <div style="width: 64px; height: 64px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                        <svg width="32" height="32" fill="none" stroke="white" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Migração Concluída!</h3>
+                                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Todas as imagens foram migradas com sucesso para o Cloudflare R2.</p>
+                                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; max-width: 500px; margin: 0 auto;">
+                                        <div style="background: white; padding: 1rem; border-radius: var(--radius);">
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--success);" id="resultMigrated">0</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Migradas</div>
+                                        </div>
+                                        <div style="background: white; padding: 1rem; border-radius: var(--radius);">
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--warning);" id="resultSkipped">0</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Puladas</div>
+                                        </div>
+                                        <div style="background: white; padding: 1rem; border-radius: var(--radius);">
+                                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--primary);" id="resultTotal">0</div>
+                                            <div style="font-size: 0.75rem; color: var(--text-muted);">Total</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="migrationPartialResult" style="display: none;">
+                                <div style="text-align: center; padding: 2rem; background: var(--warning-light); border-radius: var(--radius-lg); border: 1px solid var(--warning);">
+                                    <div style="width: 64px; height: 64px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                        <svg width="32" height="32" fill="none" stroke="white" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                        </svg>
+                                    </div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Migração Parcial</h3>
+                                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Algumas imagens foram migradas, mas houve erros. Verifique o log acima.</p>
+                                    <button class="btn btn-primary" onclick="retryMigration()">
+                                        Tentar Novamente
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="migrationErrorResult" style="display: none;">
+                                <div style="text-align: center; padding: 2rem; background: var(--danger-light); border-radius: var(--radius-lg); border: 1px solid var(--danger);">
+                                    <div style="width: 64px; height: 64px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+                                        <svg width="32" height="32" fill="none" stroke="white" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </div>
+                                    <h3 style="font-size: 1.25rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Migração Falhou</h3>
+                                    <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">Não foi possível completar a migração. Verifique sua conexão e tente novamente.</p>
+                                    <button class="btn btn-primary" onclick="retryMigration()">
+                                        Tentar Novamente
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center;">
+                                <button class="btn btn-secondary" onclick="checkMigrationStatus()">
+                                    Verificar Novamente
+                                </button>
+                                <button class="btn btn-primary" onclick="showPage('storage', document.querySelectorAll('.nav-item')[6])">
+                                    Ver Armazenamento
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Section -->
+                    <div class="content-section">
+                        <div class="section-header">
+                            <h2 class="section-title">ℹ️ Sobre a Migração</h2>
+                        </div>
+                        <div style="padding: 1.5rem;">
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+                                <div style="padding: 1rem; background: var(--bg-primary); border-radius: var(--radius);">
+                                    <h4 style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="18" height="18" fill="none" stroke="var(--primary)" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Por que migrar?
+                                    </h4>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                        O Firebase Storage tem limitações de espaço gratuito. O Cloudflare R2 oferece 
+                                        10GB gratuitos sem cobrança por download, ideal para sites de notícias.
+                                    </p>
+                                </div>
+                                <div style="padding: 1rem; background: var(--bg-primary); border-radius: var(--radius);">
+                                    <h4 style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="18" height="18" fill="none" stroke="var(--success)" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                        </svg>
+                                        É seguro?
+                                    </h4>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                        Sim! O processo mantém os dados originais intactos. As imagens são apenas copiadas 
+                                        para o R2 e as referências são atualizadas automaticamente.
+                                    </p>
+                                </div>
+                                <div style="padding: 1rem; background: var(--bg-primary); border-radius: var(--radius);">
+                                    <h4 style="font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                        <svg width="18" height="18" fill="none" stroke="var(--warning)" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                        Duração
+                                    </h4>
+                                    <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">
+                                        O tempo varia conforme a quantidade de imagens. Cada imagem leva alguns segundos 
+                                        para ser processada e enviada ao R2.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </main>
         </div>
     </div>
@@ -3640,7 +3945,8 @@
                 'media': 'mediaPage',
                 'instagram': 'instagramPage',
                 'storage': 'storagePage',
-                'users': 'dashboardPage'
+                'users': 'dashboardPage',
+                'migration': 'migrationPage'
             };
             
             // Carregar dados específicos da página
@@ -3651,6 +3957,11 @@
             if (pageName === 'storage') {
                 // Pequeno delay para garantir que o DOM está pronto
                 setTimeout(() => loadStorageInfo(), 100);
+            }
+
+            if (pageName === 'migration') {
+                // Verificar status da migração ao abrir a página
+                setTimeout(() => checkMigrationStatus(), 100);
             }
 
             const pageId = pageMap[pageName];
@@ -6593,6 +6904,387 @@
                 console.error('[Admin] Erro ao excluir story:', error);
                 showModal('Erro!', 'Não foi possível excluir o story.', 'error');
             }
+        }
+
+        // ========================================
+        // MIGRATION FUNCTIONS - Firebase → R2
+        // ========================================
+        let migrationController = null;
+        let migrationStats = {
+            total: 0,
+            migrated: 0,
+            skipped: 0,
+            errors: 0
+        };
+
+        // Verificar status da migração
+        async function checkMigrationStatus() {
+            const pendingEl = document.getElementById('migrationPending');
+            const readyEl = document.getElementById('migrationReady');
+            const loadingEl = document.getElementById('migrationLoading');
+            const progressSection = document.getElementById('migrationProgressSection');
+            const resultSection = document.getElementById('migrationResultSection');
+
+            // Resetar UI
+            pendingEl.style.display = 'none';
+            readyEl.style.display = 'none';
+            progressSection.style.display = 'none';
+            resultSection.style.display = 'none';
+            loadingEl.style.display = 'block';
+
+            try {
+                // Buscar todas as notícias
+                const snapshot = await db.collection('news').get();
+                let pendingCount = 0;
+                let completedCount = 0;
+                let totalSize = 0;
+                let newsCount = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    newsCount++;
+
+                    // Verificar imagem principal
+                    if (data.image) {
+                        if (data.image.startsWith('data:image')) {
+                            pendingCount++;
+                            totalSize += data.image.length;
+                        } else if (data.image.startsWith('http')) {
+                            completedCount++;
+                        }
+                    }
+
+                    // Verificar galeria
+                    if (data.gallery && Array.isArray(data.gallery)) {
+                        data.gallery.forEach(item => {
+                            if (item.url) {
+                                if (item.url.startsWith('data:image')) {
+                                    pendingCount++;
+                                    totalSize += item.url.length;
+                                } else if (item.url.startsWith('http')) {
+                                    completedCount++;
+                                }
+                            }
+                        });
+                    }
+                });
+
+                // Atualizar cards
+                document.getElementById('migrationPendingCount').textContent = pendingCount;
+                document.getElementById('migrationCompletedCount').textContent = completedCount;
+                document.getElementById('migrationTotalSize').textContent = formatBytes(totalSize);
+                document.getElementById('pendingCountText').textContent = pendingCount;
+
+                // Atualizar badge no menu
+                const badge = document.getElementById('migrationBadge');
+                if (pendingCount > 0) {
+                    badge.style.display = 'inline-flex';
+                    badge.textContent = pendingCount > 99 ? '99+' : pendingCount;
+                } else {
+                    badge.style.display = 'none';
+                }
+
+                // Buscar arquivos no R2
+                try {
+                    const r2Client = new R2Client();
+                    const files = await r2Client.listFiles();
+                    document.getElementById('migrationR2Files').textContent = files.files?.length || 0;
+                } catch (e) {
+                    document.getElementById('migrationR2Files').textContent = 'N/A';
+                }
+
+                // Mostrar estado apropriado
+                loadingEl.style.display = 'none';
+                if (pendingCount === 0) {
+                    readyEl.style.display = 'block';
+                } else {
+                    pendingEl.style.display = 'block';
+                }
+
+            } catch (error) {
+                console.error('[Migration] Erro ao verificar status:', error);
+                loadingEl.style.display = 'none';
+                showModal('Erro', 'Não foi possível verificar o status da migração. Tente novamente.', 'error');
+            }
+        }
+
+        // Iniciar processo de migração
+        async function startMigrationProcess() {
+            const btn = document.getElementById('btnStartMigration');
+            const progressSection = document.getElementById('migrationProgressSection');
+            const pendingSection = document.getElementById('migrationPending');
+
+            // Resetar stats
+            migrationStats = { total: 0, migrated: 0, skipped: 0, errors: 0 };
+
+            // Atualizar UI
+            btn.disabled = true;
+            btn.innerHTML = `<div style="width: 16px; height: 16px; border: 2px solid white; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; display: inline-block; margin-right: 0.5rem; vertical-align: middle;"></div> Iniciando...`;
+
+            pendingSection.style.display = 'none';
+            progressSection.style.display = 'block';
+
+            // Criar controller para cancelamento
+            migrationController = { cancelled: false };
+
+            // Limpar log
+            document.getElementById('migrationLog').innerHTML = '';
+            addMigrationLog('🚀 Iniciando migração Firebase → R2...', 'info');
+
+            try {
+                // Buscar todas as notícias
+                const snapshot = await db.collection('news').get();
+                const news = [];
+                snapshot.forEach(doc => {
+                    news.push({ id: doc.id, ...doc.data() });
+                });
+
+                migrationStats.total = news.length;
+                updateProgressUI();
+
+                addMigrationLog(`📊 Total de notícias encontradas: ${news.length}`, 'info');
+
+                // Processar cada notícia
+                for (let i = 0; i < news.length; i++) {
+                    if (migrationController.cancelled) {
+                        addMigrationLog('❌ Migração cancelada pelo usuário', 'error');
+                        break;
+                    }
+
+                    await processNewsMigration(news[i], i + 1, news.length);
+                    updateProgressUI();
+                }
+
+                // Mostrar resultado
+                showMigrationResult();
+
+            } catch (error) {
+                console.error('[Migration] Erro:', error);
+                addMigrationLog(`❌ Erro: ${error.message}`, 'error');
+                showMigrationResult(true);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                    Iniciar Migração Agora
+                `;
+            }
+        }
+
+        // Processar migração de uma notícia
+        async function processNewsMigration(news, current, total) {
+            const r2Client = new R2Client();
+            const updates = {};
+            let hasUpdates = false;
+
+            addMigrationLog(`\n📰 [${current}/${total}] Processando: ${news.title?.substring(0, 40) || news.id}...`, 'info');
+
+            try {
+                // Processar imagem principal
+                if (news.image && news.image.startsWith('data:image')) {
+                    addMigrationLog('   📸 Convertendo imagem principal...', 'info');
+
+                    const result = await uploadBase64ToR2(news.image, `news/${news.id}_main`, r2Client);
+
+                    if (result.success) {
+                        updates.image = result.url;
+                        hasUpdates = true;
+                        migrationStats.migrated++;
+                        addMigrationLog(`   ✅ Imagem migrada: ${result.url.substring(0, 50)}...`, 'success');
+                    } else {
+                        migrationStats.errors++;
+                        addMigrationLog(`   ❌ Erro: ${result.error}`, 'error');
+                    }
+                } else if (news.image && news.image.startsWith('http')) {
+                    addMigrationLog('   ⏭️ Imagem já está no R2/URL', 'info');
+                    migrationStats.skipped++;
+                }
+
+                // Processar galeria
+                if (news.gallery && Array.isArray(news.gallery) && news.gallery.length > 0) {
+                    const newGallery = [];
+                    let galleryUpdated = false;
+
+                    for (let i = 0; i < news.gallery.length; i++) {
+                        const item = news.gallery[i];
+
+                        if (item.url && item.url.startsWith('data:image')) {
+                            addMigrationLog(`   📸 Convertendo galeria ${i + 1}/${news.gallery.length}...`, 'info');
+
+                            const result = await uploadBase64ToR2(item.url, `news/${news.id}_gallery_${i}`, r2Client);
+
+                            if (result.success) {
+                                newGallery.push({ ...item, url: result.url });
+                                galleryUpdated = true;
+                                migrationStats.migrated++;
+                                addMigrationLog(`   ✅ Galeria ${i + 1} migrada`, 'success');
+                            } else {
+                                newGallery.push(item);
+                                migrationStats.errors++;
+                                addMigrationLog(`   ❌ Erro na galeria ${i + 1}: ${result.error}`, 'error');
+                            }
+                        } else {
+                            newGallery.push(item);
+                            if (item.url && item.url.startsWith('http')) {
+                                migrationStats.skipped++;
+                            }
+                        }
+                    }
+
+                    if (galleryUpdated) {
+                        updates.gallery = newGallery;
+                        hasUpdates = true;
+                    }
+                }
+
+                // Atualizar Firestore se necessário
+                if (hasUpdates) {
+                    await db.collection('news').doc(news.id).update({
+                        ...updates,
+                        migratedAt: new Date().toISOString()
+                    });
+                    addMigrationLog('   💾 Notícia atualizada no Firebase', 'success');
+                } else {
+                    addMigrationLog('   ⏭️ Nenhuma alteração necessária', 'info');
+                }
+
+            } catch (error) {
+                migrationStats.errors++;
+                addMigrationLog(`   ❌ Erro ao processar: ${error.message}`, 'error');
+            }
+        }
+
+        // Upload de base64 para R2
+        async function uploadBase64ToR2(base64String, prefix, r2Client) {
+            try {
+                // Extrair mime type e dados
+                const match = base64String.match(/^data:(image\/\w+);base64,(.+)$/);
+                if (!match) {
+                    return { success: false, error: 'Formato base64 inválido' };
+                }
+
+                const [, mimeType, base64Data] = match;
+                const ext = mimeType.split('/')[1];
+                const filename = `${prefix}_${Date.now()}.${ext}`;
+
+                // Converter base64 para Blob
+                const byteCharacters = atob(base64Data);
+                const byteArrays = [];
+
+                for (let i = 0; i < byteCharacters.length; i += 512) {
+                    const slice = byteCharacters.slice(i, i + 512);
+                    const byteNumbers = new Array(slice.length);
+                    for (let j = 0; j < slice.length; j++) {
+                        byteNumbers[j] = slice.charCodeAt(j);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    byteArrays.push(byteArray);
+                }
+
+                const blob = new Blob(byteArrays, { type: mimeType });
+                const file = new File([blob], filename, { type: mimeType });
+
+                // Upload para R2
+                const result = await r2Client.uploadFile(file, 'migracao');
+
+                return { success: true, url: result.url };
+
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Adicionar log na migração
+        function addMigrationLog(message, type = 'info') {
+            const logContainer = document.getElementById('migrationLog');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+
+            let color = 'var(--text-sidebar)';
+            if (type === 'success') color = '#4ade80';
+            if (type === 'error') color = '#f87171';
+            if (type === 'warning') color = '#fbbf24';
+
+            const logEntry = document.createElement('div');
+            logEntry.style.color = color;
+            logEntry.style.marginBottom = '2px';
+            logEntry.textContent = `[${timestamp}] ${message}`;
+
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        // Atualizar UI de progresso
+        function updateProgressUI() {
+            const total = migrationStats.total || 1;
+            const processed = migrationStats.migrated + migrationStats.skipped + migrationStats.errors;
+            const percent = Math.round((processed / total) * 100);
+
+            document.getElementById('progressPercent').textContent = `${percent}%`;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            document.getElementById('progressTotal').textContent = migrationStats.total;
+            document.getElementById('progressSuccess').textContent = migrationStats.migrated;
+            document.getElementById('progressSkipped').textContent = migrationStats.skipped;
+            document.getElementById('progressErrors').textContent = migrationStats.errors;
+        }
+
+        // Mostrar resultado da migração
+        function showMigrationResult(hasError = false) {
+            const progressSection = document.getElementById('migrationProgressSection');
+            const resultSection = document.getElementById('migrationResultSection');
+            const successResult = document.getElementById('migrationSuccessResult');
+            const partialResult = document.getElementById('migrationPartialResult');
+            const errorResult = document.getElementById('migrationErrorResult');
+
+            progressSection.style.display = 'none';
+            resultSection.style.display = 'block';
+
+            // Esconder todos os resultados
+            successResult.style.display = 'none';
+            partialResult.style.display = 'none';
+            errorResult.style.display = 'none';
+
+            // Preencher valores
+            document.getElementById('resultMigrated').textContent = migrationStats.migrated;
+            document.getElementById('resultSkipped').textContent = migrationStats.skipped;
+            document.getElementById('resultTotal').textContent = migrationStats.total;
+
+            if (hasError || migrationStats.errors === migrationStats.total) {
+                errorResult.style.display = 'block';
+            } else if (migrationStats.errors > 0) {
+                partialResult.style.display = 'block';
+            } else {
+                successResult.style.display = 'block';
+            }
+
+            // Atualizar status
+            checkMigrationStatus();
+        }
+
+        // Cancelar migração
+        function cancelMigration() {
+            if (migrationController) {
+                migrationController.cancelled = true;
+            }
+            document.getElementById('btnCancelMigration').textContent = 'Cancelando...';
+            document.getElementById('btnCancelMigration').disabled = true;
+        }
+
+        // Tentar novamente
+        function retryMigration() {
+            document.getElementById('migrationResultSection').style.display = 'none';
+            checkMigrationStatus();
+        }
+
+        // Formatar bytes
+        function formatBytes(bytes, decimals = 2) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const dm = decimals < 0 ? 0 : decimals;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
         }
     </script>
     <!-- Story Modal -->
