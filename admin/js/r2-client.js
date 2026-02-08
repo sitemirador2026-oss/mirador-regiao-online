@@ -1,12 +1,13 @@
 /**
  * R2 Client - Frontend
- * Envia arquivos para o backend (Render) que faz upload pro R2
+ * Envia arquivos para o Cloudflare Worker que faz upload pro R2
  */
 
 class R2Client {
     constructor() {
-        // URL do backend (mesmo servidor onde está hospedado)
-        this.baseUrl = window.location.origin;
+        // URL do Cloudflare Worker (configure após o deploy)
+        this.baseUrl = 'https://mirador-r2-worker.seu-subdominio.workers.dev';
+        // ou use variável de ambiente/configuração
     }
 
     /**
