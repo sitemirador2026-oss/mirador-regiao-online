@@ -5,9 +5,8 @@
 
 class R2Client {
     constructor() {
-        // URL do Cloudflare Worker (configure após o deploy)
-        this.baseUrl = 'https://mirador-r2-worker.seu-subdominio.workers.dev';
-        // ou use variável de ambiente/configuração
+        // URL do Cloudflare Worker
+        this.baseUrl = 'https://mirador-r2.sitemirador2026.workers.dev';
     }
 
     /**
