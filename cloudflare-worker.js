@@ -230,15 +230,44 @@ export default {
     
     // Rota de debug (remover em produção)
     if (request.method === 'GET' && new URL(request.url).pathname === '/api/debug') {
-      return new Response(
-        JSON.stringify({
-          envKeys: Object.keys(env || {}),
-          hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
-          hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
-          accessKeyPrefix: env?.R2_ACCESS_KEY_ID ? env.R2_ACCESS_KEY_ID.substring(0, 5) + '...' : null
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      try {
+        const listUrl = `${R2_CONFIG.endpoint}?list-type=2&max-keys=1`;
+        const headers = {
+          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
+        };
+        
+        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
+        
+        const r2Response = await fetch(listUrl, {
+          method: 'GET',
+          headers: { ...headers, ...authHeaders }
+        });
+        
+        const responseText = await r2Response.text();
+        
+        return new Response(
+          JSON.stringify({
+            envKeys: Object.keys(env || {}),
+            hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
+            hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
+            r2Status: r2Response.status,
+            r2StatusText: r2Response.statusText,
+            r2Response: responseText.substring(0, 500)
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            envKeys: Object.keys(env || {}),
+            hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
+            hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
+            error: error.message,
+            stack: error.stack
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
     }
     
     // Rota de status do Worker (para o painel admin)
