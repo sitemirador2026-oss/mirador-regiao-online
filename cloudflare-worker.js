@@ -35,26 +35,28 @@ async function signRequest(method, url, headers, payload, env) {
   
   const date = new Date();
   const dateStamp = date.toISOString().slice(0, 10).replace(/-/g, '');
-  const timeStamp = date.toISOString().slice(0, 19).replace(/[-:]/g, '') + 'Z';
+  const timeStamp = date.toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(0, 15) + 'Z';
   
-  const region = 'us-east-1';
+  const region = 'auto';
   const service = 's3';
   
   // Canonical request
   const parsedUrl = new URL(url);
-  const canonicalUri = parsedUrl.pathname;
+  const canonicalUri = encodeURIComponent(parsedUrl.pathname).replace(/%2F/g, '/');
   const canonicalQuerystring = parsedUrl.search.slice(1);
   
-  // Headers assinados
-  const signedHeaders = Object.keys(headers).map(k => k.toLowerCase()).sort().join(';');
-  const canonicalHeaders = Object.keys(headers).sort().map(k => `${k.toLowerCase()}:${headers[k]}\n`).join('');
+  // Headers assinados - incluir host
+  const allHeaders = { ...headers, 'host': parsedUrl.host };
+  const signedHeadersList = Object.keys(allHeaders).map(k => k.toLowerCase()).sort();
+  const signedHeaders = signedHeadersList.join(';');
+  const canonicalHeaders = signedHeadersList.map(k => `${k}:${allHeaders[k].trim()}\n`).join('');
   
   const payloadHash = await crypto.subtle.digest('SHA-256', payload);
   const payloadHashHex = Array.from(new Uint8Array(payloadHash)).map(b => b.toString(16).padStart(2, '0')).join('');
   
   const canonicalRequest = [
     method,
-    canonicalUri,
+    parsedUrl.pathname,
     canonicalQuerystring,
     canonicalHeaders,
     signedHeaders,
@@ -87,7 +89,8 @@ async function signRequest(method, url, headers, payload, env) {
   return {
     'Authorization': authHeader,
     'x-amz-date': timeStamp,
-    'x-amz-content-sha256': payloadHashHex
+    'x-amz-content-sha256': payloadHashHex,
+    'host': parsedUrl.host
   };
 }
 
