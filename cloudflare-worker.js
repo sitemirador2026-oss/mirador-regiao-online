@@ -20,14 +20,18 @@ const R2_CONFIG = {
 // Headers CORS para permitir acesso do seu domínio
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*', // ou especifique seu domínio
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type'
 };
 
 // Função para gerar assinatura AWS v4
 async function signRequest(method, url, headers, payload, env) {
-  const R2_ACCESS_KEY_ID = env.R2_ACCESS_KEY_ID;
-  const R2_SECRET_ACCESS_KEY = env.R2_SECRET_ACCESS_KEY;
+  const R2_ACCESS_KEY_ID = env?.R2_ACCESS_KEY_ID;
+  const R2_SECRET_ACCESS_KEY = env?.R2_SECRET_ACCESS_KEY;
+  
+  if (!R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
+    throw new Error('Credenciais R2 não configuradas');
+  }
   
   const date = new Date();
   const dateStamp = date.toISOString().slice(0, 10).replace(/-/g, '');
@@ -96,6 +100,15 @@ async function hmacSHA256(key, data) {
     ['sign']
   );
   return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(data));
+}
+
+// Formatar bytes para human-readable
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
 // Handler principal
@@ -200,7 +213,7 @@ export default {
       }
     }
     
-    // Rota de status
+    // Rota de status geral
     if (request.method === 'GET' && new URL(request.url).pathname === '/api/status') {
       return new Response(
         JSON.stringify({ 
@@ -210,6 +223,245 @@ export default {
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+    
+    // Rota de debug (remover em produção)
+    if (request.method === 'GET' && new URL(request.url).pathname === '/api/debug') {
+      return new Response(
+        JSON.stringify({
+          envKeys: Object.keys(env || {}),
+          hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
+          hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
+          accessKeyPrefix: env?.R2_ACCESS_KEY_ID ? env.R2_ACCESS_KEY_ID.substring(0, 5) + '...' : null
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Rota de status do Worker (para o painel admin)
+    if (request.method === 'GET' && new URL(request.url).pathname === '/api/worker/status') {
+      try {
+        // Verificar se credenciais estão configuradas
+        const hasCredentials = env?.R2_ACCESS_KEY_ID && env?.R2_SECRET_ACCESS_KEY;
+        
+        if (!hasCredentials) {
+          return new Response(
+            JSON.stringify({
+              status: 'online',
+              worker: 'mirador-r2',
+              version: '1.0.0',
+              timestamp: new Date().toISOString(),
+              r2: {
+                connected: false,
+                error: 'Credenciais não configuradas',
+                bucket: R2_CONFIG.bucketName
+              }
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        // Testar conexão com R2
+        const listUrl = `${R2_CONFIG.endpoint}?list-type=2&max-keys=1`;
+        const headers = {
+          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
+        };
+        
+        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
+        
+        const r2Response = await fetch(listUrl, {
+          method: 'GET',
+          headers: { ...headers, ...authHeaders }
+        });
+        
+        const r2Connected = r2Response.ok;
+        
+        return new Response(
+          JSON.stringify({
+            status: 'online',
+            worker: 'mirador-r2',
+            version: '1.0.0',
+            timestamp: new Date().toISOString(),
+            r2: {
+              connected: r2Connected,
+              bucket: R2_CONFIG.bucketName,
+              endpoint: R2_CONFIG.endpoint,
+              publicUrl: R2_CONFIG.publicUrl
+            },
+            limits: {
+              requestsPerDay: 100000,
+              maxFileSize: '50MB'
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+        
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            status: 'online',
+            worker: 'mirador-r2',
+            error: error.message,
+            timestamp: new Date().toISOString(),
+            r2: {
+              connected: false,
+              bucket: R2_CONFIG.bucketName
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // Rota de estatísticas do R2
+    if (request.method === 'GET' && new URL(request.url).pathname === '/api/r2/usage') {
+      try {
+        // Listar todos os objetos do bucket
+        const listUrl = `${R2_CONFIG.endpoint}?list-type=2`;
+        const headers = {
+          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
+        };
+        
+        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
+        
+        const r2Response = await fetch(listUrl, {
+          method: 'GET',
+          headers: { ...headers, ...authHeaders }
+        });
+        
+        if (!r2Response.ok) {
+          throw new Error('Erro ao listar arquivos');
+        }
+        
+        const xmlText = await r2Response.text();
+        
+        // Parse simples do XML
+        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
+        let totalSize = 0;
+        let fileCount = 0;
+        
+        for (const content of contents) {
+          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
+          if (sizeMatch) {
+            totalSize += parseInt(sizeMatch[1]);
+            fileCount++;
+          }
+        }
+        
+        return new Response(
+          JSON.stringify({
+            used: totalSize,
+            files: fileCount,
+            limit: 10 * 1024 * 1024 * 1024, // 10GB
+            formatted: formatBytes(totalSize)
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+        
+      } catch (error) {
+        console.error('Erro ao obter estatísticas:', error);
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // Rota para listar arquivos
+    if (request.method === 'GET' && new URL(request.url).pathname === '/api/files') {
+      try {
+        const url = new URL(request.url);
+        const prefix = url.searchParams.get('prefix') || '';
+        
+        const listUrl = `${R2_CONFIG.endpoint}?list-type=2${prefix ? '&prefix=' + encodeURIComponent(prefix) : ''}`;
+        const headers = {
+          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
+        };
+        
+        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
+        
+        const r2Response = await fetch(listUrl, {
+          method: 'GET',
+          headers: { ...headers, ...authHeaders }
+        });
+        
+        if (!r2Response.ok) {
+          throw new Error('Erro ao listar arquivos');
+        }
+        
+        const xmlText = await r2Response.text();
+        
+        // Parse simples do XML
+        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
+        const files = [];
+        
+        for (const content of contents) {
+          const keyMatch = content.match(/<Key>([^<]+)<\/Key>/);
+          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
+          const modifiedMatch = content.match(/<LastModified>([^<]+)<\/LastModified>/);
+          
+          if (keyMatch && sizeMatch) {
+            files.push({
+              key: keyMatch[1],
+              size: parseInt(sizeMatch[1]),
+              lastModified: modifiedMatch ? modifiedMatch[1] : null,
+              url: `${R2_CONFIG.publicUrl}/${keyMatch[1]}`
+            });
+          }
+        }
+        
+        return new Response(
+          JSON.stringify({ files }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+        
+      } catch (error) {
+        console.error('Erro ao listar arquivos:', error);
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // Rota para deletar arquivo
+    if (request.method === 'DELETE') {
+      const urlPath = new URL(request.url).pathname;
+      const match = urlPath.match(/^\/api\/files\/(.+)$/);
+      
+      if (match) {
+        try {
+          const key = decodeURIComponent(match[1]);
+          const deleteUrl = `${R2_CONFIG.endpoint}/${key}`;
+          
+          const headers = {
+            'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
+          };
+          
+          const authHeaders = await signRequest('DELETE', deleteUrl, headers, new ArrayBuffer(0), env);
+          
+          const r2Response = await fetch(deleteUrl, {
+            method: 'DELETE',
+            headers: { ...headers, ...authHeaders }
+          });
+          
+          if (!r2Response.ok && r2Response.status !== 204) {
+            throw new Error('Erro ao deletar arquivo');
+          }
+          
+          return new Response(
+            JSON.stringify({ success: true, message: 'Arquivo deletado' }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+          
+        } catch (error) {
+          console.error('Erro ao deletar:', error);
+          return new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
     }
     
     // Rota não encontrada
