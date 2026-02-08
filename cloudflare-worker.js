@@ -245,7 +245,8 @@ export default {
     // Rota de debug (remover em produção)
     if (request.method === 'GET' && new URL(request.url).pathname === '/api/debug') {
       try {
-        const listUrl = `${R2_CONFIG.endpoint}?list-type=2&max-keys=1`;
+        // Testar com GET simples no bucket
+        const listUrl = `${R2_CONFIG.endpoint}`;
         const headers = {
           'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
         };
@@ -307,8 +308,8 @@ export default {
           );
         }
         
-        // Testar conexão com R2
-        const listUrl = `${R2_CONFIG.endpoint}?list-type=2&max-keys=1`;
+        // Testar conexão com R2 (GET no bucket)
+        const listUrl = `${R2_CONFIG.endpoint}`;
         const headers = {
           'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
         };
@@ -320,7 +321,7 @@ export default {
           headers: { ...headers, ...authHeaders }
         });
         
-        const r2Connected = r2Response.ok;
+        const r2Connected = r2Response.ok || r2Response.status === 200;
         
         return new Response(
           JSON.stringify({
@@ -363,7 +364,7 @@ export default {
     if (request.method === 'GET' && new URL(request.url).pathname === '/api/r2/usage') {
       try {
         // Listar todos os objetos do bucket
-        const listUrl = `${R2_CONFIG.endpoint}?list-type=2`;
+        const listUrl = `${R2_CONFIG.endpoint}`;
         const headers = {
           'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
         };
@@ -419,7 +420,7 @@ export default {
         const url = new URL(request.url);
         const prefix = url.searchParams.get('prefix') || '';
         
-        const listUrl = `${R2_CONFIG.endpoint}?list-type=2${prefix ? '&prefix=' + encodeURIComponent(prefix) : ''}`;
+        const listUrl = `${R2_CONFIG.endpoint}${prefix ? '?prefix=' + encodeURIComponent(prefix) : ''}`;
         const headers = {
           'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
         };
