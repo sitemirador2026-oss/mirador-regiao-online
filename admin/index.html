@@ -2296,6 +2296,14 @@
                             </div>
                         </div>
                         <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
+                            <div style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">
+                                Uso do storage: <span id="r2StoragePercent">0%</span>
+                            </div>
+                            <div style="width: 100%; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden;">
+                                <div id="r2StorageBar" style="width: 0%; height: 100%; background: var(--primary); transition: width 0.3s;"></div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-secondary); border-radius: var(--radius);">
                             <div style="font-size: 0.875rem; color: var(--text-secondary);">
                                 <div><strong>Bucket:</strong> mirador-regiao-online</div>
                                 <div><strong>Endpoint:</strong> 8341826f08014d0252c400798d657729.r2.cloudflarestorage.com</div>
