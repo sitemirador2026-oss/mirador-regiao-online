@@ -1,11 +1,8 @@
 /**
  * Cloudflare Worker - Upload Proxy para R2
  * Substitui o server.js do Render
- * 
- * Deploy: Cloudflare Dashboard > Workers & Pages > Create Service
  */
 
-// Configuração do R2 (mesma do server.js)
 const R2_CONFIG = {
   accountId: '8341826f08014d0252c400798d657729',
   bucketName: 'mirador-regiao-online',
@@ -13,113 +10,107 @@ const R2_CONFIG = {
   publicUrl: 'https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev'
 };
 
-// Credenciais vindas das variáveis de ambiente do Cloudflare
-// Configure no Cloudflare: Workers > Your Worker > Settings > Variables
-// Adicione como "Secret": R2_ACCESS_KEY_ID e R2_SECRET_ACCESS_KEY
-
-// Headers CORS para permitir acesso do seu domínio
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*', // ou especifique seu domínio
+  'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type'
 };
 
-// Função para gerar assinatura AWS v4
-async function signRequest(method, url, headers, payload, env) {
-  const R2_ACCESS_KEY_ID = env?.R2_ACCESS_KEY_ID;
-  const R2_SECRET_ACCESS_KEY = env?.R2_SECRET_ACCESS_KEY;
-  
-  if (!R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY) {
-    throw new Error('Credenciais R2 não configuradas');
-  }
-  
-  // Usar horário UTC correto
-  const now = new Date();
-  const year = now.getUTCFullYear();
-  const month = String(now.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(now.getUTCDate()).padStart(2, '0');
-  const hours = String(now.getUTCHours()).padStart(2, '0');
-  const minutes = String(now.getUTCMinutes()).padStart(2, '0');
-  const seconds = String(now.getUTCSeconds()).padStart(2, '0');
-  
-  const dateStamp = `${year}${month}${day}`;
-  const timeStamp = `${dateStamp}T${hours}${minutes}${seconds}Z`;
-  
-  const region = 'us-east-1';
-  const service = 's3';
-  
-  // Canonical request
-  const parsedUrl = new URL(url);
-  
-  // Headers assinados
-  const allHeaders = { ...headers };
-  if (!allHeaders['host']) {
-    allHeaders['host'] = parsedUrl.host;
-  }
-  if (!allHeaders['x-amz-content-sha256']) {
-    const payloadHash = await crypto.subtle.digest('SHA-256', payload);
-    allHeaders['x-amz-content-sha256'] = Array.from(new Uint8Array(payloadHash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  }
-  if (!allHeaders['x-amz-date']) {
-    allHeaders['x-amz-date'] = timeStamp;
-  }
-  
-  const signedHeadersList = Object.keys(allHeaders).map(k => k.toLowerCase()).sort();
-  const signedHeaders = signedHeadersList.join(';');
-  const canonicalHeaders = signedHeadersList.map(k => `${k}:${allHeaders[k].trim()}\n`).join('');
-  
-  const canonicalRequest = [
-    method,
-    parsedUrl.pathname,
-    parsedUrl.search.slice(1),
-    canonicalHeaders,
-    signedHeaders,
-    allHeaders['x-amz-content-sha256']
-  ].join('\n');
-  
-  // String to sign
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-  const canonicalRequestHash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(canonicalRequest));
-  const canonicalRequestHashHex = Array.from(new Uint8Array(canonicalRequestHash)).map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  const stringToSign = [
-    'AWS4-HMAC-SHA256',
-    timeStamp,
-    credentialScope,
-    canonicalRequestHashHex
-  ].join('\n');
-  
-  // Assinatura
-  const kDate = await hmacSHA256(`AWS4${R2_SECRET_ACCESS_KEY}`, dateStamp);
-  const kRegion = await hmacSHA256(kDate, region);
-  const kService = await hmacSHA256(kRegion, service);
-  const kSigning = await hmacSHA256(kService, 'aws4_request');
-  const signature = await hmacSHA256(kSigning, stringToSign);
-  const signatureHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('');
-  
-  // Authorization header
-  const authHeader = `AWS4-HMAC-SHA256 Credential=${R2_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signatureHex}`;
-  
-  return {
-    'Authorization': authHeader,
-    'x-amz-date': timeStamp,
-    'x-amz-content-sha256': allHeaders['x-amz-content-sha256'],
-    'host': allHeaders['host']
-  };
+// SHA-256 hash
+async function sha256(message) {
+  const msgBuffer = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
-async function hmacSHA256(key, data) {
+// HMAC-SHA256
+async function hmacSHA256(key, message) {
+  const keyBuffer = typeof key === 'string' ? new TextEncoder().encode(key) : key;
+  const msgBuffer = new TextEncoder().encode(message);
+  
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    typeof key === 'string' ? new TextEncoder().encode(key) : key,
+    keyBuffer,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign']
   );
-  return crypto.subtle.sign('HMAC', cryptoKey, new TextEncoder().encode(data));
+  
+  const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgBuffer);
+  return new Uint8Array(signature);
 }
 
-// Formatar bytes para human-readable
+// Gerar assinatura AWS Signature Version 4
+async function getSignedHeaders(method, path, queryString, env) {
+  const accessKeyId = env.R2_ACCESS_KEY_ID;
+  const secretKey = env.R2_SECRET_ACCESS_KEY;
+  
+  if (!accessKeyId || !secretKey) {
+    throw new Error('Credenciais R2 não configuradas');
+  }
+  
+  const now = new Date();
+  const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const amzDate = now.toISOString().slice(0, 19).replace(/[-:]/g, '') + 'Z';
+  
+  const region = 'auto';
+  const service = 's3';
+  
+  // Host
+  const host = `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`;
+  
+  // Payload vazio para GET
+  const payloadHash = method === 'GET' 
+    ? 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+    : await sha256('');
+  
+  // Canonical Request
+  const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+  
+  const canonicalRequest = [
+    method,
+    path,
+    queryString || '',
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash
+  ].join('\n');
+  
+  // String to Sign
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const canonicalRequestHash = await sha256(canonicalRequest);
+  
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    canonicalRequestHash
+  ].join('\n');
+  
+  // Signing Key
+  const kDate = await hmacSHA256(`AWS4${secretKey}`, dateStamp);
+  const kRegion = await hmacSHA256(kDate, region);
+  const kService = await hmacSHA256(kRegion, service);
+  const kSigning = await hmacSHA256(kService, 'aws4_request');
+  
+  // Signature
+  const signature = await hmacSHA256(kSigning, stringToSign);
+  const signatureHex = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
+  
+  // Authorization Header
+  const authorization = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signatureHex}`;
+  
+  return {
+    'Authorization': authorization,
+    'x-amz-date': amzDate,
+    'x-amz-content-sha256': payloadHash,
+    'host': host
+  };
+}
+
+// Formatar bytes
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -128,19 +119,146 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Handler principal
 export default {
   async fetch(request, env, ctx) {
-    // Responder preflight CORS
     if (request.method === 'OPTIONS') {
-      return new Response(null, { 
-        status: 204, 
-        headers: corsHeaders 
-      });
+      return new Response(null, { status: 204, headers: corsHeaders });
     }
     
-    // Rota de upload
-    if (request.method === 'POST' && new URL(request.url).pathname === '/api/upload') {
+    const url = new URL(request.url);
+    const path = url.pathname;
+    
+    // Status
+    if (path === '/api/status') {
+      return new Response(
+        JSON.stringify({ status: 'ok', service: 'mirador-r2-worker', timestamp: new Date().toISOString() }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    
+    // Worker Status
+    if (path === '/api/worker/status') {
+      try {
+        const signedHeaders = await getSignedHeaders('GET', '/', '', env);
+        const r2Url = `${R2_CONFIG.endpoint}/`;
+        
+        const r2Response = await fetch(r2Url, {
+          method: 'GET',
+          headers: signedHeaders
+        });
+        
+        return new Response(
+          JSON.stringify({
+            status: 'online',
+            worker: 'mirador-r2',
+            version: '1.0.0',
+            timestamp: new Date().toISOString(),
+            r2: {
+              connected: r2Response.ok,
+              status: r2Response.status,
+              bucket: R2_CONFIG.bucketName,
+              publicUrl: R2_CONFIG.publicUrl
+            }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            status: 'online',
+            error: error.message,
+            r2: { connected: false }
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // R2 Usage
+    if (path === '/api/r2/usage') {
+      try {
+        const signedHeaders = await getSignedHeaders('GET', '/', '', env);
+        const r2Url = `${R2_CONFIG.endpoint}/`;
+        
+        const r2Response = await fetch(r2Url, {
+          method: 'GET',
+          headers: signedHeaders
+        });
+        
+        if (!r2Response.ok) {
+          throw new Error(`R2 Error: ${r2Response.status}`);
+        }
+        
+        const xmlText = await r2Response.text();
+        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
+        
+        let totalSize = 0;
+        for (const content of contents) {
+          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
+          if (sizeMatch) totalSize += parseInt(sizeMatch[1]);
+        }
+        
+        return new Response(
+          JSON.stringify({
+            used: totalSize,
+            files: contents.length,
+            limit: 10 * 1024 * 1024 * 1024,
+            formatted: formatBytes(totalSize)
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // List files
+    if (path === '/api/files') {
+      try {
+        const prefix = url.searchParams.get('prefix') || '';
+        const queryString = prefix ? `?prefix=${encodeURIComponent(prefix)}` : '';
+        const signedHeaders = await getSignedHeaders('GET', '/', queryString, env);
+        
+        const r2Url = `${R2_CONFIG.endpoint}/${queryString}`;
+        const r2Response = await fetch(r2Url, {
+          method: 'GET',
+          headers: signedHeaders
+        });
+        
+        if (!r2Response.ok) {
+          throw new Error(`R2 Error: ${r2Response.status}`);
+        }
+        
+        const xmlText = await r2Response.text();
+        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
+        
+        const files = contents.map(content => {
+          const keyMatch = content.match(/<Key>([^<]+)<\/Key>/);
+          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
+          return {
+            key: keyMatch?.[1] || '',
+            size: parseInt(sizeMatch?.[1] || '0'),
+            url: `${R2_CONFIG.publicUrl}/${keyMatch?.[1] || ''}`
+          };
+        });
+        
+        return new Response(
+          JSON.stringify({ files }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ error: error.message }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+    
+    // Upload
+    if (path === '/api/upload' && request.method === 'POST') {
       try {
         const formData = await request.formData();
         const file = formData.get('file');
@@ -153,76 +271,101 @@ export default {
           );
         }
         
-        // Validar tipo de arquivo
-        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime'];
+        // Validar tipo
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4'];
         if (!allowedTypes.includes(file.type)) {
           return new Response(
-            JSON.stringify({ error: 'Tipo de arquivo não suportado' }),
+            JSON.stringify({ error: 'Tipo não suportado' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
         
-        // Validar tamanho (máximo 50MB)
-        const maxSize = 50 * 1024 * 1024;
-        if (file.size > maxSize) {
-          return new Response(
-            JSON.stringify({ error: 'Arquivo muito grande (máx 50MB)' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        // Gerar nome único
+        // Gerar nome
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
         const key = `${folder}/${timestamp}-${safeName}`;
         
-        // Ler arquivo como ArrayBuffer
+        // Ler arquivo
         const fileBuffer = await file.arrayBuffer();
         
-        // Preparar headers para R2
-        const headers = {
-          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`,
-          'Content-Type': file.type,
-          'Content-Length': file.size.toString()
-        };
-        
-        // Gerar assinatura
-        const url = `${R2_CONFIG.endpoint}/${key}`;
-        const authHeaders = await signRequest('PUT', url, headers, fileBuffer, env);
-        
         // Fazer upload para R2
-        const r2Response = await fetch(url, {
+        const accessKeyId = env.R2_ACCESS_KEY_ID;
+        const secretKey = env.R2_SECRET_ACCESS_KEY;
+        
+        const now = new Date();
+        const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
+        const amzDate = now.toISOString().slice(0, 19).replace(/[-:]/g, '') + 'Z';
+        
+        const host = `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`;
+        const r2Path = `/${key}`;
+        
+        // Calcular hash do payload
+        const payloadHash = await crypto.subtle.digest('SHA-256', fileBuffer);
+        const payloadHashHex = Array.from(new Uint8Array(payloadHash)).map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // Canonical Request
+        const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHashHex}\nx-amz-date:${amzDate}\n`;
+        const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+        
+        const canonicalRequest = [
+          'PUT',
+          r2Path,
+          '',
+          canonicalHeaders,
+          signedHeaders,
+          payloadHashHex
+        ].join('\n');
+        
+        // String to Sign
+        const credentialScope = `${dateStamp}/auto/s3/aws4_request`;
+        const canonicalRequestHash = await sha256(canonicalRequest);
+        
+        const stringToSign = [
+          'AWS4-HMAC-SHA256',
+          amzDate,
+          credentialScope,
+          canonicalRequestHash
+        ].join('\n');
+        
+        // Signing Key
+        const kDate = await hmacSHA256(`AWS4${secretKey}`, dateStamp);
+        const kRegion = await hmacSHA256(kDate, 'auto');
+        const kService = await hmacSHA256(kRegion, 's3');
+        const kSigning = await hmacSHA256(kService, 'aws4_request');
+        
+        // Signature
+        const signature = await hmacSHA256(kSigning, stringToSign);
+        const signatureHex = Array.from(signature).map(b => b.toString(16).padStart(2, '0')).join('');
+        
+        // Upload
+        const r2Url = `${R2_CONFIG.endpoint}${r2Path}`;
+        const r2Response = await fetch(r2Url, {
           method: 'PUT',
           headers: {
-            ...headers,
-            ...authHeaders
+            'Authorization': `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signatureHex}`,
+            'x-amz-date': amzDate,
+            'x-amz-content-sha256': payloadHashHex,
+            'host': host,
+            'Content-Type': file.type
           },
           body: fileBuffer
         });
         
         if (!r2Response.ok) {
           const errorText = await r2Response.text();
-          console.error('Erro R2:', errorText);
-          return new Response(
-            JSON.stringify({ error: 'Erro ao fazer upload para R2' }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
+          throw new Error(`Upload failed: ${r2Response.status}`);
         }
-        
-        // Retornar URL pública
-        const publicUrl = `${R2_CONFIG.publicUrl}/${key}`;
         
         return new Response(
           JSON.stringify({
             success: true,
-            url: publicUrl,
+            url: `${R2_CONFIG.publicUrl}/${key}`,
             key: key
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
         
       } catch (error) {
-        console.error('Erro:', error);
         return new Response(
           JSON.stringify({ error: error.message }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -230,183 +373,23 @@ export default {
       }
     }
     
-    // Rota de status geral
-    if (request.method === 'GET' && new URL(request.url).pathname === '/api/status') {
-      return new Response(
-        JSON.stringify({ 
-          status: 'ok', 
-          service: 'mirador-r2-worker',
-          timestamp: new Date().toISOString()
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-    
-    // Rota de debug (remover em produção)
-    if (request.method === 'GET' && new URL(request.url).pathname === '/api/debug') {
+    // Delete file
+    if (path.startsWith('/api/files/') && request.method === 'DELETE') {
       try {
-        // Testar com GET simples no bucket
-        const listUrl = `${R2_CONFIG.endpoint}`;
-        const headers = {
-          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
-        };
+        const key = decodeURIComponent(path.replace('/api/files/', ''));
+        const signedHeaders = await getSignedHeaders('DELETE', `/${key}`, '', env);
         
-        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
-        
-        const r2Response = await fetch(listUrl, {
-          method: 'GET',
-          headers: { ...headers, ...authHeaders }
+        const r2Url = `${R2_CONFIG.endpoint}/${key}`;
+        const r2Response = await fetch(r2Url, {
+          method: 'DELETE',
+          headers: signedHeaders
         });
         
-        const responseText = await r2Response.text();
-        
         return new Response(
-          JSON.stringify({
-            envKeys: Object.keys(env || {}),
-            hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
-            hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
-            r2Status: r2Response.status,
-            r2StatusText: r2Response.statusText,
-            r2Response: responseText.substring(0, 500)
-          }),
+          JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       } catch (error) {
-        return new Response(
-          JSON.stringify({
-            envKeys: Object.keys(env || {}),
-            hasAccessKey: !!env?.R2_ACCESS_KEY_ID,
-            hasSecretKey: !!env?.R2_SECRET_ACCESS_KEY,
-            error: error.message,
-            stack: error.stack
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-    
-    // Rota de status do Worker (para o painel admin)
-    if (request.method === 'GET' && new URL(request.url).pathname === '/api/worker/status') {
-      try {
-        // Verificar se credenciais estão configuradas
-        const hasCredentials = env?.R2_ACCESS_KEY_ID && env?.R2_SECRET_ACCESS_KEY;
-        
-        if (!hasCredentials) {
-          return new Response(
-            JSON.stringify({
-              status: 'online',
-              worker: 'mirador-r2',
-              version: '1.0.0',
-              timestamp: new Date().toISOString(),
-              r2: {
-                connected: false,
-                error: 'Credenciais não configuradas',
-                bucket: R2_CONFIG.bucketName
-              }
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-        
-        // Testar conexão com R2 (GET no bucket)
-        const listUrl = `${R2_CONFIG.endpoint}`;
-        const headers = {
-          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
-        };
-        
-        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
-        
-        const r2Response = await fetch(listUrl, {
-          method: 'GET',
-          headers: { ...headers, ...authHeaders }
-        });
-        
-        const r2Connected = r2Response.ok || r2Response.status === 200;
-        
-        return new Response(
-          JSON.stringify({
-            status: 'online',
-            worker: 'mirador-r2',
-            version: '1.0.0',
-            timestamp: new Date().toISOString(),
-            r2: {
-              connected: r2Connected,
-              bucket: R2_CONFIG.bucketName,
-              endpoint: R2_CONFIG.endpoint,
-              publicUrl: R2_CONFIG.publicUrl
-            },
-            limits: {
-              requestsPerDay: 100000,
-              maxFileSize: '50MB'
-            }
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-        
-      } catch (error) {
-        return new Response(
-          JSON.stringify({
-            status: 'online',
-            worker: 'mirador-r2',
-            error: error.message,
-            timestamp: new Date().toISOString(),
-            r2: {
-              connected: false,
-              bucket: R2_CONFIG.bucketName
-            }
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-    
-    // Rota de estatísticas do R2
-    if (request.method === 'GET' && new URL(request.url).pathname === '/api/r2/usage') {
-      try {
-        // Listar todos os objetos do bucket
-        const listUrl = `${R2_CONFIG.endpoint}`;
-        const headers = {
-          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
-        };
-        
-        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
-        
-        const r2Response = await fetch(listUrl, {
-          method: 'GET',
-          headers: { ...headers, ...authHeaders }
-        });
-        
-        if (!r2Response.ok) {
-          throw new Error('Erro ao listar arquivos');
-        }
-        
-        const xmlText = await r2Response.text();
-        
-        // Parse simples do XML
-        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
-        let totalSize = 0;
-        let fileCount = 0;
-        
-        for (const content of contents) {
-          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
-          if (sizeMatch) {
-            totalSize += parseInt(sizeMatch[1]);
-            fileCount++;
-          }
-        }
-        
-        return new Response(
-          JSON.stringify({
-            used: totalSize,
-            files: fileCount,
-            limit: 10 * 1024 * 1024 * 1024, // 10GB
-            formatted: formatBytes(totalSize)
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-        
-      } catch (error) {
-        console.error('Erro ao obter estatísticas:', error);
         return new Response(
           JSON.stringify({ error: error.message }),
           { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -414,104 +397,7 @@ export default {
       }
     }
     
-    // Rota para listar arquivos
-    if (request.method === 'GET' && new URL(request.url).pathname === '/api/files') {
-      try {
-        const url = new URL(request.url);
-        const prefix = url.searchParams.get('prefix') || '';
-        
-        const listUrl = `${R2_CONFIG.endpoint}${prefix ? '?prefix=' + encodeURIComponent(prefix) : ''}`;
-        const headers = {
-          'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
-        };
-        
-        const authHeaders = await signRequest('GET', listUrl, headers, new ArrayBuffer(0), env);
-        
-        const r2Response = await fetch(listUrl, {
-          method: 'GET',
-          headers: { ...headers, ...authHeaders }
-        });
-        
-        if (!r2Response.ok) {
-          throw new Error('Erro ao listar arquivos');
-        }
-        
-        const xmlText = await r2Response.text();
-        
-        // Parse simples do XML
-        const contents = xmlText.match(/<Contents>([\s\S]*?)<\/Contents>/g) || [];
-        const files = [];
-        
-        for (const content of contents) {
-          const keyMatch = content.match(/<Key>([^<]+)<\/Key>/);
-          const sizeMatch = content.match(/<Size>(\d+)<\/Size>/);
-          const modifiedMatch = content.match(/<LastModified>([^<]+)<\/LastModified>/);
-          
-          if (keyMatch && sizeMatch) {
-            files.push({
-              key: keyMatch[1],
-              size: parseInt(sizeMatch[1]),
-              lastModified: modifiedMatch ? modifiedMatch[1] : null,
-              url: `${R2_CONFIG.publicUrl}/${keyMatch[1]}`
-            });
-          }
-        }
-        
-        return new Response(
-          JSON.stringify({ files }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-        
-      } catch (error) {
-        console.error('Erro ao listar arquivos:', error);
-        return new Response(
-          JSON.stringify({ error: error.message }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-    }
-    
-    // Rota para deletar arquivo
-    if (request.method === 'DELETE') {
-      const urlPath = new URL(request.url).pathname;
-      const match = urlPath.match(/^\/api\/files\/(.+)$/);
-      
-      if (match) {
-        try {
-          const key = decodeURIComponent(match[1]);
-          const deleteUrl = `${R2_CONFIG.endpoint}/${key}`;
-          
-          const headers = {
-            'Host': `${R2_CONFIG.bucketName}.${R2_CONFIG.accountId}.r2.cloudflarestorage.com`
-          };
-          
-          const authHeaders = await signRequest('DELETE', deleteUrl, headers, new ArrayBuffer(0), env);
-          
-          const r2Response = await fetch(deleteUrl, {
-            method: 'DELETE',
-            headers: { ...headers, ...authHeaders }
-          });
-          
-          if (!r2Response.ok && r2Response.status !== 204) {
-            throw new Error('Erro ao deletar arquivo');
-          }
-          
-          return new Response(
-            JSON.stringify({ success: true, message: 'Arquivo deletado' }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-          
-        } catch (error) {
-          console.error('Erro ao deletar:', error);
-          return new Response(
-            JSON.stringify({ error: error.message }),
-            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-      }
-    }
-    
-    // Rota não encontrada
+    // Not found
     return new Response(
       JSON.stringify({ error: 'Not found' }),
       { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
