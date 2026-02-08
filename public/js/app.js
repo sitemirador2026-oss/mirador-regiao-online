@@ -558,16 +558,18 @@ function createHorizontalNewsCard(news) {
                 <h3 class="news-card-horizontal-title">${news.title}</h3>
                 <div class="news-card-horizontal-footer">
                     <span class="news-card-horizontal-category">${categoryLabel}</span>
-                    <span class="news-card-horizontal-time">${timeStr} • ${dateStr}</span>
-                    <div class="news-card-horizontal-source-row">
-                        <div class="news-card-horizontal-source">
-                            <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                    <div class="news-card-horizontal-subline">
+                        <span class="news-card-horizontal-time">${timeStr} • ${dateStr}</span>
+                        <div class="news-card-horizontal-source-row">
+                            <div class="news-card-horizontal-source">
+                                <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                            </div>
+                            <button class="news-card-horizontal-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
+                                </svg>
+                            </button>
                         </div>
-                        <button class="news-card-horizontal-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/>
-                            </svg>
-                        </button>
                     </div>
                 </div>
             </div>
@@ -1228,6 +1230,38 @@ function hasInstagramProfileInLayout(layoutData = {}) {
     );
 }
 
+function extractInstagramProfileFromBrand(brandData = {}) {
+    return normalizeInstagramProfileSettings({
+        displayName:
+            brandData.instagramProfileDisplayName ||
+            brandData.instagramDisplayName ||
+            '',
+        username:
+            brandData.instagramProfileUsername ||
+            brandData.instagramUsername ||
+            brandData.instagramHandle ||
+            '',
+        profileImage:
+            brandData.instagramProfileImage ||
+            brandData.instagramProfilePhoto ||
+            brandData.instagramAvatar ||
+            ''
+    });
+}
+
+function hasInstagramProfileInBrand(brandData = {}) {
+    return Boolean(
+        brandData.instagramProfileDisplayName ||
+        brandData.instagramDisplayName ||
+        brandData.instagramProfileUsername ||
+        brandData.instagramUsername ||
+        brandData.instagramHandle ||
+        brandData.instagramProfileImage ||
+        brandData.instagramProfilePhoto ||
+        brandData.instagramAvatar
+    );
+}
+
 async function loadInstagramProfileSettings() {
     let profileDoc = null;
     try {
@@ -1282,6 +1316,33 @@ async function loadInstagramProfileSettings() {
             const normalized = normalizeInstagramProfileSettings(JSON.parse(saved));
             instagramProfileSettings = normalized;
             return normalized;
+        }
+    } catch (_error) {}
+
+    try {
+        const brandDoc = await db.collection('settings').doc('brand').get();
+        if (brandDoc && brandDoc.exists && hasInstagramProfileInBrand(brandDoc.data() || {})) {
+            const normalized = extractInstagramProfileFromBrand(brandDoc.data() || {});
+            instagramProfileSettings = normalized;
+            localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+            localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+            return normalized;
+        }
+    } catch (brandError) {
+        console.log('[App] Nao foi possivel carregar fallback do perfil no brand:', brandError);
+    }
+
+    try {
+        const savedBrand = localStorage.getItem('publicSiteBrand');
+        if (savedBrand) {
+            const parsedBrand = JSON.parse(savedBrand);
+            if (hasInstagramProfileInBrand(parsedBrand || {})) {
+                const normalized = extractInstagramProfileFromBrand(parsedBrand || {});
+                instagramProfileSettings = normalized;
+                localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+                localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+                return normalized;
+            }
         }
     } catch (_error) {}
 

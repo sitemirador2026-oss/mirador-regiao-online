@@ -2351,6 +2351,9 @@
                                             </svg>
                                         </button>
                                     </div>
+                                    <div id="instagramVideoManualNotice" style="display: none; margin-top: 0.75rem; padding: 0.75rem 0.875rem; border-radius: var(--radius); border: 1px solid #f59e0b; background: #fffbeb; color: #92400e; font-size: 0.8125rem; line-height: 1.4;">
+                                        Detectamos que este link e um video (Reel), mas o Instagram nao liberou o arquivo para download automatico. Faça upload manual do video no campo acima para publicar fiel ao post original.
+                                    </div>
                                     <input type="hidden" id="instagramNewsImageUrl">
                                     <input type="hidden" id="instagramNewsVideoUrl">
                                     <input type="hidden" id="instagramNewsMediaType" value="image">
@@ -6135,6 +6138,38 @@
             );
         }
 
+        function extractInstagramProfileFromBrandAdmin(brandData = {}) {
+            return normalizeInstagramProfileSettingsAdmin({
+                displayName:
+                    brandData.instagramProfileDisplayName ||
+                    brandData.instagramDisplayName ||
+                    '',
+                username:
+                    brandData.instagramProfileUsername ||
+                    brandData.instagramUsername ||
+                    brandData.instagramHandle ||
+                    '',
+                profileImage:
+                    brandData.instagramProfileImage ||
+                    brandData.instagramProfilePhoto ||
+                    brandData.instagramAvatar ||
+                    ''
+            });
+        }
+
+        function hasInstagramProfileInBrandAdmin(brandData = {}) {
+            return Boolean(
+                brandData.instagramProfileDisplayName ||
+                brandData.instagramDisplayName ||
+                brandData.instagramProfileUsername ||
+                brandData.instagramUsername ||
+                brandData.instagramHandle ||
+                brandData.instagramProfileImage ||
+                brandData.instagramProfilePhoto ||
+                brandData.instagramAvatar
+            );
+        }
+
         function applyInstagramProfileSettingsAdminForm(settings = {}) {
             const normalized = normalizeInstagramProfileSettingsAdmin(settings);
             const nameInput = document.getElementById('instagramDefaultProfileName');
@@ -6227,8 +6262,17 @@
                 }
 
                 imageInput.value = uploadedUrl;
+                const nameInput = document.getElementById('instagramDefaultProfileName');
+                const usernameInput = document.getElementById('instagramDefaultProfileUsername');
+                if (nameInput && !(nameInput.value || '').trim()) {
+                    nameInput.value = DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName;
+                }
+                if (usernameInput && !sanitizeInstagramHandleAdmin(usernameInput.value || '')) {
+                    usernameInput.value = DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.username;
+                }
                 updateInstagramProfilePreviewAdmin();
-                showModal('Sucesso!', 'Foto enviada. Agora clique em "Salvar perfil".', 'success');
+                await saveInstagramProfileSettingsAdmin({ silent: true });
+                showModal('Sucesso!', 'Foto enviada e perfil salvo com sucesso.', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao enviar foto de perfil do Instagram:', error);
                 showModal('Erro', 'Nao foi possivel enviar a foto: ' + (error.message || 'erro desconhecido'), 'error');
@@ -6275,6 +6319,20 @@
             }
 
             try {
+                const brandDoc = await db.collection('settings').doc('brand').get();
+                if (brandDoc && brandDoc.exists && hasInstagramProfileInBrandAdmin(brandDoc.data() || {})) {
+                    const normalized = extractInstagramProfileFromBrandAdmin(brandDoc.data() || {});
+                    instagramProfileSettingsAdmin = normalized;
+                    localStorage.setItem('siteInstagramProfile', JSON.stringify(normalized));
+                    localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
+                    applyInstagramProfileSettingsAdminForm(normalized);
+                    return;
+                }
+            } catch (brandError) {
+                console.log('[Admin] Erro ao carregar fallback do perfil no brand:', brandError);
+            }
+
+            try {
                 const saved = localStorage.getItem('siteInstagramProfile');
                 if (saved) {
                     const normalized = normalizeInstagramProfileSettingsAdmin(JSON.parse(saved));
@@ -6287,7 +6345,8 @@
             applyInstagramProfileSettingsAdminForm(DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN);
         }
 
-        async function saveInstagramProfileSettingsAdmin() {
+        async function saveInstagramProfileSettingsAdmin(options = {}) {
+            const silent = Boolean(options && options.silent);
             try {
                 const displayName = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
                 const username = sanitizeInstagramHandleAdmin(document.getElementById('instagramDefaultProfileUsername')?.value || '');
@@ -6320,6 +6379,12 @@
                         instagramProfileUsername: payload.username || '',
                         instagramProfileImage: payload.profileImage || '',
                         instagramProfileUpdatedAt: payload.updatedAt || new Date().toISOString()
+                    }, { merge: true }),
+                    db.collection('settings').doc('brand').set({
+                        instagramProfileDisplayName: payload.displayName || '',
+                        instagramProfileUsername: payload.username || '',
+                        instagramProfileImage: payload.profileImage || '',
+                        instagramProfileUpdatedAt: payload.updatedAt || new Date().toISOString()
                     }, { merge: true })
                 ]);
                 instagramProfileSettingsAdmin = payload;
@@ -6328,10 +6393,16 @@
                 const syncResult = await applyOfficialInstagramProfileToExistingPostsAdmin(payload);
                 updateInstagramProfilePreviewAdmin();
                 const updatedCount = syncResult?.updated || 0;
-                showModal('Sucesso!', `Perfil oficial salvo. ${updatedCount} post(s) de Instagram foram atualizados com a foto/nome oficial.`, 'success');
+                if (!silent) {
+                    showModal('Sucesso!', `Perfil oficial salvo. ${updatedCount} post(s) de Instagram foram atualizados com a foto/nome oficial.`, 'success');
+                }
+                return payload;
             } catch (error) {
                 console.error('[Admin] Erro ao salvar perfil oficial do Instagram:', error);
-                showModal('Erro!', 'Nao foi possivel salvar o perfil oficial do Instagram.', 'error');
+                if (!silent) {
+                    showModal('Erro!', 'Nao foi possivel salvar o perfil oficial do Instagram.', 'error');
+                }
+                throw error;
             }
         }
 
@@ -6745,11 +6816,22 @@
                 collaborators: internalMeta?.collaborators || [],
                 hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
             };
+            const urlLooksVideo = /instagram\.com\/(?:reel|reels|tv)\//i.test(url);
+            const inferredVideoPost = Boolean(
+                merged.video ||
+                internalMeta?.mediaType === 'video' ||
+                internalMeta?.isVideoPost ||
+                urlLooksVideo
+            );
+            const resolvedMediaType = inferredVideoPost ? 'video' : 'image';
 
             const normalized = normalizeInstagramMetaAdmin(merged, url);
             return {
                 ...merged,
-                ...normalized
+                ...normalized,
+                mediaType: resolvedMediaType,
+                isVideoPost: inferredVideoPost,
+                requiresVideoUpload: inferredVideoPost && !merged.video
             };
         }
 
@@ -6777,6 +6859,11 @@
                     videoUrl = extracted.video || '';
                     title = extracted.title || '';
                     description = extracted.description || '';
+                    const isVideoPost = Boolean(
+                        extracted.mediaType === 'video' ||
+                        extracted.isVideoPost ||
+                        /instagram\.com\/(?:reel|reels|tv)\//i.test(url)
+                    );
                     
                     // Processar dados extraidos (ou usar valores padrao se vazio)
                     const cleanedContent = cleanInstagramText(description || '');
@@ -6785,7 +6872,7 @@
                     
                     instagramNewsData.image = imageUrl;
                     instagramNewsData.video = videoUrl;
-                    instagramNewsData.mediaType = videoUrl ? 'video' : 'image';
+                    instagramNewsData.mediaType = isVideoPost ? 'video' : 'image';
                     instagramNewsData.title = finalTitle;
                     instagramNewsData.content = cleanedContent;
                     instagramNewsData.url = url;
@@ -6807,11 +6894,12 @@
                     document.getElementById('instagramNewsCaption').value = cleanedContent;
                     
                     // Mostrar midia extraida (video ou imagem)
-                    if (videoUrl || imageUrl) {
+                    if (videoUrl || imageUrl || isVideoPost) {
                         setInstagramMainMediaPreview({
-                            mediaType: videoUrl ? 'video' : 'image',
+                            mediaType: isVideoPost ? 'video' : 'image',
                             imageUrl: imageUrl,
-                            videoUrl: videoUrl
+                            videoUrl: videoUrl,
+                            showManualVideoNotice: isVideoPost && !videoUrl
                         });
                     } else {
                         // Se nao conseguiu midia, mostrar area de upload
@@ -6849,9 +6937,17 @@
                 description: captionContent
             }, instagramUrl);
             const officialProfile = normalizeInstagramProfileSettingsAdmin(instagramProfileSettingsAdmin || {});
-            const finalProfileUsername = officialProfile.username || instagramMeta.username || '';
-            const finalProfileDisplayName = officialProfile.displayName || instagramMeta.displayName || finalProfileUsername || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName;
-            const finalProfileImage = officialProfile.profileImage || instagramMeta.profileImage || '';
+            const configuredDisplayName = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
+            const configuredUsername = sanitizeInstagramHandleAdmin(document.getElementById('instagramDefaultProfileUsername')?.value || '');
+            const configuredProfileImage = sanitizeInstagramProfileImageAdmin(document.getElementById('instagramDefaultProfileImage')?.value || '');
+            const finalProfileUsername = configuredUsername || officialProfile.username || instagramMeta.username || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.username;
+            const finalProfileDisplayName = configuredDisplayName || officialProfile.displayName || instagramMeta.displayName || finalProfileUsername || DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN.displayName;
+            const finalProfileImage = configuredProfileImage || officialProfile.profileImage || '';
+
+            if (!finalProfileImage) {
+                showModal('Atencao', 'Envie a foto do perfil oficial na caixa "Foto do perfil" antes de publicar o post.', 'warning');
+                return;
+            }
             
             let categoryName = document.querySelector(`#instagramNewsCategory option[value="${category}"]`).textContent;
             categoryName = categoryName.replace(/[^\w\s]/g, '').trim();
@@ -6964,7 +7060,7 @@
         
         const MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES = 15 * 1024 * 1024;
 
-        function setInstagramMainMediaPreview({ mediaType = 'image', imageUrl = '', videoUrl = '' } = {}) {
+        function setInstagramMainMediaPreview({ mediaType = 'image', imageUrl = '', videoUrl = '', showManualVideoNotice = false } = {}) {
             const previewContainer = document.getElementById('instagramImagePreviewContainer');
             const uploadArea = document.getElementById('instagramImageUploadArea');
             const imageEl = document.getElementById('instagramNewsImage');
@@ -6972,8 +7068,12 @@
             const imageInput = document.getElementById('instagramNewsImageUrl');
             const videoInput = document.getElementById('instagramNewsVideoUrl');
             const mediaTypeInput = document.getElementById('instagramNewsMediaType');
+            const manualVideoNotice = document.getElementById('instagramVideoManualNotice');
 
             if (!previewContainer || !uploadArea || !imageEl || !videoEl || !imageInput || !videoInput || !mediaTypeInput) return;
+            if (manualVideoNotice) {
+                manualVideoNotice.style.display = showManualVideoNotice ? 'block' : 'none';
+            }
 
             if (mediaType === 'video' && videoUrl) {
                 imageEl.style.display = 'none';
@@ -6987,6 +7087,32 @@
                 mediaTypeInput.value = 'video';
                 instagramNewsData.image = imageUrl || '';
                 instagramNewsData.video = videoUrl;
+                instagramNewsData.mediaType = 'video';
+                return;
+            }
+
+            if (mediaType === 'video' && !videoUrl) {
+                videoEl.pause();
+                videoEl.src = '';
+                videoEl.style.display = 'none';
+
+                if (imageUrl) {
+                    imageEl.style.display = 'block';
+                    imageEl.src = imageUrl;
+                    previewContainer.style.display = 'block';
+                } else {
+                    imageEl.style.display = 'none';
+                    imageEl.src = '';
+                    previewContainer.style.display = 'none';
+                }
+
+                // Mantem o upload visivel para o usuario enviar o video manualmente
+                uploadArea.style.display = 'block';
+                imageInput.value = imageUrl || '';
+                videoInput.value = '';
+                mediaTypeInput.value = 'video';
+                instagramNewsData.image = imageUrl || '';
+                instagramNewsData.video = '';
                 instagramNewsData.mediaType = 'video';
                 return;
             }
@@ -7514,6 +7640,9 @@
                 if (videoUrlInput) videoUrlInput.value = '';
                 const mediaTypeInput = document.getElementById('instagramNewsMediaType');
                 if (mediaTypeInput) mediaTypeInput.value = 'image';
+
+                const manualVideoNotice = document.getElementById('instagramVideoManualNotice');
+                if (manualVideoNotice) manualVideoNotice.style.display = 'none';
                 
                 const preview = document.getElementById('instagramNewsPreview');
                 if (preview) preview.style.display = 'none';

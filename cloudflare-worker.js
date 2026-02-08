@@ -258,11 +258,26 @@ async function scrapeInstagramMeta(instagramUrl = '') {
   const ogVideo = decodeEscapedUrl(
     extractMetaTagContent(html, 'og:video', 'property') ||
     extractMetaTagContent(html, 'og:video:url', 'property') ||
+    extractMetaTagContent(html, 'og:video:secure_url', 'property') ||
     extractMetaTagContent(html, 'twitter:player:stream', 'name')
   );
-  const inlineVideoMatch = html.match(/"video_url"\s*:\s*"([^"]+)"/i);
-  const inlineVideoUrl = inlineVideoMatch ? decodeEscapedUrl(inlineVideoMatch[1]) : '';
+  const inlineVideoCandidates = [];
+  const inlinePatterns = [
+    /"video_url"\s*:\s*"([^"]+)"/i,
+    /"contentUrl"\s*:\s*"([^"]+)"/i,
+    /"video_versions"\s*:\s*\[\s*\{[^}]*"url"\s*:\s*"([^"]+)"/i
+  ];
+  for (const pattern of inlinePatterns) {
+    const match = html.match(pattern);
+    if (match && match[1]) {
+      inlineVideoCandidates.push(decodeEscapedUrl(match[1]));
+    }
+  }
+  const inlineVideoUrl = inlineVideoCandidates.find(value => typeof value === 'string' && /^https?:\/\//i.test(value)) || '';
   const resolvedVideo = ogVideo || inlineVideoUrl || '';
+  const urlLooksVideo = /\/(?:reel|reels|tv)\//i.test(parsedUrl.pathname || '');
+  const htmlMarksVideo = /"is_video"\s*:\s*true/i.test(html) || /"__typename"\s*:\s*"GraphVideo"/i.test(html);
+  const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
 
   const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+likes?/i);
   const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+comments?/i);
@@ -314,7 +329,8 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     description: ogDescription || '',
     image: ogImage || '',
     video: resolvedVideo,
-    mediaType: resolvedVideo ? 'video' : 'image',
+    mediaType: isVideoPost ? 'video' : 'image',
+    isVideoPost,
     collaborators,
     hasAdditionalCollaborator,
     sourceUrl: cleanUrl
