@@ -6417,32 +6417,31 @@
             progressDiv.style.display = 'block';
             
             try {
-                const storageRef = firebase.storage().ref();
-                const fileRef = storageRef.child('stories/' + Date.now() + '_' + file.name);
-                
-                const uploadTask = fileRef.put(file);
-                
-                uploadTask.on('state_changed', 
-                    (snapshot) => {
-                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        progressBar.style.width = progress + '%';
-                    },
-                    (error) => {
-                        console.error('[Admin] Erro no upload:', error);
-                        showModal('Erro', 'Erro ao fazer upload do arquivo.', 'error');
-                        progressDiv.style.display = 'none';
-                    },
-                    async () => {
-                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
-                        document.getElementById('storyMediaUrl').value = downloadURL;
-                        extractedStoryImage = downloadURL;
-                        progressDiv.style.display = 'none';
-                    }
-                );
+                if (!r2Client) {
+                    initR2Client();
+                }
+
+                const result = await r2Client.uploadFile(file, 'stories', (progress) => {
+                    progressBar.style.width = `${Math.max(0, Math.min(progress, 100))}%`;
+                });
+
+                const fileUrl = result?.url || '';
+                if (!fileUrl) {
+                    throw new Error('URL do arquivo não retornada pelo R2');
+                }
+
+                document.getElementById('storyMediaUrl').value = fileUrl;
+                extractedStoryImage = fileUrl;
+                progressBar.style.width = '100%';
+                setTimeout(() => {
+                    progressDiv.style.display = 'none';
+                    progressBar.style.width = '0%';
+                }, 200);
             } catch (error) {
                 console.error('[Admin] Erro no upload:', error);
                 showModal('Erro', 'Erro ao fazer upload: ' + error.message, 'error');
                 progressDiv.style.display = 'none';
+                progressBar.style.width = '0%';
             }
         }
 
