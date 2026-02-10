@@ -2310,6 +2310,72 @@ body {
         padding-left: 0.5rem;
     }
 
+    .footer {
+        padding: 2rem 0 1.2rem;
+    }
+
+    .footer .container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1.1rem 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .footer-col {
+        min-width: 0;
+    }
+
+    .footer-col:first-child {
+        grid-column: 1 / -1;
+        padding-bottom: 0.45rem;
+        margin-bottom: 0.15rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .footer-title {
+        font-size: 1.05rem;
+        margin-bottom: 0.45rem;
+    }
+
+    .footer-text {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    .footer-heading {
+        margin-bottom: 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .footer-links {
+        gap: 0.45rem;
+    }
+
+    .footer-links a {
+        font-size: 0.82rem;
+        line-height: 1.35;
+    }
+
+    .social-links {
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    .social-links a {
+        width: 34px;
+        height: 34px;
+    }
+
+    .footer-bottom {
+        padding-top: 0.85rem;
+        font-size: 0.76rem;
+        line-height: 1.4;
+    }
+
     .header-content {
         min-height: var(--mobile-header-height);
         justify-content: center;

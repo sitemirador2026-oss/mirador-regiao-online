@@ -2443,6 +2443,9 @@ function closeInstagramVideoModal() {
     player.load();
 
     document.body.style.overflow = '';
+
+    // Ao fechar o player, fechar também o post expandido.
+    closeInstagramModal();
 }
 
 function isInstagramVideoModalOpen() {
