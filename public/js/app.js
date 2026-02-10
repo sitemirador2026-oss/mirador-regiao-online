@@ -651,6 +651,30 @@ function createTopBannerImageElement(url, alt = '') {
     return img;
 }
 
+function applyTopBannerCardAspectRatio(card, media = []) {
+    if (!card) return;
+    card.style.removeProperty('aspect-ratio');
+
+    const first = Array.isArray(media) ? media.find(item => item && item.url) : null;
+    if (!first || !first.url) return;
+
+    const hintWidth = Number(first.width || first.imageWidth || first.naturalWidth || 0);
+    const hintHeight = Number(first.height || first.imageHeight || first.naturalHeight || 0);
+    if (hintWidth > 0 && hintHeight > 0) {
+        card.style.aspectRatio = `${hintWidth} / ${hintHeight}`;
+        return;
+    }
+
+    const probe = new Image();
+    probe.decoding = 'async';
+    probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+            card.style.aspectRatio = `${probe.naturalWidth} / ${probe.naturalHeight}`;
+        }
+    };
+    probe.src = first.url;
+}
+
 function collectTopBannerMediaForMobile(items = []) {
     const media = [];
     (items || []).forEach(item => {
@@ -675,6 +699,8 @@ function renderTopBannerSlot(slotId, slotConfig, card) {
         card.classList.add('is-empty');
         return false;
     }
+
+    applyTopBannerCardAspectRatio(card, media);
 
     const transition = TOP_BANNER_TRANSITIONS.includes(slotConfig.transition)
         ? slotConfig.transition

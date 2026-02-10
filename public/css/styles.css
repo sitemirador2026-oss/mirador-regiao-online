@@ -27,7 +27,7 @@
     --header-top-strip-bg: #1c2737;
     --header-top-strip-bg: color-mix(in srgb, var(--header-bg, #1c2737) 90%, #000 10%);
     --font-news: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
-    --mobile-top-strip-height: 42px;
+    --mobile-top-strip-height: 32px;
     --mobile-header-height: 62px;
     
     /* Espaçamentos */
@@ -76,50 +76,57 @@ body {
 .header-top-strip .container {
     display: flex;
     align-items: center;
-    padding-top: 0.3rem;
-    padding-bottom: 0.3rem;
+    padding-top: 0.2rem;
+    padding-bottom: 0.2rem;
     min-height: var(--mobile-top-strip-height);
 }
 
 .header-top-strip-brand {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    gap: 0.05rem;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.45rem;
     min-width: 0;
     width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
 }
 
 .header-top-strip-title {
-    display: block;
-    width: 100%;
+    display: inline-block;
+    width: auto;
     font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
-    font-size: 0.9rem;
+    font-size: 0.86rem;
     font-weight: 700;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
     line-height: 1;
     color: var(--header-text, #ffffff);
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+    flex: 1 1 auto;
+    order: 2;
 }
 
 .header-top-strip-subtitle {
-    display: block;
-    width: 100%;
+    display: inline-block;
+    width: auto;
     font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
-    font-size: 0.72rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-    line-height: 1.1;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    line-height: 1;
     color: var(--header-text, #ffffff);
-    opacity: 0.92;
+    opacity: 0.95;
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 0 0 auto;
+    order: 1;
 }
 
 .header > .container {
@@ -598,7 +605,7 @@ body {
     border: 1px solid var(--border);
     overflow: hidden;
     aspect-ratio: 1080 / 200;
-    background: #e5e7eb;
+    background: transparent;
 }
 
 .top-banner-card.is-empty {
@@ -620,14 +627,14 @@ body {
     display: block;
     user-select: none;
     -webkit-user-drag: none;
-    background: #0f172a;
+    background: transparent;
 }
 
 .top-banner-slide {
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
-    background-color: #0f172a;
+    background-color: transparent;
 }
 
 .top-banner-card.transition-fade .top-banner-slide,
@@ -2096,11 +2103,11 @@ body {
     }
 
     .header-top-strip-title {
-        font-size: 0.84rem;
+        font-size: 0.76rem;
     }
 
     .header-top-strip-subtitle {
-        font-size: 0.68rem;
+        font-size: 0.64rem;
     }
 
     .news-grid {
@@ -2152,6 +2159,7 @@ body {
 
     .top-banner-card {
         border-radius: 0;
+        border: 0;
         aspect-ratio: 1080 / 200;
     }
 
