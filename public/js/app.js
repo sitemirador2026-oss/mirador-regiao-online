@@ -139,6 +139,13 @@ function parseInstagramCount(value) {
         } else {
             numeric = Number(numPart.replace(/,/g, ''));
         }
+    } else if (numPart.includes('.') && !numPart.includes(',')) {
+        const parts = numPart.split('.');
+        const looksLikeThousands = parts.length > 1 && parts.every((part, index) => {
+            if (index === 0) return part.length >= 1 && part.length <= 3;
+            return part.length === 3;
+        });
+        numeric = Number(looksLikeThousands ? parts.join('') : numPart);
     } else {
         numeric = Number(numPart.replace(/[^\d.]/g, ''));
     }
@@ -395,7 +402,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
     const localEndpoint = `/api/instagram/meta?url=${encodedUrl}${requestSuffix}`;
     const metaEndpoints = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
         ? [workerEndpoint]
-        : [localEndpoint, workerEndpoint];
+        : [workerEndpoint, localEndpoint];
 
     for (const endpoint of metaEndpoints) {
         try {
@@ -416,8 +423,8 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
 
     if (needsExternalCountFallback && canUseMicrolinkNow) {
         try {
-            const microlinkEndpoint = `https://api.microlink.io/?url=${encodeURIComponent(instagramUrl)}${forceFresh ? `&_t=${Date.now()}` : ''}`;
-            const response = await fetch(microlinkEndpoint, { cache: forceFresh ? 'no-store' : 'default' });
+            const microlinkEndpoint = `https://api.microlink.io/?url=${encodeURIComponent(instagramUrl)}`;
+            const response = await fetch(microlinkEndpoint, { cache: 'default' });
             if (response.status === 429) {
                 instagramMicrolinkCooldownUntil = Date.now() + INSTAGRAM_MICROLINK_COOLDOWN_MS;
             } else if (response.ok) {
@@ -430,8 +437,8 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
     const shouldUseNoembedFallback = !internalMeta && !microlinkData;
     if (shouldUseNoembedFallback) {
         try {
-            const noembedEndpoint = `https://noembed.com/embed?url=${encodeURIComponent(instagramUrl)}${forceFresh ? `&_t=${Date.now()}` : ''}`;
-            const response = await fetch(noembedEndpoint, { cache: forceFresh ? 'no-store' : 'default' });
+            const noembedEndpoint = `https://noembed.com/embed?url=${encodeURIComponent(instagramUrl)}`;
+            const response = await fetch(noembedEndpoint, { cache: 'default' });
             if (response.ok) {
                 noembedData = await response.json();
             }
@@ -2090,7 +2097,7 @@ async function goToInstagramFeedSection() {
         renderInstagramFeedSection(allInstagramNews);
         queueInstagramStatsRefresh(allInstagramNews, {
             force: false,
-            forceFresh: true,
+            forceFresh: false,
             limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
         });
     }
@@ -2183,7 +2190,7 @@ async function loadInstagramNews() {
         updateInstagramMobileCarousels();
         
         // Atualizar contagens reais de curtidas/comentários
-        queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: true });
+        queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: false });
         scheduleInstagramStatsAutoRefresh();
         
     } catch (error) {
@@ -2263,7 +2270,7 @@ function scheduleInstagramStatsAutoRefresh() {
         if (renderedPosts.length === 0) return;
         queueInstagramStatsRefresh(renderedPosts, {
             force: false,
-            forceFresh: true,
+            forceFresh: false,
             limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
         });
     }, INSTAGRAM_STATS_REFRESH_INTERVAL_MS);
@@ -2325,7 +2332,7 @@ document.addEventListener('visibilitychange', () => {
     if (renderedPosts.length === 0) return;
     queueInstagramStatsRefresh(renderedPosts, {
         force: true,
-        forceFresh: true,
+        forceFresh: false,
         limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
     });
 });

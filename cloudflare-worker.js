@@ -25,6 +25,10 @@ const instagramHeaders = {
 
 const instagramProfileCache = new Map();
 const INSTAGRAM_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
+const instagramMetaCache = new Map();
+const INSTAGRAM_META_CACHE_TTL = 2 * 60 * 1000; // 2 minutos
+const instagramOembedCache = new Map();
+const INSTAGRAM_OEMBED_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
 
 function decodeHtmlEntities(text = '') {
   return String(text)
@@ -41,6 +45,23 @@ function decodeEscapedUrl(url = '') {
   return decodeHtmlEntities(String(url))
     .replace(/\\u0026/g, '&')
     .replace(/\\\//g, '/');
+}
+
+function decodeEscapedText(text = '') {
+  return decodeHtmlEntities(String(text || ''))
+    .replace(/\\u0026/g, '&')
+    .replace(/\\\//g, '/')
+    .replace(/\\"/g, '"')
+    .replace(/\\n/g, ' ')
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_match, hex) => {
+      try {
+        return String.fromCharCode(parseInt(hex, 16));
+      } catch (_error) {
+        return '';
+      }
+    })
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 function extractMetaTagContent(html = '', key = '', type = 'property') {
@@ -76,6 +97,13 @@ function parseCompactNumber(value) {
     } else {
       numeric = Number(numPart.replace(/,/g, ''));
     }
+  } else if (numPart.includes('.') && !numPart.includes(',')) {
+    const parts = numPart.split('.');
+    const looksLikeThousands = parts.length > 1 && parts.every((part, index) => {
+      if (index === 0) return part.length >= 1 && part.length <= 3;
+      return part.length === 3;
+    });
+    numeric = Number(looksLikeThousands ? parts.join('') : numPart);
   } else {
     numeric = Number(numPart.replace(/[^\d.]/g, ''));
   }
@@ -104,22 +132,135 @@ function extractFirstIntegerByPatterns(text = '', patterns = []) {
   return 0;
 }
 
+function extractFirstValueByPatterns(text = '', patterns = []) {
+  for (const pattern of patterns) {
+    const match = String(text || '').match(pattern);
+    if (!match || match[1] == null) continue;
+    return String(match[1]).trim();
+  }
+  return '';
+}
+
 function extractInstagramEngagementFromHtml(html = '') {
   if (!html) return { likes: 0, comments: 0 };
 
   const likes = extractFirstIntegerByPatterns(html, [
     /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
     /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
-    /"like_count"\s*:\s*(\d+)/i
+    /"like_count"\s*:\s*(\d+)/i,
+    /\\"edge_media_preview_like\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"edge_liked_by\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"like_count\\"\s*:\s*(\d+)/i
   ]);
 
   const comments = extractFirstIntegerByPatterns(html, [
     /"edge_media_to_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
     /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
-    /"comment_count"\s*:\s*(\d+)/i
+    /"comment_count"\s*:\s*(\d+)/i,
+    /"commenter_count"\s*:\s*(\d+)/i,
+    /\\"edge_media_to_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"edge_media_preview_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"comment_count\\"\s*:\s*(\d+)/i,
+    /\\"commenter_count\\"\s*:\s*(\d+)/i
   ]);
 
   return { likes, comments };
+}
+
+function buildInstagramEmbedCaptionUrl(instagramUrl = '') {
+  try {
+    const parsed = new URL(instagramUrl);
+    const segments = parsed.pathname.split('/').filter(Boolean);
+    const mediaType = (segments[0] || '').toLowerCase();
+    const shortcode = (segments[1] || '').trim();
+    const allowedTypes = new Set(['p', 'reel', 'reels', 'tv']);
+    if (!allowedTypes.has(mediaType) || !shortcode) return '';
+    const normalizedType = mediaType === 'reels' ? 'reel' : mediaType;
+    return `https://www.instagram.com/${normalizedType}/${encodeURIComponent(shortcode)}/embed/captioned/`;
+  } catch (_error) {
+    return '';
+  }
+}
+
+function extractInstagramMetaFromEmbedHtml(html = '') {
+  if (!html) {
+    return {
+      likes: 0,
+      comments: 0,
+      username: '',
+      displayName: '',
+      profileImage: '',
+      description: '',
+      image: '',
+      video: '',
+      isVideoPost: false
+    };
+  }
+
+  const engagement = extractInstagramEngagementFromHtml(html);
+  const username = sanitizeInstagramHandle(
+    extractFirstValueByPatterns(html, [
+      /"owner"\s*:\s*\{[^}]*"username"\s*:\s*"([a-z0-9._]{2,30})"/i,
+      /\\"owner\\"\s*:\s*\{[^}]*\\"username\\"\s*:\s*\\"([a-z0-9._]{2,30})\\"/i,
+      /"author_name"\s*:\s*"([^"]+)"/i,
+      /\\"author_name\\"\s*:\s*\\"([^"]+)\\"/i
+    ])
+  );
+
+  const displayName = decodeEscapedText(
+    extractFirstValueByPatterns(html, [
+      /"owner"\s*:\s*\{[^}]*"full_name"\s*:\s*"([^"]{1,180})"/i,
+      /\\"owner\\"\s*:\s*\{[^}]*\\"full_name\\"\s*:\s*\\"([^"]{1,180})\\"/i
+    ])
+  );
+
+  const profileImage = decodeEscapedUrl(
+    extractFirstValueByPatterns(html, [
+      /"profile_pic_url"\s*:\s*"([^"]+)"/i,
+      /\\"profile_pic_url\\"\s*:\s*\\"([^"]+)\\"/i
+    ])
+  );
+
+  const description = decodeEscapedText(
+    extractFirstValueByPatterns(html, [
+      /"edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
+      /\\"edge_media_to_caption\\"\s*:\s*\{\s*\\"edges\\"\s*:\s*\[\s*\{\s*\\"node\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i
+    ])
+  );
+
+  const image = decodeEscapedUrl(
+    extractFirstValueByPatterns(html, [
+      /"display_url"\s*:\s*"([^"]+)"/i,
+      /\\"display_url\\"\s*:\s*\\"([^"]+)\\"/i,
+      /"thumbnail_url"\s*:\s*"([^"]+)"/i,
+      /\\"thumbnail_url\\"\s*:\s*\\"([^"]+)\\"/i
+    ])
+  );
+
+  const video = decodeEscapedUrl(
+    extractFirstValueByPatterns(html, [
+      /"video_url"\s*:\s*"([^"]+)"/i,
+      /\\"video_url\\"\s*:\s*\\"([^"]+)\\"/i
+    ])
+  );
+
+  const isVideoPost = Boolean(
+    video ||
+    /"__typename"\s*:\s*"GraphVideo"/i.test(html) ||
+    /\\"__typename\\"\s*:\s*\\"GraphVideo\\"/i.test(html)
+  );
+
+  return {
+    likes: engagement.likes,
+    comments: engagement.comments,
+    username,
+    displayName,
+    profileImage,
+    description,
+    image,
+    video,
+    isVideoPost
+  };
 }
 
 function sanitizeInstagramHandle(value = '') {
@@ -256,6 +397,65 @@ async function fetchTextWithRetry(url, attempts = 2) {
   throw lastError || new Error('Falha ao buscar URL');
 }
 
+function stripJsonPreamble(payload = '') {
+  return String(payload || '').replace(/^\s*for\s*\(;;\);\s*/i, '').trim();
+}
+
+async function fetchJsonWithRetry(url, attempts = 2) {
+  let lastError = null;
+
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          ...instagramHeaders,
+          'Accept': 'application/json,text/plain,*/*'
+        },
+        cf: {
+          cacheTtl: 0,
+          cacheEverything: false
+        }
+      });
+
+      if (response.ok) {
+        const text = await response.text();
+        return JSON.parse(stripJsonPreamble(text));
+      }
+
+      lastError = new Error(`HTTP ${response.status}`);
+      if (response.status === 429 && attempt < attempts) {
+        await new Promise(resolve => setTimeout(resolve, 350 * attempt));
+        continue;
+      }
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  throw lastError || new Error('Falha ao buscar JSON');
+}
+
+async function fetchInstagramOembedMeta(instagramUrl = '') {
+  const cleanUrl = String(instagramUrl || '').trim();
+  if (!cleanUrl) return null;
+
+  const cached = instagramOembedCache.get(cleanUrl);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  const oembedUrl = `https://www.instagram.com/api/v1/oembed/?url=${encodeURIComponent(cleanUrl)}`;
+  const payload = await fetchJsonWithRetry(oembedUrl, 2);
+  if (!payload || typeof payload !== 'object') return null;
+
+  instagramOembedCache.set(cleanUrl, {
+    data: payload,
+    expiresAt: Date.now() + INSTAGRAM_OEMBED_CACHE_TTL
+  });
+
+  return payload;
+}
+
 async function fetchInstagramProfileImage(username = '') {
   const cleanUsername = String(username || '').trim().toLowerCase().replace(/^@/, '');
   if (!cleanUsername) return '';
@@ -282,48 +482,42 @@ async function scrapeInstagramMeta(instagramUrl = '') {
   const cleanUrl = String(instagramUrl || '').trim();
   if (!cleanUrl) throw new Error('URL do Instagram ausente');
 
-  const parsedUrl = new URL(cleanUrl);
-  if (!parsedUrl.hostname.includes('instagram.com')) {
-    throw new Error('URL inválida: use um link do Instagram');
+  const cachedMeta = instagramMetaCache.get(cleanUrl);
+  if (cachedMeta && cachedMeta.expiresAt > Date.now()) {
+    return cachedMeta.data;
   }
 
-  const html = await fetchTextWithRetry(cleanUrl);
-  const ogTitle = extractMetaTagContent(html, 'og:title', 'property');
-  const ogDescription = extractMetaTagContent(html, 'og:description', 'property') || extractMetaTagContent(html, 'description', 'name');
-  const ogImage = decodeEscapedUrl(extractMetaTagContent(html, 'og:image', 'property'));
-  const ogVideo = decodeEscapedUrl(
+  const parsedUrl = new URL(cleanUrl);
+  if (!parsedUrl.hostname.includes('instagram.com')) {
+    throw new Error('URL invalida: use um link do Instagram');
+  }
+
+  let html = '';
+  try {
+    html = await fetchTextWithRetry(cleanUrl);
+  } catch (_error) {
+    html = '';
+  }
+
+  let ogTitle = extractMetaTagContent(html, 'og:title', 'property');
+  let ogDescription = extractMetaTagContent(html, 'og:description', 'property') || extractMetaTagContent(html, 'description', 'name');
+  let ogImage = decodeEscapedUrl(extractMetaTagContent(html, 'og:image', 'property'));
+  let ogVideo = decodeEscapedUrl(
     extractMetaTagContent(html, 'og:video', 'property') ||
     extractMetaTagContent(html, 'og:video:url', 'property') ||
     extractMetaTagContent(html, 'og:video:secure_url', 'property') ||
     extractMetaTagContent(html, 'twitter:player:stream', 'name')
   );
-  const inlineVideoCandidates = [];
-  const inlinePatterns = [
-    /"video_url"\s*:\s*"([^"]+)"/i,
-    /"contentUrl"\s*:\s*"([^"]+)"/i,
-    /"video_versions"\s*:\s*\[\s*\{[^}]*"url"\s*:\s*"([^"]+)"/i
-  ];
-  for (const pattern of inlinePatterns) {
-    const match = html.match(pattern);
-    if (match && match[1]) {
-      inlineVideoCandidates.push(decodeEscapedUrl(match[1]));
-    }
-  }
-  const inlineVideoUrl = inlineVideoCandidates.find(value => typeof value === 'string' && /^https?:\/\//i.test(value)) || '';
-  const resolvedVideo = ogVideo || inlineVideoUrl || '';
-  const urlLooksVideo = /\/(?:reel|reels|tv)\//i.test(parsedUrl.pathname || '');
-  const htmlMarksVideo = /"is_video"\s*:\s*true/i.test(html) || /"__typename"\s*:\s*"GraphVideo"/i.test(html);
-  const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
 
-  const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
-  const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[aá]rios?)/i);
-  const likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
-  const commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
-  const engagementFromHtml = extractInstagramEngagementFromHtml(html);
-  const likes = likesFromDescription > 0 ? likesFromDescription : engagementFromHtml.likes;
-  const comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
+  let likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
+  let commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+  let likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
+  let commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+  let engagementFromHtml = extractInstagramEngagementFromHtml(html);
+  let likes = likesFromDescription > 0 ? likesFromDescription : engagementFromHtml.likes;
+  let comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
 
-  const username =
+  let username =
     extractInstagramUsernameFromText(ogDescription) ||
     extractInstagramUsernameFromText(ogTitle) ||
     extractInstagramUsernameFromUrl(cleanUrl);
@@ -334,10 +528,96 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     displayName = decodeHtmlEntities(displayFromTitle[1]).trim();
   }
 
+  let embedHtml = '';
+  const shouldUseEmbedFallback = (likes <= 0 && comments <= 0) || !ogTitle || !ogDescription || (!ogImage && !ogVideo);
+  if (shouldUseEmbedFallback) {
+    const embedUrl = buildInstagramEmbedCaptionUrl(cleanUrl);
+    if (embedUrl) {
+      try {
+        embedHtml = await fetchTextWithRetry(embedUrl);
+        const embedMeta = extractInstagramMetaFromEmbedHtml(embedHtml);
+
+        if (likes <= 0 && embedMeta.likes > 0) likes = embedMeta.likes;
+        if (comments <= 0 && embedMeta.comments > 0) comments = embedMeta.comments;
+        if (!username && embedMeta.username) username = embedMeta.username;
+        if (!displayName && embedMeta.displayName) displayName = embedMeta.displayName;
+        if (!ogDescription && embedMeta.description) ogDescription = embedMeta.description;
+        if (!ogImage && embedMeta.image) ogImage = embedMeta.image;
+        if (!ogVideo && embedMeta.video) ogVideo = embedMeta.video;
+      } catch (_error) {
+        embedHtml = '';
+      }
+    }
+  }
+
+  const shouldUseOembedFallback = !ogTitle || !ogDescription || !username || (!ogImage && !ogVideo);
+  if (shouldUseOembedFallback) {
+    try {
+      const oembed = await fetchInstagramOembedMeta(cleanUrl);
+      if (oembed) {
+        const oembedTitle = decodeEscapedText(oembed.title || '');
+        if (!ogTitle && oembedTitle) {
+          ogTitle = oembedTitle.length > 120 ? `${oembedTitle.slice(0, 117).trimEnd()}...` : oembedTitle;
+        }
+        if (!ogDescription && oembedTitle) ogDescription = oembedTitle;
+
+        const oembedUsername = sanitizeInstagramHandle(
+          oembed.author_name ||
+          extractInstagramUsernameFromUrl(oembed.author_url || '')
+        );
+        if (!username && oembedUsername) username = oembedUsername;
+        if (!displayName && oembed.author_name) {
+          displayName = decodeEscapedText(oembed.author_name || '');
+        }
+
+        const oembedThumb = decodeEscapedUrl(oembed.thumbnail_url || '');
+        if (!ogImage && oembedThumb) ogImage = oembedThumb;
+      }
+    } catch (_error) {}
+  }
+
+  const inlineVideoCandidates = [];
+  const inlinePatterns = [
+    /"video_url"\s*:\s*"([^"]+)"/i,
+    /\\"video_url\\"\s*:\s*\\"([^"]+)\\"/i,
+    /"contentUrl"\s*:\s*"([^"]+)"/i,
+    /\\"contentUrl\\"\s*:\s*\\"([^"]+)\\"/i,
+    /"video_versions"\s*:\s*\[\s*\{[^}]*"url"\s*:\s*"([^"]+)"/i,
+    /\\"video_versions\\"\s*:\s*\[\s*\{[^}]*\\"url\\"\s*:\s*\\"([^"]+)\\"/i
+  ];
+  const htmlForVideoScan = [html, embedHtml].filter(Boolean).join('\n');
+  for (const pattern of inlinePatterns) {
+    const match = htmlForVideoScan.match(pattern);
+    if (match && match[1]) {
+      inlineVideoCandidates.push(decodeEscapedUrl(match[1]));
+    }
+  }
+
+  const inlineVideoUrl = inlineVideoCandidates.find(value => typeof value === 'string' && /^https?:\/\//i.test(value)) || '';
+  const resolvedVideo = ogVideo || inlineVideoUrl || '';
+  const urlLooksVideo = /\/(?:reel|reels|tv)\//i.test(parsedUrl.pathname || '');
+  const htmlMarksVideo =
+    /"is_video"\s*:\s*true/i.test(htmlForVideoScan) ||
+    /"__typename"\s*:\s*"GraphVideo"/i.test(htmlForVideoScan) ||
+    /\\"is_video\\"\s*:\s*true/i.test(htmlForVideoScan) ||
+    /\\"__typename\\"\s*:\s*\\"GraphVideo\\"/i.test(htmlForVideoScan);
+  const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
+
+  if (likes <= 0 || comments <= 0) {
+    likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
+    commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+    likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
+    commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+    engagementFromHtml = extractInstagramEngagementFromHtml(htmlForVideoScan);
+    if (likes <= 0) likes = likesFromDescription > 0 ? likesFromDescription : engagementFromHtml.likes;
+    if (comments <= 0) comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
+  }
+
   const collaborators = collectInstagramCollaborators(
     username,
     displayName,
-    extractInstagramCollaboratorsFromHtml(html)
+    extractInstagramCollaboratorsFromHtml(html),
+    extractInstagramCollaboratorsFromHtml(embedHtml)
   );
   const primaryHandle = collaborators[0] || username;
   const hasAdditionalCollaborator = Boolean(
@@ -345,8 +625,13 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     /(?:\be\b|\band\b)\s+(?:outra\s+conta|outros?\s+\d+|others?\s+\d+)/i.test(`${ogTitle || ''} ${ogDescription || ''}`)
   );
 
-  let profileImage = '';
-  if (primaryHandle) {
+  let profileImage = decodeEscapedUrl(
+    extractFirstValueByPatterns(embedHtml, [
+      /"profile_pic_url"\s*:\s*"([^"]+)"/i,
+      /\\"profile_pic_url\\"\s*:\s*\\"([^"]+)\\"/i
+    ])
+  );
+  if (primaryHandle && !profileImage) {
     try {
       profileImage = await fetchInstagramProfileImage(primaryHandle);
     } catch (_error) {
@@ -358,7 +643,7 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     profileImage = ogImage;
   }
 
-  return {
+  const result = {
     username,
     displayName,
     profileImage,
@@ -374,6 +659,13 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     hasAdditionalCollaborator,
     sourceUrl: cleanUrl
   };
+
+  instagramMetaCache.set(cleanUrl, {
+    data: result,
+    expiresAt: Date.now() + INSTAGRAM_META_CACHE_TTL
+  });
+
+  return result;
 }
 
 export default {
@@ -386,15 +678,15 @@ export default {
     const path = url.pathname;
 
     if (path === '/api/instagram/meta') {
+      const instagramMetaHeaders = {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      };
       try {
         const instagramUrl = url.searchParams.get('url') || '';
-        const instagramMetaHeaders = {
-          ...corsHeaders,
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        };
         if (!instagramUrl) {
           return new Response(
             JSON.stringify({ success: false, error: 'Parâmetro url é obrigatório' }),
