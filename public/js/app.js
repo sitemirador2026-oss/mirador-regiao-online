@@ -155,9 +155,9 @@ function parseInstagramCount(value) {
     const suffix = (compact[2] || '').toLowerCase();
     const multiplier =
         suffix === 'k' || suffix === 'mil' ? 1_000 :
-        suffix === 'm' || suffix === 'mi' ? 1_000_000 :
-        suffix === 'b' ? 1_000_000_000 :
-        1;
+            suffix === 'm' || suffix === 'mi' ? 1_000_000 :
+                suffix === 'b' ? 1_000_000_000 :
+                    1;
 
     return Math.max(0, Math.round(numeric * multiplier));
 }
@@ -390,6 +390,75 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
     };
 }
 
+// Buscar dados de engagement do Instagram diretamente do navegador do usuário
+async function fetchInstagramEmbedDataFromBrowser(instagramUrl) {
+    try {
+        const parsed = new URL(instagramUrl);
+        const segments = parsed.pathname.split('/').filter(Boolean);
+        const mediaType = (segments[0] || '').toLowerCase();
+        const shortcode = (segments[1] || '').trim();
+        const allowedTypes = new Set(['p', 'reel', 'reels', 'tv']);
+        if (!allowedTypes.has(mediaType) || !shortcode) return null;
+
+        const normalizedType = mediaType === 'reels' ? 'reel' : mediaType;
+        const embedUrl = `https://www.instagram.com/${normalizedType}/${encodeURIComponent(shortcode)}/embed/captioned/`;
+
+        const response = await fetch(embedUrl, { credentials: 'include' });
+        if (!response.ok) return null;
+        const html = await response.text();
+        if (!html || html.length < 500) return null;
+
+        const extractInt = (patterns) => {
+            for (const pattern of patterns) {
+                const match = html.match(pattern);
+                if (match && match[1]) {
+                    const val = parseInt(match[1], 10);
+                    if (Number.isFinite(val) && val >= 0) return val;
+                }
+            }
+            return 0;
+        };
+
+        const likes = extractInt([
+            /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /"like_count"\s*:\s*(\d+)/i,
+            /"likes"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /\\"like_count\\"\s*:\s*(\d+)/i,
+            /\\"edge_media_preview_like\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i
+        ]);
+
+        const comments = extractInt([
+            /"edge_media_to_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /"comment_count"\s*:\s*(\d+)/i,
+            /"comments"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+            /\\"comment_count\\"\s*:\s*(\d+)/i,
+            /\\"edge_media_to_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i
+        ]);
+
+        if (likes > 0 || comments > 0) {
+            console.log(`[App] Embed do navegador retornou: likes=${likes}, comments=${comments} para ${shortcode}`);
+            return { likes, comments };
+        }
+
+        // Tenta extrair do texto visível do embed (ex: "1.700 curtidas")
+        const textLikes = html.match(/([\d.,]+)\s*(?:likes?|curtidas?)/i);
+        const textComments = html.match(/([\d.,]+)\s*(?:comments?|coment[aá]rios?)/i);
+        const parsedTextLikes = textLikes ? parseInstagramCount(textLikes[1]) : 0;
+        const parsedTextComments = textComments ? parseInstagramCount(textComments[1]) : 0;
+
+        if (parsedTextLikes > 0 || parsedTextComments > 0) {
+            console.log(`[App] Embed texto retornou: likes=${parsedTextLikes}, comments=${parsedTextComments} para ${shortcode}`);
+            return { likes: parsedTextLikes, comments: parsedTextComments };
+        }
+
+        return null;
+    } catch (_e) {
+        return null;
+    }
+}
+
 async function fetchInstagramMeta(instagramUrl, options = {}) {
     const forceFresh = Boolean(options.forceFresh);
     let internalMeta = null;
@@ -413,7 +482,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
                 internalMeta = payload;
                 break;
             }
-        } catch (_e) {}
+        } catch (_e) { }
     }
 
     const internalLikes = internalMeta?.likes != null ? parseInstagramCount(internalMeta.likes) : 0;
@@ -431,7 +500,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
                 const payload = await response.json();
                 microlinkData = payload?.data || null;
             }
-        } catch (_e) {}
+        } catch (_e) { }
     }
 
     const shouldUseNoembedFallback = !internalMeta && !microlinkData;
@@ -442,7 +511,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
             if (response.ok) {
                 noembedData = await response.json();
             }
-        } catch (_e) {}
+        } catch (_e) { }
     }
 
     const microlinkLikes = pickBestInstagramCount(
@@ -473,11 +542,22 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
         hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
 
+    // Fallback final: buscar embed diretamente do navegador do usuário
+    if (resolvedLikes <= 0 && resolvedComments <= 0) {
+        try {
+            const embedData = await fetchInstagramEmbedDataFromBrowser(instagramUrl);
+            if (embedData) {
+                if (embedData.likes > 0) merged.likes = embedData.likes;
+                if (embedData.comments > 0) merged.comments = embedData.comments;
+            }
+        } catch (_e) { }
+    }
+
     const normalized = normalizeInstagramMeta(merged, instagramUrl);
     return {
         ...normalized,
-        likesSource,
-        commentsSource,
+        likesSource: merged.likes > 0 ? (internalLikes > 0 ? 'instagram' : (microlinkLikes > 0 ? 'microlink' : 'embed')) : 'none',
+        commentsSource: merged.comments > 0 ? (internalComments > 0 ? 'instagram' : (microlinkComments > 0 ? 'microlink' : 'embed')) : 'none',
         source: internalMeta ? 'instagram' : (microlinkData ? 'microlink' : (noembedData ? 'noembed' : 'unknown'))
     };
 }
@@ -839,7 +919,7 @@ function getSiteLogo() {
         try {
             const settings = JSON.parse(brandSettings);
             if (settings.logo) return settings.logo;
-        } catch(e) {}
+        } catch (e) { }
     }
     return null;
 }
@@ -848,9 +928,9 @@ function getSiteLogo() {
 function createNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
     const isExternal = news.externalUrl || news.isImported;
-    
+
     let sourceDomain, sourceLogo;
-    
+
     if (isExternal) {
         // Notícia de terceiros - usar favicon
         sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
@@ -867,12 +947,12 @@ function createNewsCard(news) {
             sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
         }
     }
-    
+
     // Formatar data e hora separadamente
     const dateObj = new Date(news.date);
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-    
+
     return `
         <article class="news-card" onclick="viewNews('${news.id}')">
             <div class="news-card-image-wrapper">
@@ -908,9 +988,9 @@ function createNewsCard(news) {
 function createHorizontalNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
     const isExternal = news.externalUrl || news.isImported;
-    
+
     let sourceDomain, sourceLogo;
-    
+
     if (isExternal) {
         sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
         sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
@@ -924,11 +1004,11 @@ function createHorizontalNewsCard(news) {
             sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
         }
     }
-    
+
     const dateObj = new Date(news.date);
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-    
+
     return `
         <article class="news-card-horizontal" onclick="viewNews('${news.id}')">
             <div class="news-card-horizontal-image">
@@ -988,7 +1068,7 @@ function renderNewsBlock(newsItems, startIndex, container) {
     let html = '';
     let index = startIndex;
     let rowsRendered = 0;
-    
+
     // Padrão: 2 normais + 1 especial (repetido 2x = 4 normais + 2 especiais)
     for (let cycle = 0; cycle < 2 && index < newsItems.length; cycle++) {
         // Fileira normal 1
@@ -998,7 +1078,7 @@ function renderNewsBlock(newsItems, startIndex, container) {
             }
             rowsRendered++;
         }
-        
+
         // Fileira normal 2
         if (index < newsItems.length) {
             for (let i = 0; i < cardsPerRow && index < newsItems.length; i++) {
@@ -1006,7 +1086,7 @@ function renderNewsBlock(newsItems, startIndex, container) {
             }
             rowsRendered++;
         }
-        
+
         // Fileira especial horizontal
         if (index < newsItems.length) {
             html += '<div class="news-row-horizontal">';
@@ -1017,45 +1097,45 @@ function renderNewsBlock(newsItems, startIndex, container) {
             rowsRendered++;
         }
     }
-    
+
     // Se sobrar notícias, completar com cards normais
     while (index < newsItems.length) {
         html += createNewsCard(newsItems[index++]);
     }
-    
+
     if (container) {
         container.innerHTML = html || '<div class="empty-state">Nenhuma notícia encontrada.</div>';
     }
-    
+
     return index; // Retorna o índice final
 }
 
 async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
-        
+
         // Armazenar todas as notícias globalmente para compartilhamento
         window.allNews = news;
-        
+
         // Destaques
         const featured = news.filter(n => n.featured);
         const featuredContainer = document.getElementById('featuredNews');
         if (featuredContainer) {
-            featuredContainer.innerHTML = featured.length > 0 
+            featuredContainer.innerHTML = featured.length > 0
                 ? featured.map(createNewsCard).join('')
                 : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
         }
-        
+
         // Últimas notícias - excluindo notícias do Instagram (têm seção própria)
         const latest = news
             .filter(n => n.source !== 'Instagram' && n.category !== 'instagram')
             .sort((a, b) => new Date(b.date) - new Date(a.date));
         const latestContainer = document.getElementById('latestNews');
-        
+
         if (latestContainer) {
             renderNewsBlock(latest, 0, latestContainer);
         }
-        
+
         // Renderizar seções por categoria
         const categories = [
             { id: 'esportes', containerId: 'categoryEsportes' },
@@ -1065,15 +1145,15 @@ async function renderNews() {
             { id: 'mirador', containerId: 'categoryMirador' },
             { id: 'brasil', containerId: 'categoryBrasil' }
         ];
-        
+
         categories.forEach(cat => {
             const categoryNews = news
                 .filter(n => n.category === cat.id)
                 .sort((a, b) => new Date(b.date) - new Date(a.date));
-            
+
             const container = document.getElementById(cat.containerId);
             const sectionElement = document.querySelector(`[data-category="${cat.id}"]`);
-            
+
             if (container && sectionElement) {
                 if (categoryNews.length > 0) {
                     renderNewsBlock(categoryNews, 0, container);
@@ -1083,7 +1163,7 @@ async function renderNews() {
                 }
             }
         });
-        
+
     } catch (error) {
         console.error('[App] Erro ao renderizar notícias:', error);
     }
@@ -1098,11 +1178,11 @@ function viewNews(id) {
 // Busca
 async function searchNews(query) {
     const news = await loadNewsFromFirebase();
-    const results = news.filter(n => 
+    const results = news.filter(n =>
         n.title.toLowerCase().includes(query.toLowerCase()) ||
         n.excerpt.toLowerCase().includes(query.toLowerCase())
     );
-    
+
     const container = document.getElementById('searchResults');
     if (container) {
         container.innerHTML = results.length > 0
@@ -1134,12 +1214,12 @@ let sidePanelTimer = null;
 function openSidePanel() {
     const panel = document.getElementById('sidePanel');
     const backdrop = document.getElementById('sidePanelBackdrop');
-    
+
     if (panel) {
         panel.classList.add('active');
         if (backdrop) backdrop.classList.add('active');
         document.body.style.overflow = 'hidden';
-        
+
         // Start auto-close timer (10 seconds)
         startSidePanelTimer();
     }
@@ -1148,12 +1228,12 @@ function openSidePanel() {
 function closeSidePanel() {
     const panel = document.getElementById('sidePanel');
     const backdrop = document.getElementById('sidePanelBackdrop');
-    
+
     if (panel) {
         panel.classList.remove('active');
         if (backdrop) backdrop.classList.remove('active');
         document.body.style.overflow = '';
-        
+
         // Clear timer
         clearSidePanelTimer();
     }
@@ -1162,7 +1242,7 @@ function closeSidePanel() {
 function startSidePanelTimer() {
     // Clear existing timer if any
     clearSidePanelTimer();
-    
+
     // Set new timer for 10 seconds
     sidePanelTimer = setTimeout(() => {
         closeSidePanel();
@@ -1204,7 +1284,7 @@ async function filterByCategory(category) {
     const news = await loadNewsFromFirebase();
     const filtered = news.filter(n => n.category === normalizedCategory);
     const container = document.getElementById('latestNews');
-    
+
     if (container) {
         if (filtered.length > 0) {
             renderNewsBlock(filtered, 0, container);
@@ -1213,7 +1293,7 @@ async function filterByCategory(category) {
         }
         container.scrollIntoView({ behavior: 'smooth' });
     }
-    
+
     // Fechar menu mobile
     const mobileMenu = document.getElementById('mobileMenu');
     if (mobileMenu?.classList.contains('active')) {
@@ -1224,15 +1304,15 @@ async function filterByCategory(category) {
 }
 
 // Inicialização
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     console.log('[App] v2.5 - Inicializando...');
-    
+
     // Inicializar dados
     await initializeData();
-    
+
     // Renderizar notícias
     await renderNews();
-    
+
     // Event Listeners
     document.querySelector('.btn-search')?.addEventListener('click', toggleSearchModal);
     document.querySelector('.search-close')?.addEventListener('click', toggleSearchModal);
@@ -1240,12 +1320,12 @@ document.addEventListener('DOMContentLoaded', async function() {
     document.querySelector('.mobile-menu-close')?.addEventListener('click', toggleMobileMenu);
     document.getElementById('instagramVideoModalClose')?.addEventListener('click', closeInstagramVideoModal);
     document.getElementById('instagramVideoModalBackdrop')?.addEventListener('click', closeInstagramVideoModal);
-    
+
     // Side Panel Events
     document.getElementById('btnSideMenu')?.addEventListener('click', openSidePanel);
     document.getElementById('sidePanelClose')?.addEventListener('click', closeSidePanel);
     document.getElementById('sidePanelBackdrop')?.addEventListener('click', closeSidePanel);
-    
+
     // Reset timer on interaction with side panel
     const sidePanel = document.getElementById('sidePanel');
     if (sidePanel) {
@@ -1253,49 +1333,49 @@ document.addEventListener('DOMContentLoaded', async function() {
         sidePanel.addEventListener('mouseleave', startSidePanelTimer);
         sidePanel.addEventListener('click', resetSidePanelTimer);
     }
-    
+
     // Busca em tempo real
-    document.getElementById('searchInput')?.addEventListener('input', function(e) {
+    document.getElementById('searchInput')?.addEventListener('input', function (e) {
         if (e.target.value.length >= 2) {
             searchNews(e.target.value);
         }
     });
-    
+
     // Fechar modal ao clicar fora
-    document.getElementById('searchModal')?.addEventListener('click', function(e) {
+    document.getElementById('searchModal')?.addEventListener('click', function (e) {
         if (e.target === this) toggleSearchModal();
     });
-    
+
     // Links de categoria
     document.querySelectorAll('[data-category]').forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             e.preventDefault();
             filterByCategory(this.getAttribute('data-category'));
         });
     });
-    
+
     // Fechar menu mobile ao clicar fora
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         const menu = document.getElementById('mobileMenu');
         const btn = document.querySelector('.btn-menu-mobile');
         if (menu && !menu.contains(e.target) && !btn?.contains(e.target)) {
             menu.classList.remove('active');
         }
     });
-    
+
     // Carregar e aplicar configurações de links do rodapé
     loadFooterLinks();
-    
+
     // Carregar stories
     loadStories();
 
     // Carregar banners do topo
     renderTopBanners();
-    
+
     // Carregar notícias do Instagram
     await loadInstagramProfileSettings();
     loadInstagramNews();
-    
+
     console.log('[App] v2.5 - Pronto!');
 });
 
@@ -1390,7 +1470,7 @@ function persistInstitutionalContent(siteName) {
 
     try {
         localStorage.setItem('publicInstitutionalContent', JSON.stringify(payload));
-    } catch (_error) {}
+    } catch (_error) { }
 }
 
 // Carregar configurações de links do rodapé
@@ -1516,7 +1596,7 @@ function renderStories() {
     const container = document.getElementById('storiesContainer');
     const storiesSection = document.querySelector('.stories-section');
     if (!container) return;
-    
+
     if (storiesData.length === 0) {
         container.innerHTML = '';
         if (storiesSection) storiesSection.style.display = 'none';
@@ -1524,10 +1604,10 @@ function renderStories() {
     }
 
     if (storiesSection) storiesSection.style.display = 'block';
-    
+
     container.innerHTML = storiesData.map((story, index) => {
         let avatarContent = '';
-        
+
         if (story.type === 'text') {
             // Story de texto - mostrar círculo com gradiente
             avatarContent = `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${story.bgColor || 'linear-gradient(45deg, #f09433, #e6683c, #dc2743)'}; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">T</div>`;
@@ -1543,7 +1623,7 @@ function renderStories() {
             // Story de imagem
             avatarContent = `<img src="${story.image}" alt="${story.title}">`;
         }
-        
+
         return `
             <div class="story-item" onclick="openStory(${index})">
                 <div class="story-avatar" style="position: relative;">
@@ -1576,15 +1656,15 @@ function closeStoryModal() {
 
 function showCurrentStory() {
     clearStoryTimers();
-    
+
     const story = storiesData[currentStoryIndex];
     if (!story) return;
-    
+
     const storyContent = document.querySelector('.story-content');
-    
+
     // Limpar conteúdo anterior
     storyContent.innerHTML = '';
-    
+
     // Renderizar baseado no tipo
     if (story.type === 'text') {
         // Story de texto
@@ -1605,9 +1685,9 @@ function showCurrentStory() {
             ${story.title ? `<div class="story-caption">${story.title}</div>` : ''}
         `;
     }
-    
+
     document.getElementById('storyTime').textContent = formatStoryTime(story.date);
-    
+
     // Esconder botão "Ver no Instagram" se não tiver link
     const storyLink = document.getElementById('storyLink');
     if (storyLink) {
@@ -1618,13 +1698,13 @@ function showCurrentStory() {
             storyLink.style.display = 'none';
         }
     }
-    
+
     // Update navigation visibility
     const prevBtn = document.getElementById('storyPrev');
     const nextBtn = document.getElementById('storyNext');
     if (prevBtn) prevBtn.style.visibility = currentStoryIndex > 0 ? 'visible' : 'hidden';
     if (nextBtn) nextBtn.style.visibility = currentStoryIndex < storiesData.length - 1 ? 'visible' : 'hidden';
-    
+
     // Start progress
     startStoryProgress();
 }
@@ -1632,16 +1712,16 @@ function showCurrentStory() {
 function startStoryProgress() {
     const progressBar = document.getElementById('storyProgressBar');
     if (!progressBar) return;
-    
+
     progressBar.style.width = '0%';
     progressBar.style.transition = 'none';
-    
+
     // Force reflow
     void progressBar.offsetWidth;
-    
+
     progressBar.style.transition = `width ${STORY_DURATION}ms linear`;
     progressBar.style.width = '100%';
-    
+
     storyAutoAdvanceTimeout = setTimeout(() => {
         nextStory();
     }, STORY_DURATION);
@@ -1678,7 +1758,7 @@ function formatStoryTime(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const diff = Math.floor((now - date) / 1000);
-    
+
     if (diff < 60) return 'Agora';
     if (diff < 3600) return `${Math.floor(diff / 60)} min`;
     if (diff < 86400) return `${Math.floor(diff / 3600)} h`;
@@ -1686,17 +1766,17 @@ function formatStoryTime(dateString) {
 }
 
 // Story event listeners
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('storyModalClose')?.addEventListener('click', closeStoryModal);
     document.getElementById('storyModalBackdrop')?.addEventListener('click', closeStoryModal);
     document.getElementById('storyNext')?.addEventListener('click', nextStory);
     document.getElementById('storyPrev')?.addEventListener('click', prevStory);
-    
+
     // Keyboard navigation
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         const modal = document.getElementById('storyModal');
         if (!modal?.classList.contains('active')) return;
-        
+
         if (e.key === 'Escape') closeStoryModal();
         if (e.key === 'ArrowRight') nextStory();
         if (e.key === 'ArrowLeft') prevStory();
@@ -1834,7 +1914,7 @@ async function loadInstagramProfileSettings() {
     let profileDoc = null;
     try {
         profileDoc = await db.collection('settings').doc('instagramProfile').get({ source: 'server' });
-    } catch (_error) {}
+    } catch (_error) { }
 
     try {
         if (!profileDoc) {
@@ -1876,7 +1956,7 @@ async function loadInstagramProfileSettings() {
                 return normalizedFromLayout;
             }
         }
-    } catch (_error) {}
+    } catch (_error) { }
 
     try {
         const saved = localStorage.getItem('publicInstagramProfile');
@@ -1885,7 +1965,7 @@ async function loadInstagramProfileSettings() {
             instagramProfileSettings = normalized;
             return normalized;
         }
-    } catch (_error) {}
+    } catch (_error) { }
 
     try {
         const brandDoc = await db.collection('settings').doc('brand').get();
@@ -1912,7 +1992,7 @@ async function loadInstagramProfileSettings() {
                 return normalized;
             }
         }
-    } catch (_error) {}
+    } catch (_error) { }
 
     try {
         const adminSaved = localStorage.getItem('siteInstagramProfile');
@@ -1922,7 +2002,7 @@ async function loadInstagramProfileSettings() {
             localStorage.setItem('publicInstagramProfile', JSON.stringify(normalized));
             return normalized;
         }
-    } catch (_error) {}
+    } catch (_error) { }
 
     instagramProfileSettings = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS };
     return instagramProfileSettings;
@@ -2140,7 +2220,7 @@ async function loadInstagramNews() {
     try {
         await loadInstagramProfileSettings();
         let news = [];
-        
+
         try {
             // Tentar consulta com filtros (requer índice)
             const snapshot = await db.collection('news')
@@ -2148,7 +2228,7 @@ async function loadInstagramNews() {
                 .where('status', '==', 'published')
                 .orderBy('date', 'desc')
                 .get();
-            
+
             snapshot.forEach(doc => {
                 news.push({ id: doc.id, ...doc.data() });
             });
@@ -2158,7 +2238,7 @@ async function loadInstagramNews() {
             const snapshot = await db.collection('news')
                 .orderBy('date', 'desc')
                 .get();
-            
+
             snapshot.forEach(doc => {
                 const data = doc.data();
                 if ((data.source === 'Instagram' || data.category === 'instagram') && data.status === 'published') {
@@ -2166,12 +2246,12 @@ async function loadInstagramNews() {
                 }
             });
         }
-        
+
         const container = document.getElementById('instagramNewsGrid');
         if (!container) return;
-        
+
         allInstagramNews = news;
-        
+
         if (news.length === 0) {
             container.innerHTML = '';
             renderInstagramFeedSection([]);
@@ -2179,20 +2259,20 @@ async function loadInstagramNews() {
             stopInstagramStatsAutoRefresh();
             return;
         }
-        
+
         // Mostrar quantidade configurada no painel (fallback: 4)
         const instagramVisiblePosts = getInstagramVisiblePostsCount();
         const newsToShow = news.slice(0, instagramVisiblePosts);
-        
+
         container.innerHTML = newsToShow.map(createInstagramCard).join('');
         primeInstagramCardVideos(container);
         renderInstagramFeedSection(news);
         updateInstagramMobileCarousels();
-        
+
         // Atualizar contagens reais de curtidas/comentários
         queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: false });
         scheduleInstagramStatsAutoRefresh();
-        
+
     } catch (error) {
         console.error('[App] Erro ao carregar notícias do Instagram:', error);
     }
@@ -2287,7 +2367,7 @@ function queueInstagramStatsRefresh(newsItems = [], options = {}) {
     if (queueItems.length === 0) return Promise.resolve();
 
     instagramStatsRefreshQueue = instagramStatsRefreshQueue
-        .catch(() => {})
+        .catch(() => { })
         .then(() => runInstagramStatsRefresh(queueItems, options));
 
     return instagramStatsRefreshQueue;
@@ -2662,7 +2742,7 @@ function primeInstagramCardVideoFrame(videoEl) {
         videoEl.dataset.previewPrimed = '1';
         try {
             videoEl.pause();
-        } catch (_error) {}
+        } catch (_error) { }
     };
 
     const applyPreviewFrame = () => {
@@ -2755,7 +2835,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null) {
     requestAnimationFrame(() => {
         const playPromise = player.play();
         if (playPromise && typeof playPromise.catch === 'function') {
-            playPromise.catch(() => {});
+            playPromise.catch(() => { });
         }
     });
 }
@@ -2788,7 +2868,7 @@ function closeInstagramVideoModal() {
 
     try {
         player.pause();
-    } catch (_error) {}
+    } catch (_error) { }
     player.removeAttribute('src');
     player.load();
 
@@ -2890,13 +2970,13 @@ function createInstagramCard(news) {
     );
     const hasAvatar = Boolean(profileImage);
     const displayTitle = buildInstagramTitlePreview(news.title, content);
-    
+
     // Verificar se tem galeria e tipo da midia principal
     const allMedia = getInstagramAllMedia(news);
     const primaryMedia = allMedia[0] || { type: 'image', url: '', poster: '' };
     const hasGallery = allMedia.length > 1;
     const totalMedia = allMedia.length;
-    
+
     // Guardar dados para uso no modal
     const existingPostData = instagramPostsData[news.id] || {};
     instagramPostsData[news.id] = {
@@ -2920,18 +3000,18 @@ function createInstagramCard(news) {
         instagramHasCollaborator: false,
         title: displayTitle
     };
-    
+
     return `
         <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}', this)">
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper ${primaryMedia.type === 'video' ? 'is-video' : ''}">
                 ${primaryMedia.type === 'video'
-                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
+            ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
                        <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir vídeo">
                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                        </button>`
-                    : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
-                }
+            : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
+        }
                 ${hasGallery ? `
                     <div class="instagram-gallery-indicator">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -2982,13 +3062,13 @@ function createInstagramCard(news) {
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
-                            <span class="instagram-likes-count" data-id="${news.id}">${formatNumber(profileMeta.likes)}</span>
+                            <span class="instagram-likes-count" data-id="${news.id}">${profileMeta.likes > 0 ? formatNumber(profileMeta.likes) : ''}</span>
                         </button>
                         <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
-                            <span class="instagram-comments-count" data-id="${news.id}">${formatNumber(profileMeta.comments)}</span>
+                            <span class="instagram-comments-count" data-id="${news.id}">${profileMeta.comments > 0 ? formatNumber(profileMeta.comments) : ''}</span>
                         </button>
                     </div>
                     <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
@@ -3019,7 +3099,7 @@ function openInstagramModal(newsId, cardElement = null) {
 
     // Cada abertura do post conta como uma visualizacao
     void trackNewsView(newsId);
-    
+
     // Se já tem um card expandido, fechar ele primeiro
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
@@ -3027,19 +3107,19 @@ function openInstagramModal(newsId, cardElement = null) {
             closeInstagramCard(currentExpanded);
         }
     }
-    
+
     // Encontrar o card clicado
     const card = (cardElement && cardElement.classList && cardElement.classList.contains('instagram-card'))
         ? cardElement
         : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
     if (!card) return;
     if (card.classList.contains('expanded')) return;
-    
+
     // Em desktop, escondemos o último card para preservar a grade quando o card expande.
     if (!isMobileViewport()) {
         hideLastCard(newsId, card);
     }
-    
+
     // DEPOIS: Expandir o card (agora tem espaço para ocupar 2 colunas)
     card.classList.add('expanded');
     expandedCardId = newsId;
@@ -3047,7 +3127,7 @@ function openInstagramModal(newsId, cardElement = null) {
     if (mobileCarousel) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
-    
+
     // Adicionar botão fechar se não existir
     let closeBtn = card.querySelector('.instagram-card-close');
     if (!closeBtn) {
@@ -3066,14 +3146,14 @@ function openInstagramModal(newsId, cardElement = null) {
         if (header) header.appendChild(closeBtn);
     }
     closeBtn.style.display = 'flex';
-    
+
     // Esconder preview e mostrar conteúdo completo
     const titlePreview = card.querySelector('.instagram-card-title-preview');
     if (titlePreview) titlePreview.style.display = 'none';
-    
+
     const time = card.querySelector('.instagram-card-time');
     if (time) time.style.display = 'none';
-    
+
     // Adicionar legenda completa se não existir
     let captionFull = card.querySelector('.instagram-card-caption-full');
     if (!captionFull) {
@@ -3092,13 +3172,13 @@ function openInstagramModal(newsId, cardElement = null) {
     const captionText = getInstagramPostCaption(post, newsId);
     captionFull.textContent = captionText || 'Sem legenda disponível.';
     captionFull.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow-y: auto !important; margin-bottom: 0.75rem !important; padding: 0 !important;';
-    
+
     // Atualizar contadores de curtidas e comentários
     const likesEl = card.querySelector('.instagram-likes-count');
     const commentsEl = card.querySelector('.instagram-comments-count');
     if (likesEl) likesEl.textContent = formatNumber(post.likes || 0);
     if (commentsEl) commentsEl.textContent = formatNumber(post.comments || 0);
-    
+
     // ATUALIZAR todos os links do Instagram com a URL correta
     const actionButtons = card.querySelectorAll('.instagram-card-action-btn');
     actionButtons.forEach(btn => {
@@ -3110,10 +3190,10 @@ function openInstagramModal(newsId, cardElement = null) {
         };
         btn.parentNode.replaceChild(newBtn, btn);
     });
-    
+
     // CONFIGURAR GALERIA se houver múltiplas mídias
     setupInstagramGallery(card, post);
-    
+
     // Scroll suave para o card
     setTimeout(() => {
         card.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3127,7 +3207,7 @@ function setupInstagramGallery(card, post) {
 
     // Montar array de todas as mídias válidas (capa + galeria)
     const allMedia = getInstagramAllMedia(post);
-    
+
     // Se só tem uma mídia, não precisa de navegação
     if (allMedia.length <= 1) {
         // Remover controles de galeria se existirem
@@ -3154,18 +3234,18 @@ function setupInstagramGallery(card, post) {
         }
         return;
     }
-    
+
     // Guardar dados da galeria no card
     card.dataset.galleryIndex = '0';
     card.dataset.galleryTotal = allMedia.length;
-    
+
     // Criar container da galeria se não existir
     let galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
     if (!galleryContainer) {
         galleryContainer = document.createElement('div');
         galleryContainer.className = 'instagram-gallery-container';
         galleryContainer.style.cssText = 'width: 100%; height: 100%; position: relative; overflow: hidden;';
-        
+
         // Mover a midia atual para dentro do container
         const img = imageWrapper.querySelector('img');
         if (img) {
@@ -3177,10 +3257,10 @@ function setupInstagramGallery(card, post) {
             existingVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
             galleryContainer.appendChild(existingVideo);
         }
-        
+
         imageWrapper.appendChild(galleryContainer);
     }
-    
+
     // Criar controles de navegação
     let controls = imageWrapper.querySelector('.instagram-gallery-controls');
     if (!controls) {
@@ -3200,7 +3280,7 @@ function setupInstagramGallery(card, post) {
         `;
         imageWrapper.appendChild(controls);
     }
-    
+
     // Criar indicadores (dots)
     let dots = imageWrapper.querySelector('.instagram-gallery-dots');
     if (!dots) {
@@ -3211,7 +3291,7 @@ function setupInstagramGallery(card, post) {
         `).join('');
         imageWrapper.appendChild(dots);
     }
-    
+
     // Mostrar primeira mídia
     showGalleryMedia(card, allMedia, 0);
 }
@@ -3228,19 +3308,19 @@ function navigateGallery(cardOrNewsId, direction) {
 
     const post = instagramPostsData[newsId];
     if (!post) return;
-    
+
     // Montar array de mídias
     const allMedia = getInstagramAllMedia(post);
-    
+
     const total = allMedia.length;
     if (total === 0) return;
     let currentIndex = parseInt(card.dataset.galleryIndex || '0');
-    
+
     // Calcular novo índice
     currentIndex += direction;
     if (currentIndex < 0) currentIndex = total - 1;
     if (currentIndex >= total) currentIndex = 0;
-    
+
     card.dataset.galleryIndex = currentIndex;
     showGalleryMedia(card, allMedia, currentIndex);
 }
@@ -3249,7 +3329,7 @@ function navigateGallery(cardOrNewsId, direction) {
 function showGalleryMedia(card, allMedia, index) {
     const galleryContainer = card.querySelector('.instagram-gallery-container');
     if (!galleryContainer) return;
-    
+
     const media = allMedia[index];
     if (!media) return;
     const newsId = card.dataset.instagramId || '';
@@ -3257,10 +3337,10 @@ function showGalleryMedia(card, allMedia, index) {
     if (imageWrapper) {
         imageWrapper.classList.toggle('is-video', media.type === 'video');
     }
-    
+
     // Limpar container
     galleryContainer.innerHTML = '';
-    
+
     // Criar elemento de mídia
     if (media.type === 'video') {
         const video = document.createElement('video');
@@ -3288,7 +3368,7 @@ function showGalleryMedia(card, allMedia, index) {
         img.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
         galleryContainer.appendChild(img);
     }
-    
+
     // Atualizar dots
     const dots = card.querySelectorAll('.instagram-gallery-dot');
     dots.forEach((dot, i) => {
@@ -3298,21 +3378,21 @@ function showGalleryMedia(card, allMedia, index) {
 
 function closeInstagramCard(card) {
     if (!card) return;
-    
+
     card.classList.remove('expanded');
     expandedCardId = null;
-    
+
     // PRIMEIRO: Esconder botão fechar e elementos do expandido
     const closeBtn = card.querySelector('.instagram-card-close');
     if (closeBtn) closeBtn.style.display = 'none';
-    
+
     // GARANTIR que legenda completa está totalmente escondida - ANTES de mostrar o card escondido
     const captionFull = card.querySelector('.instagram-card-caption-full');
     if (captionFull) {
         captionFull.removeAttribute('style');
         captionFull.style.display = 'none';
     }
-    
+
     // RESTAURAR imagem de capa e remover controles da galeria
     const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
     if (imageWrapper) {
@@ -3323,7 +3403,7 @@ function closeInstagramCard(card) {
         if (dots) dots.remove();
         const galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
         if (galleryContainer) galleryContainer.remove();
-        
+
         // Restaurar imagem de capa
         const newsId = card.dataset.instagramId;
         const post = instagramPostsData[newsId];
@@ -3373,7 +3453,7 @@ function closeInstagramCard(card) {
             }
         }
     }
-    
+
     // Mostrar preview novamente - FORÇAR com line-clamp
     const titlePreview = card.querySelector('.instagram-card-title-preview');
     if (titlePreview) {
@@ -3382,10 +3462,10 @@ function closeInstagramCard(card) {
         titlePreview.style.webkitBoxOrient = 'vertical';
         titlePreview.style.overflow = 'hidden';
     }
-    
+
     const time = card.querySelector('.instagram-card-time');
     if (time) time.style.display = '';
-    
+
     // DEPOIS: Mostrar o card que estava escondido (evita reflow que mostra a legenda)
     showLastCard(card);
 
@@ -3402,15 +3482,15 @@ function hideLastCard(newsIdToKeep, expandedCard = null) {
         ? expandedCard.closest('.instagram-news-grid')
         : null;
     const allCards = (scope || document).querySelectorAll('.instagram-card');
-    
+
     // Encontrar o último card que não é o que será expandido
     for (let i = allCards.length - 1; i >= 0; i--) {
         const card = allCards[i];
         const cardId = card.dataset.instagramId;
-        
+
         // Não esconder o card que está sendo expandido
         if (cardId === newsIdToKeep) continue;
-        
+
         // Esconder este card
         card.style.display = 'none';
         card.dataset.wasHidden = 'true';
@@ -3447,27 +3527,27 @@ async function shareNews(newsId, event) {
         event.stopPropagation();
         event.preventDefault();
     }
-    
+
     // Buscar dados da notícia
     let news = instagramPostsData[newsId];
-    
+
     // Se não encontrar nos posts do Instagram, buscar no array de notícias
     if (!news && window.allNews) {
         news = window.allNews.find(n => n.id === newsId);
     }
-    
+
     if (!news) {
         console.error('Notícia não encontrada:', newsId);
         return;
     }
-    
+
     const shareUrl = `${window.location.origin}/?news=${newsId}`;
     const shareData = {
         title: news.title || 'Mirador e Região Online',
         text: news.excerpt || news.content?.substring(0, 100) || 'Confira esta notícia',
         url: shareUrl
     };
-    
+
     try {
         // Tentar usar a API de compartilhamento nativa (mobile)
         if (navigator.share) {
@@ -3499,7 +3579,7 @@ function showToast(message) {
     if (existingToast) {
         existingToast.remove();
     }
-    
+
     const toast = document.createElement('div');
     toast.className = 'toast-notification';
     toast.style.cssText = `
@@ -3517,7 +3597,7 @@ function showToast(message) {
         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     `;
     toast.textContent = message;
-    
+
     // Adicionar animação
     const style = document.createElement('style');
     style.textContent = `
@@ -3531,9 +3611,9 @@ function showToast(message) {
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(toast);
-    
+
     // Remover após 3 segundos
     setTimeout(() => {
         toast.style.animation = 'slideDown 0.3s ease forwards';
@@ -3570,7 +3650,7 @@ function updateInstagramCardStats(newsId, stats) {
     const commentsEls = document.querySelectorAll(`.instagram-comments-count[data-id="${newsId}"]`);
     const usernameEls = document.querySelectorAll(`.instagram-card-username[data-id="${newsId}"]`);
     const avatarWrapperEls = document.querySelectorAll(`.instagram-card-avatar[data-id="${newsId}"]`);
-    
+
     const current = instagramPostsData[newsId] || {};
     const currentLikes = pickBestInstagramCount(current.likes, current.instagramLikes, current.rawLikes, 0);
     const currentComments = pickBestInstagramCount(current.comments, current.instagramComments, current.rawComments, 0);
@@ -3578,8 +3658,8 @@ function updateInstagramCardStats(newsId, stats) {
     const incomingComments = stats && stats.comments != null ? parseInstagramCount(stats.comments) : 0;
     const likesSource = String(stats?.likesSource || stats?.source || '').toLowerCase();
     const commentsSource = String(stats?.commentsSource || stats?.source || '').toLowerCase();
-    const canTrustIncomingLikes = likesSource === 'instagram';
-    const canTrustIncomingComments = commentsSource === 'instagram';
+    const canTrustIncomingLikes = likesSource === 'instagram' || likesSource === 'embed';
+    const canTrustIncomingComments = commentsSource === 'instagram' || commentsSource === 'embed';
     const finalLikesValue = incomingLikes > 0
         ? (canTrustIncomingLikes ? incomingLikes : Math.max(currentLikes, incomingLikes))
         : currentLikes;
@@ -3588,10 +3668,10 @@ function updateInstagramCardStats(newsId, stats) {
         : currentComments;
 
     likesEls.forEach((el) => {
-        el.textContent = formatNumber(finalLikesValue);
+        el.textContent = finalLikesValue > 0 ? formatNumber(finalLikesValue) : '';
     });
     commentsEls.forEach((el) => {
-        el.textContent = formatNumber(finalCommentsValue);
+        el.textContent = finalCommentsValue > 0 ? formatNumber(finalCommentsValue) : '';
     });
 
     const officialProfile = getInstagramOfficialProfile();
@@ -3677,7 +3757,7 @@ function updateInstagramCardStats(newsId, stats) {
                     console.log('[App] Não foi possível persistir engagement no Firestore:', err.message || err);
                 });
             }
-        } catch (_e) {}
+        } catch (_e) { }
     }
 }
 
