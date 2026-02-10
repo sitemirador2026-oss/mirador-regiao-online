@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conteúdo institucional do portal Mirador e Região Online">
+    <title id="siteTitle">Institucional - Mirador e Região Online</title>
+    <link rel="stylesheet" href="css/styles.css?v=144">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        .header-content.header-content-brand {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70px;
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .site-brand-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .site-logo {
+            max-height: 56px;
+            max-width: 210px;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+        }
+
+        .site-logo-fallback {
+            width: 60px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--header-text, #ffffff);
+            font-family: var(--font-uol);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .institutional-main {
+            padding: 2rem 0 2.5rem;
+        }
+
+        .institutional-wrap {
+            max-width: 980px;
+            margin: 0 auto;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: clamp(1rem, 3vw, 2rem);
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+
+        .institutional-kicker {
+            color: var(--muted-foreground);
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 0.65rem;
+        }
+
+        .institutional-title {
+            font-family: var(--font-uol);
+            font-size: clamp(1.7rem, 4vw, 2.3rem);
+            line-height: 1.15;
+            color: var(--foreground);
+            margin-bottom: 1rem;
+        }
+
+        .institutional-content {
+            font-size: 1.04rem;
+            line-height: 1.8;
+            color: var(--foreground);
+        }
+
+        .institutional-content p {
+            margin-bottom: 1rem;
+        }
+
+        .footer-links a.footer-link-active {
+            color: var(--primary);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 0.2em;
+        }
+
+        @media (max-width: 768px) {
+            .institutional-main {
+                padding: 1.2rem 0 1.8rem;
+            }
+
+            .institutional-content {
+                font-size: 0.98rem;
+                line-height: 1.75;
+            }
+
+            .site-logo {
+                max-height: 42px;
+                max-width: 168px;
+            }
+        }
+    </style>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+    <header class="header">
+        <div class="header-top-strip">
+            <div class="container">
+                <div class="header-top-strip-brand">
+                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÍCIAS</span>
+                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃO ONLINE</span>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="header-content header-content-brand">
+                <a href="index.html" class="site-brand-logo" id="siteLogoLink" aria-label="Voltar para página inicial">
+                    <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
+                    <span id="siteLogoFallback" class="site-logo-fallback">MRO</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="main institutional-main">
+        <div class="container">
+            <article class="institutional-wrap">
+                <p class="institutional-kicker">Página Institucional</p>
+                <h1 class="institutional-title" id="institutionalTitle">Sobre nós</h1>
+                <div class="institutional-content" id="institutionalContent">
+                    <p>Carregando conteúdo...</p>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3 class="footer-title" id="footerSiteName">Mirador e Região Online</h3>
+                    <p class="footer-text">Notícias de Mirador, região e Brasil. Informação com credibilidade e agilidade.</p>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Categorias</h4>
+                    <ul class="footer-links">
+                        <li><a href="index.html?category=mirador">Mirador</a></li>
+                        <li><a href="index.html?category=regiao">Região</a></li>
+                        <li><a href="index.html?category=brasil">Brasil</a></li>
+                        <li><a href="index.html?category=policia">Polícia</a></li>
+                        <li><a href="index.html?category=esportes">Esportes</a></li>
+                        <li><a href="index.html?category=politica">Política</a></li>
+                        <li><a href="index.html?category=instagram" style="color: #E4405F;">Instagram</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Links</h4>
+                    <ul class="footer-links">
+                        <li><a href="institucional.html?sec=about" id="footerLinkAboutEl">Sobre nós</a></li>
+                        <li><a href="institucional.html?sec=privacy" id="footerLinkPrivacyEl">Política de Privacidade</a></li>
+                        <li><a href="institucional.html?sec=terms" id="footerLinkTermsEl">Termos de Uso</a></li>
+                    </ul>
+                    <div class="footer-contact-block">
+                        <p class="footer-contact-text" id="footerContactTextEl" style="display: none;"></p>
+                        <a class="footer-contact-phone" id="footerContactPhoneEl" href="#" style="display: none;"></a>
+                        <a class="footer-contact-email" id="footerContactEmailEl" href="mailto:miradoreregiaoonline@gmail.com">miradoreregiaoonline@gmail.com</a>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4 class="footer-heading">Siga-nos</h4>
+                    <div class="social-links">
+                        <a href="https://instagram.com/miradoreregiao" target="_blank" aria-label="Instagram" id="footerSocialInstagramEl" style="display: none;">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
+                            </svg>
+                        </a>
+                        <a href="https://facebook.com/miradoreregiao" target="_blank" aria-label="Facebook" id="footerSocialFacebookEl" style="display: none;">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                            </svg>
+                        </a>
+                        <a href="https://twitter.com" target="_blank" aria-label="Twitter" id="footerSocialTwitterEl" style="display: none;">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.84 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" />
+                            </svg>
+                        </a>
+                        <a href="https://youtube.com" target="_blank" aria-label="YouTube" id="footerSocialYoutubeEl" style="display: none;">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p id="footerCopyright">&copy; 2026 Mirador e Região Online. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/firebase-config.js?v=16"></script>
+    <script>
+        const institutionalData = {
+            siteName: 'Mirador e Região Online',
+            about: '',
+            privacy: '',
+            terms: ''
+        };
+
+        function normalizeBrandText(value) {
+            const text = String(value || '').normalize('NFC');
+            const fixWord = function (match, correctWord) {
+                if (match === match.toUpperCase()) return correctWord.toLocaleUpperCase('pt-BR');
+                if (match.charAt(0) === match.charAt(0).toUpperCase()) {
+                    return correctWord.charAt(0).toUpperCase() + correctWord.slice(1);
+                }
+                return correctWord;
+            };
+
+            return text
+                .replace(/\bregiao\b/gi, function (match) { return fixWord(match, 'região'); })
+                .replace(/\bregi\u00e3o\b/gi, function (match) { return fixWord(match, 'região'); })
+                .replace(/\bnoticias\b/gi, function (match) { return fixWord(match, 'notícias'); });
+        }
+
+        function normalizeSection(section) {
+            if (section === 'privacy' || section === 'terms') return section;
+            return 'about';
+        }
+
+        function getSelectedSection() {
+            const query = new URLSearchParams(window.location.search);
+            return normalizeSection((query.get('sec') || '').toLowerCase());
+        }
+
+        function buildInstitutionalUrl(section) {
+            const safe = normalizeSection(section);
+            return `institucional.html?sec=${encodeURIComponent(safe)}`;
+        }
+
+        function setInstitutionalFooterLinks(activeSection) {
+            const map = [
+                { id: 'footerLinkAboutEl', sec: 'about' },
+                { id: 'footerLinkPrivacyEl', sec: 'privacy' },
+                { id: 'footerLinkTermsEl', sec: 'terms' }
+            ];
+            map.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (!el) return;
+                el.href = buildInstitutionalUrl(item.sec);
+                if (item.sec === activeSection) el.classList.add('footer-link-active');
+                else el.classList.remove('footer-link-active');
+            });
+        }
+
+        function isLikelyUrlText(value) {
+            const text = String(value || '').trim();
+            if (!text) return false;
+            return /^(https?:\/\/|www\.)/i.test(text) || /^[\w-]+\.html$/i.test(text);
+        }
+
+        function isValidSocialLink(url) {
+            const clean = String(url || '').trim();
+            if (!clean) return false;
+            try {
+                const parsed = new URL(clean);
+                return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+            } catch (_error) {
+                return false;
+            }
+        }
+
+        function getPhoneHref(value) {
+            const raw = String(value || '').trim();
+            if (!raw) return '';
+            const clean = raw.replace(/[^\d+]/g, '');
+            return clean ? `tel:${clean}` : '';
+        }
+
+        function getDefaultAboutText(siteName) {
+            return `${siteName} nasceu para informar Mirador e toda a região com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
+        }
+
+        function getDefaultPrivacyText(siteName) {
+            return `${siteName} utiliza dados mínimos de navegação apenas para melhorar a experiência no portal e não comercializa dados pessoais de leitores.`;
+        }
+
+        function getDefaultTermsText(siteName) {
+            return [
+                `Os termos de uso do ${siteName} definem as regras para acesso e utilização do conteúdo publicado no portal.`,
+                '1. O conteúdo tem finalidade jornalística e informativa.',
+                '2. A reprodução total do material depende de autorização prévia da redação.',
+                '3. Comentários e interações devem respeitar a legislação vigente e a boa convivência.',
+                '4. A equipe editorial pode atualizar, corrigir ou remover publicações para preservar qualidade e veracidade.',
+                '5. O uso contínuo do portal representa concordância com estes termos.'
+            ].join('\n\n');
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatInstitutionalContent(value) {
+            const text = String(value || '').trim();
+            if (!text) return '<p>Conteúdo indisponível no momento.</p>';
+            return text
+                .split(/\n{2,}/)
+                .map(part => `<p>${escapeHtml(part).replace(/\n/g, '<br>')}</p>`)
+                .join('');
+        }
+
+        function parseCssColorToRgb(value) {
+            const color = String(value || '').trim();
+            if (!color) return null;
+            const hexMatch = color.match(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/);
+            if (hexMatch) {
+                const raw = hexMatch[1];
+                const normalized = raw.length === 3 ? raw.split('').map(ch => ch + ch).join('') : raw;
+                return {
+                    r: parseInt(normalized.slice(0, 2), 16),
+                    g: parseInt(normalized.slice(2, 4), 16),
+                    b: parseInt(normalized.slice(4, 6), 16)
+                };
+            }
+
+            const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+            if (!rgbMatch) return null;
+            const parts = rgbMatch[1].split(',').map(part => parseFloat(part.trim()));
+            if (parts.length < 3 || parts.some(part => !Number.isFinite(part))) return null;
+            return {
+                r: Math.max(0, Math.min(255, Math.round(parts[0]))),
+                g: Math.max(0, Math.min(255, Math.round(parts[1]))),
+                b: Math.max(0, Math.min(255, Math.round(parts[2])))
+            };
+        }
+
+        function darkenColorByPercent(color, percent) {
+            const rgb = parseCssColorToRgb(color);
+            if (!rgb) return '';
+            const ratio = Math.max(0, Math.min(100, Number(percent) || 0)) / 100;
+            const darken = channel => Math.max(0, Math.min(255, Math.round(channel * (1 - ratio))));
+            return `rgb(${darken(rgb.r)}, ${darken(rgb.g)}, ${darken(rgb.b)})`;
+        }
+
+        function getContrastColor(hexColor) {
+            const normalized = String(hexColor || '').trim();
+            if (!normalized) return '#64748b';
+            const hex = normalized.replace('#', '');
+            if (hex.length !== 6) return '#64748b';
+            const r = parseInt(hex.slice(0, 2), 16);
+            const g = parseInt(hex.slice(2, 4), 16);
+            const b = parseInt(hex.slice(4, 6), 16);
+            if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return '#64748b';
+            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+            return yiq >= 128 ? '#000000' : '#ffffff';
+        }
+
+        function adjustFooterTextColor(colors) {
+            const footerBg = colors.Muted || '#f1f5f9';
+            const contrastColor = getContrastColor(footerBg);
+            document.documentElement.style.setProperty('--footer-text-auto', contrastColor);
+        }
+
+        function applyColorSettings(colors) {
+            if (!colors || typeof colors !== 'object') return;
+            const root = document.documentElement;
+            const colorMap = {
+                Primary: '--primary',
+                Secondary: '--secondary',
+                Accent: '--accent',
+                Background: '--background',
+                Foreground: '--foreground',
+                Muted: '--muted',
+                MutedForeground: '--muted-foreground',
+                Header: '--header-bg',
+                HeaderText: '--header-text',
+                Card: '--card-bg',
+                FooterText: '--footer-text'
+            };
+
+            Object.entries(colorMap).forEach(([key, cssVar]) => {
+                if (colors[key]) {
+                    root.style.setProperty(cssVar, colors[key]);
+                }
+            });
+
+            adjustFooterTextColor(colors);
+        }
+
+        function updateInstitutionalContent(section, siteName) {
+            const titleEl = document.getElementById('institutionalTitle');
+            const contentEl = document.getElementById('institutionalContent');
+            const pageTitle = document.getElementById('siteTitle');
+            if (!titleEl || !contentEl || !pageTitle) return;
+
+            const config = {
+                about: 'Sobre nós',
+                privacy: 'Política de Privacidade',
+                terms: 'Termos de Uso'
+            };
+            const safeSection = normalizeSection(section);
+            const title = config[safeSection];
+            titleEl.textContent = title;
+            pageTitle.textContent = `${title} - ${siteName}`;
+            contentEl.innerHTML = formatInstitutionalContent(institutionalData[safeSection]);
+            setInstitutionalFooterLinks(safeSection);
+        }
+
+        function applyBrandSettings(settings) {
+            const root = document.documentElement;
+            const siteTitleEl = document.getElementById('siteTitle');
+            const footerSiteName = document.getElementById('footerSiteName');
+            const footerCopyright = document.getElementById('footerCopyright');
+            const topStripName = document.getElementById('siteTopStripName');
+            const topStripTagline = document.getElementById('siteTopStripTagline');
+            const logoImg = document.getElementById('siteLogoImg');
+            const logoFallback = document.getElementById('siteLogoFallback');
+
+            const siteNameRaw = settings.siteName || 'Mirador e Região Online';
+            const siteTaglineRaw = settings.siteTagline || 'Portal de Notícias';
+            const topStripNameRaw = settings.topStripTitleText || settings.topStripName || siteNameRaw;
+            const topStripSubtitleRaw = settings.topStripSubtitleText || settings.topStripTagline || siteTaglineRaw;
+
+            const siteName = normalizeBrandText(siteNameRaw);
+            const siteTagline = normalizeBrandText(siteTaglineRaw);
+            const stripName = normalizeBrandText(topStripNameRaw);
+            const stripSubtitle = normalizeBrandText(topStripSubtitleRaw);
+
+            institutionalData.siteName = siteName;
+
+            if (siteTitleEl) siteTitleEl.textContent = `Institucional - ${siteName}`;
+            if (footerSiteName) footerSiteName.textContent = siteName;
+            if (footerCopyright) footerCopyright.innerHTML = '&copy; ' + new Date().getFullYear() + ' ' + siteName + '. Todos os direitos reservados.';
+            if (topStripName) topStripName.textContent = stripName.toLocaleUpperCase('pt-BR');
+            if (topStripTagline) topStripTagline.textContent = stripSubtitle.toLocaleUpperCase('pt-BR');
+
+            const topStripBgColor = settings.topStripBgColor || '';
+            const topStripTextColor = settings.topStripTextColor || '';
+            if (topStripBgColor) {
+                root.style.setProperty('--header-top-strip-bg', topStripBgColor);
+            } else {
+                const headerColorSource = getComputedStyle(root).getPropertyValue('--header-bg').trim();
+                const stripColor = darkenColorByPercent(headerColorSource, 10);
+                if (stripColor) root.style.setProperty('--header-top-strip-bg', stripColor);
+            }
+            if (topStripTextColor) root.style.setProperty('--header-top-strip-text', topStripTextColor);
+            else root.style.removeProperty('--header-top-strip-text');
+
+            const initials = siteName
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map(part => part.charAt(0).toUpperCase())
+                .join('') || 'MRO';
+
+            if (settings.logo && logoImg) {
+                logoImg.src = settings.logo;
+                logoImg.alt = siteName;
+                logoImg.style.display = 'block';
+                if (logoFallback) logoFallback.style.display = 'none';
+            } else if (logoImg) {
+                logoImg.style.display = 'none';
+                if (logoFallback) {
+                    logoFallback.style.display = 'flex';
+                    logoFallback.textContent = initials;
+                }
+            }
+        }
+
+        function applyFooterSettings(links) {
+            const DEFAULT_VISIBLE_FOOTER_EMAIL = 'miradoreregiaoonline@gmail.com';
+            const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const siteName = institutionalData.siteName || 'Mirador e Região Online';
+            const aboutRaw = String(links?.aboutText || links?.aboutDescription || '').trim();
+            const privacyRaw = String(links?.privacyText || '').trim();
+            const termsRaw = String(links?.termsText || '').trim();
+            const contactTextRaw = String(links?.contactText || links?.contact || '').trim();
+            const contactPhoneRaw = String(links?.contactPhone || links?.phone || '').trim();
+            const contactEmailRaw = String(links?.contactEmail || links?.email || '').trim();
+
+            institutionalData.about = aboutRaw && !isLikelyUrlText(aboutRaw) ? aboutRaw : getDefaultAboutText(siteName);
+            institutionalData.privacy = privacyRaw && !isLikelyUrlText(privacyRaw) ? privacyRaw : getDefaultPrivacyText(siteName);
+            institutionalData.terms = termsRaw && !isLikelyUrlText(termsRaw) ? termsRaw : getDefaultTermsText(siteName);
+
+            const contactTextEl = document.getElementById('footerContactTextEl');
+            if (contactTextEl) {
+                if (contactTextRaw) {
+                    contactTextEl.textContent = contactTextRaw;
+                    contactTextEl.style.display = 'block';
+                } else {
+                    contactTextEl.textContent = '';
+                    contactTextEl.style.display = 'none';
+                }
+            }
+
+            const contactPhoneEl = document.getElementById('footerContactPhoneEl');
+            if (contactPhoneEl) {
+                if (contactPhoneRaw) {
+                    contactPhoneEl.textContent = contactPhoneRaw;
+                    contactPhoneEl.href = getPhoneHref(contactPhoneRaw) || '#';
+                    contactPhoneEl.style.display = 'flex';
+                } else {
+                    contactPhoneEl.style.display = 'none';
+                }
+            }
+
+            const contactEmailEl = document.getElementById('footerContactEmailEl');
+            if (contactEmailEl) {
+                const normalizedConfigEmail = String(contactEmailRaw || '').trim().replace(/\s+/g, '');
+                const fallbackEmail = String(contactEmailEl.textContent || '').trim().replace(/\s+/g, '');
+                const emailToUse = EMAIL_REGEX.test(normalizedConfigEmail)
+                    ? normalizedConfigEmail
+                    : (EMAIL_REGEX.test(fallbackEmail) ? fallbackEmail : DEFAULT_VISIBLE_FOOTER_EMAIL);
+                contactEmailEl.textContent = emailToUse;
+                contactEmailEl.href = `mailto:${emailToUse}`;
+                contactEmailEl.style.display = 'flex';
+            }
+
+            const social = links?.social || {};
+            const socialMap = [
+                { id: 'footerSocialInstagramEl', value: social.instagram },
+                { id: 'footerSocialFacebookEl', value: social.facebook },
+                { id: 'footerSocialTwitterEl', value: social.twitter },
+                { id: 'footerSocialYoutubeEl', value: social.youtube }
+            ];
+            socialMap.forEach(item => {
+                const el = document.getElementById(item.id);
+                if (!el) return;
+                if (isValidSocialLink(item.value)) {
+                    el.href = item.value.trim();
+                    el.style.display = 'flex';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+
+            try {
+                localStorage.setItem('publicInstitutionalContent', JSON.stringify({
+                    siteName,
+                    about: institutionalData.about,
+                    privacy: institutionalData.privacy,
+                    terms: institutionalData.terms,
+                    updatedAt: Date.now()
+                }));
+            } catch (_error) {}
+
+            updateInstitutionalContent(getSelectedSection(), siteName);
+        }
+
+        async function loadBrandAndFooter() {
+            let brandSettings = {};
+            let colorSettings = {};
+            let footerSettings = {};
+
+            try {
+                const brandLegacyDoc = await db.collection('settings').doc('brand').get();
+                if (brandLegacyDoc.exists) {
+                    brandSettings = { ...brandSettings, ...(brandLegacyDoc.data() || {}) };
+                }
+                const brandDoc = await db.collection('settings').doc('siteBrand').get();
+                if (brandDoc.exists) {
+                    brandSettings = { ...brandSettings, ...(brandDoc.data() || {}) };
+                }
+
+                const colorsLegacyDoc = await db.collection('settings').doc('colors').get();
+                if (colorsLegacyDoc.exists) {
+                    colorSettings = { ...colorSettings, ...(colorsLegacyDoc.data() || {}) };
+                }
+                const colorDoc = await db.collection('settings').doc('siteColors').get();
+                if (colorDoc.exists) {
+                    colorSettings = { ...colorSettings, ...(colorDoc.data() || {}) };
+                }
+                if (Object.keys(colorSettings).length > 0) {
+                    localStorage.setItem('publicSiteColors', JSON.stringify(colorSettings));
+                }
+
+                const footerDoc = await db.collection('settings').doc('footer').get();
+                if (footerDoc.exists) {
+                    footerSettings = footerDoc.data() || {};
+                    localStorage.setItem('publicFooterLinks', JSON.stringify(footerSettings));
+                }
+            } catch (_error) {}
+
+            try {
+                const cachedBrand = localStorage.getItem('publicSiteBrand');
+                if (cachedBrand) {
+                    brandSettings = { ...JSON.parse(cachedBrand), ...brandSettings };
+                }
+            } catch (_error) {}
+
+            try {
+                const cachedColors = localStorage.getItem('publicSiteColors');
+                if (cachedColors) {
+                    colorSettings = { ...JSON.parse(cachedColors), ...colorSettings };
+                }
+            } catch (_error) {}
+
+            try {
+                const cachedFooter = localStorage.getItem('publicFooterLinks');
+                if (cachedFooter && Object.keys(footerSettings).length === 0) {
+                    footerSettings = JSON.parse(cachedFooter);
+                }
+            } catch (_error) {}
+
+            applyColorSettings(colorSettings);
+            applyBrandSettings(brandSettings);
+            applyFooterSettings(footerSettings);
+
+            if (!footerSettings || Object.keys(footerSettings).length === 0) {
+                updateInstitutionalContent(getSelectedSection(), institutionalData.siteName);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadBrandAndFooter);
+    </script>
+</body>
+
+</html>
+

@@ -271,6 +271,7 @@
             height: 100vh;
             z-index: 50;
             overflow-x: hidden;
+            overscroll-behavior: contain;
         }
 
         .sidebar-header {
@@ -317,6 +318,16 @@
             flex: 1;
             padding: 1rem 0.75rem;
             overflow-y: auto;
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            overscroll-behavior-y: contain;
+            overscroll-behavior: contain;
+        }
+
+        .sidebar-nav::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none;
         }
 
         .nav-section {
@@ -3235,21 +3246,31 @@
                                     Paginas Institucionais
                                 </h3>
                                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem;">
-                                    <div class="brand-input-group">
-                                        <label for="footerLinkAbout">Sobre Nos (URL)</label>
-                                        <input type="url" id="footerLinkAbout" class="brand-input" placeholder="https://... ou sobre.html">
+                                    <div class="brand-input-group" style="grid-column: 1 / -1;">
+                                        <label for="footerAboutText">Sobre Nos (texto completo para leitura)</label>
+                                        <textarea id="footerAboutText" class="brand-input" rows="4" placeholder="Conte aqui a historia do portal, como iniciou e a missao editorial..."></textarea>
+                                    </div>
+                                    <div class="brand-input-group" style="grid-column: 1 / -1;">
+                                        <label for="footerContactText">Contato exibido no rodape (texto)</label>
+                                        <input type="text" id="footerContactText" class="brand-input" placeholder="Ex: Redacao Mirador e Regiao Online">
                                     </div>
                                     <div class="brand-input-group">
-                                        <label for="footerLinkContact">Contato (URL)</label>
-                                        <input type="url" id="footerLinkContact" class="brand-input" placeholder="https://... ou contato.html">
+                                        <label for="footerContactPhone">Telefone / WhatsApp exibido no rodape</label>
+                                        <input type="text" id="footerContactPhone" class="brand-input" placeholder="(99) 99999-9999">
                                     </div>
                                     <div class="brand-input-group">
-                                        <label for="footerLinkPrivacy">Politica de Privacidade (URL)</label>
-                                        <input type="url" id="footerLinkPrivacy" class="brand-input" placeholder="https://... ou privacidade.html">
+                                        <label for="footerContactEmail">Gmail de contato</label>
+                                        <input type="email" id="footerContactEmail" class="brand-input" placeholder="seuportal@gmail.com">
                                     </div>
-                                    <div class="brand-input-group">
-                                        <label for="footerLinkTerms">Termos de Uso (URL)</label>
-                                        <input type="url" id="footerLinkTerms" class="brand-input" placeholder="https://... ou termos.html">
+                                    <div class="brand-input-group" style="grid-column: 1 / -1;">
+                                        <label for="footerPrivacyText">Politica de Privacidade (texto para leitura)</label>
+                                        <textarea id="footerPrivacyText" class="brand-input" rows="4" placeholder="Explique como os dados dos usuarios sao tratados no portal..."></textarea>
+                                    </div>
+                                    <div class="brand-input-group" style="grid-column: 1 / -1; margin-top: -0.25rem;">
+                                        <label style="margin-bottom: 0.35rem;">Termos de Uso</label>
+                                        <p style="font-size: 0.8125rem; color: var(--text-muted); margin: 0;">
+                                            Os termos de uso sao gerados automaticamente pelo sistema e ficam disponiveis para leitura no rodape do site.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -4683,6 +4704,7 @@
         // Inicializar R2 Client
         document.addEventListener('DOMContentLoaded', function() {
             initR2Client();
+            setupSidebarScrollLock();
         });
 
         // Login
@@ -4771,6 +4793,40 @@
             const overlay = document.getElementById('sidebarOverlay');
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
+        }
+
+        function setupSidebarScrollLock() {
+            const sidebar = document.getElementById('sidebar');
+            const sidebarNav = document.querySelector('.sidebar-nav');
+            if (!sidebar || !sidebarNav || sidebar.dataset.scrollLockReady === '1') return;
+
+            sidebar.dataset.scrollLockReady = '1';
+
+            sidebar.addEventListener('wheel', function(event) {
+                const hasScrollableNav = sidebarNav.scrollHeight > sidebarNav.clientHeight + 1;
+
+                if (!hasScrollableNav) {
+                    event.preventDefault();
+                    return;
+                }
+
+                const deltaY = event.deltaY || 0;
+                const isScrollingDown = deltaY > 0;
+                const isScrollingUp = deltaY < 0;
+                const atTop = sidebarNav.scrollTop <= 0;
+                const atBottom = Math.ceil(sidebarNav.scrollTop + sidebarNav.clientHeight) >= sidebarNav.scrollHeight;
+                const targetInsideNav = sidebarNav.contains(event.target);
+
+                if (!targetInsideNav) {
+                    sidebarNav.scrollTop += deltaY;
+                    event.preventDefault();
+                    return;
+                }
+
+                if ((isScrollingUp && atTop) || (isScrollingDown && atBottom)) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
         }
 
         // Navegacao entre paginas
@@ -7864,11 +7920,21 @@
 
         // Salvar configuracoes de links do rodape
         async function saveFooterLinks() {
+            const defaultTermsText = [
+                '1. O conteudo publicado neste portal e de uso informativo e jornalistico.',
+                '2. E proibida a reproducao integral sem autorizacao previa da redacao.',
+                '3. Comentarios e contribuicoes de leitores devem respeitar a legislacao vigente.',
+                '4. O portal pode atualizar, corrigir ou remover publicacoes a qualquer momento para manter a qualidade editorial.',
+                '5. Ao navegar no site, o usuario concorda com estes termos e com as politicas aplicaveis.'
+            ].join('\n');
+
             const footerLinks = {
-                about: document.getElementById('footerLinkAbout').value || '',
-                contact: document.getElementById('footerLinkContact').value || '',
-                privacy: document.getElementById('footerLinkPrivacy').value || '',
-                terms: document.getElementById('footerLinkTerms').value || '',
+                aboutText: document.getElementById('footerAboutText').value || '',
+                contactText: document.getElementById('footerContactText').value || '',
+                contactPhone: document.getElementById('footerContactPhone').value || '',
+                contactEmail: document.getElementById('footerContactEmail').value || '',
+                privacyText: document.getElementById('footerPrivacyText').value || '',
+                termsText: defaultTermsText,
                 social: {
                     instagram: document.getElementById('footerSocialInstagram').value || '',
                     facebook: document.getElementById('footerSocialFacebook').value || '',
@@ -7881,7 +7947,7 @@
             try {
                 await db.collection('settings').doc('footer').set(footerLinks);
                 localStorage.setItem('siteFooterLinks', JSON.stringify(footerLinks));
-                showModal('Sucesso!', 'Links do rodape salvos com sucesso!', 'success');
+                showModal('Sucesso!', 'Informacoes do rodape salvas com sucesso!', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao salvar links:', error);
                 showModal('Erro!', 'Nao foi possivel salvar os links.', 'error');
@@ -7894,10 +7960,11 @@
                 const doc = await db.collection('settings').doc('footer').get();
                 if (doc.exists) {
                     const links = doc.data();
-                    document.getElementById('footerLinkAbout').value = links.about || '';
-                    document.getElementById('footerLinkContact').value = links.contact || '';
-                    document.getElementById('footerLinkPrivacy').value = links.privacy || '';
-                    document.getElementById('footerLinkTerms').value = links.terms || '';
+                    document.getElementById('footerAboutText').value = links.aboutText || '';
+                    document.getElementById('footerContactText').value = links.contactText || links.contact || '';
+                    document.getElementById('footerContactPhone').value = links.contactPhone || links.phone || '';
+                    document.getElementById('footerContactEmail').value = links.contactEmail || links.email || '';
+                    document.getElementById('footerPrivacyText').value = links.privacyText || '';
                     if (links.social) {
                         document.getElementById('footerSocialInstagram').value = links.social.instagram || '';
                         document.getElementById('footerSocialFacebook').value = links.social.facebook || '';
@@ -7913,10 +7980,11 @@
 
         // Restaurar links padrao
         function resetFooterLinks() {
-            document.getElementById('footerLinkAbout').value = 'sobre.html';
-            document.getElementById('footerLinkContact').value = 'contato.html';
-            document.getElementById('footerLinkPrivacy').value = 'privacidade.html';
-            document.getElementById('footerLinkTerms').value = 'termos.html';
+            document.getElementById('footerAboutText').value = 'O portal nasceu para informar Mirador e toda a regiao com responsabilidade, agilidade e linguagem clara para a comunidade.';
+            document.getElementById('footerContactText').value = '';
+            document.getElementById('footerContactPhone').value = '';
+            document.getElementById('footerContactEmail').value = '';
+            document.getElementById('footerPrivacyText').value = 'Utilizamos dados minimos de navegacao para melhorar a experiencia do usuario. Nao comercializamos dados pessoais.';
             document.getElementById('footerSocialInstagram').value = '';
             document.getElementById('footerSocialFacebook').value = '';
             document.getElementById('footerSocialTwitter').value = '';

@@ -1,4 +1,4 @@
-﻿// App principal do site público
+// App principal do site público
 
 console.log('[App] v2.5 - Script carregado');
 
@@ -78,7 +78,7 @@ function formatDateTime(dateString) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    return `${dateStr} • ${timeStr}`;
+    return `${dateStr}  ${timeStr}`;
 }
 
 function escapeHtml(value) {
@@ -854,7 +854,7 @@ function createNewsCard(news) {
                 <span class="news-card-category-text">${categoryLabel}</span>
                 <div class="news-card-datetime">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ${timeStr} • ${dateStr}
+                    ${timeStr}  ${dateStr}
                 </div>
                 <div class="news-card-source-row">
                     <div class="news-card-source">
@@ -907,7 +907,7 @@ function createHorizontalNewsCard(news) {
                 <div class="news-card-horizontal-footer">
                     <span class="news-card-horizontal-category">${categoryLabel}</span>
                     <div class="news-card-horizontal-subline">
-                        <span class="news-card-horizontal-time">${timeStr} • ${dateStr}</span>
+                        <span class="news-card-horizontal-time">${timeStr}  ${dateStr}</span>
                         <div class="news-card-horizontal-source-row">
                             <div class="news-card-horizontal-source">
                                 <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
@@ -1267,6 +1267,100 @@ document.addEventListener('DOMContentLoaded', async function() {
     console.log('[App] v2.5 - Pronto!');
 });
 
+const footerInstitutionalContent = {
+    siteName: 'Mirador e Região Online',
+    about: '',
+    privacy: '',
+    terms: ''
+};
+
+function normalizeFooterSection(section) {
+    if (section === 'privacy' || section === 'terms') return section;
+    return 'about';
+}
+
+function buildInstitutionalUrl(section) {
+    const safeSection = normalizeFooterSection(section);
+    return `institucional.html?sec=${encodeURIComponent(safeSection)}`;
+}
+
+function updateFooterInstitutionalLinks() {
+    const linkMap = [
+        { id: 'footerLinkAboutEl', sec: 'about' },
+        { id: 'footerLinkPrivacyEl', sec: 'privacy' },
+        { id: 'footerLinkTermsEl', sec: 'terms' }
+    ];
+
+    linkMap.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el) return;
+        el.href = buildInstitutionalUrl(item.sec);
+    });
+}
+
+function isLikelyUrlText(value) {
+    const text = String(value || '').trim();
+    if (!text) return false;
+    return /^(https?:\/\/|www\.)/i.test(text) || /^[\w-]+\.html$/i.test(text);
+}
+
+function getSiteNameForFooter() {
+    const footerSiteName = document.getElementById('footerSiteName');
+    const fallbackName = footerSiteName ? footerSiteName.textContent.trim() : '';
+    return fallbackName || 'Mirador e Região Online';
+}
+
+function getDefaultAboutText(siteName) {
+    return `${siteName} nasceu para informar Mirador e toda a região com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
+}
+
+function getDefaultPrivacyText(siteName) {
+    return `${siteName} utiliza dados mínimos de navegação apenas para melhorar a experiência no portal e não comercializa dados pessoais de leitores.`;
+}
+
+function getDefaultTermsText(siteName) {
+    return [
+        `Os termos de uso do ${siteName} definem as regras para acesso e utilização do conteúdo publicado no portal.`,
+        '1. O conteúdo tem finalidade jornalística e informativa.',
+        '2. A reprodução total do material depende de autorização prévia da redação.',
+        '3. Comentários e interações devem respeitar a legislação vigente e a boa convivência.',
+        '4. A equipe editorial pode atualizar, corrigir ou remover publicações para preservar qualidade e veracidade.',
+        '5. O uso contínuo do portal representa concordância com estes termos.'
+    ].join('\n\n');
+}
+
+function isValidSocialLink(url) {
+    const clean = String(url || '').trim();
+    if (!clean) return false;
+    try {
+        const parsed = new URL(clean);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+    } catch (_error) {
+        return false;
+    }
+}
+
+function getPhoneHref(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const clean = raw.replace(/[^\d+]/g, '');
+    return clean ? `tel:${clean}` : '';
+}
+
+function persistInstitutionalContent(siteName) {
+    const payload = {
+        siteName: String(siteName || '').trim() || 'Mirador e Região Online',
+        about: footerInstitutionalContent.about,
+        privacy: footerInstitutionalContent.privacy,
+        terms: footerInstitutionalContent.terms,
+        updatedAt: Date.now()
+    };
+
+    try {
+        localStorage.setItem('publicInstitutionalContent', JSON.stringify(payload));
+    } catch (_error) {}
+}
+
 // Carregar configurações de links do rodapé
 async function loadFooterLinks() {
     try {
@@ -1278,51 +1372,92 @@ async function loadFooterLinks() {
         } else {
             const saved = localStorage.getItem('publicFooterLinks');
             if (saved) applyFooterLinks(JSON.parse(saved));
+            else applyFooterLinks({});
         }
-    } catch (error) {
+    } catch (_error) {
         const saved = localStorage.getItem('publicFooterLinks');
         if (saved) applyFooterLinks(JSON.parse(saved));
+        else applyFooterLinks({});
     }
 }
 
 function applyFooterLinks(links) {
-    if (!links) return;
-    
-    if (links.about) {
-        const el = document.getElementById('footerLinkAboutEl');
-        if (el) el.href = links.about;
-    }
-    if (links.contact) {
-        const el = document.getElementById('footerLinkContactEl');
-        if (el) el.href = links.contact;
-    }
-    if (links.privacy) {
-        const el = document.getElementById('footerLinkPrivacyEl');
-        if (el) el.href = links.privacy;
-    }
-    if (links.terms) {
-        const el = document.getElementById('footerLinkTermsEl');
-        if (el) el.href = links.terms;
-    }
-    
-    if (links.social) {
-        if (links.social.instagram) {
-            const el = document.getElementById('footerSocialInstagramEl');
-            if (el) { el.href = links.social.instagram; el.style.display = 'flex'; }
-        }
-        if (links.social.facebook) {
-            const el = document.getElementById('footerSocialFacebookEl');
-            if (el) { el.href = links.social.facebook; el.style.display = 'flex'; }
-        }
-        if (links.social.twitter) {
-            const el = document.getElementById('footerSocialTwitterEl');
-            if (el) { el.href = links.social.twitter; el.style.display = 'flex'; }
-        }
-        if (links.social.youtube) {
-            const el = document.getElementById('footerSocialYoutubeEl');
-            if (el) { el.href = links.social.youtube; el.style.display = 'flex'; }
+    const DEFAULT_VISIBLE_FOOTER_EMAIL = 'miradoreregiaoonline@gmail.com';
+    const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const siteName = getSiteNameForFooter();
+    const aboutTextRaw = String(links?.aboutText || links?.aboutDescription || '').trim();
+    const privacyTextRaw = String(links?.privacyText || '').trim();
+    const termsTextRaw = String(links?.termsText || '').trim();
+    const contactTextRaw = String(links?.contactText || links?.contact || '').trim();
+    const contactPhoneRaw = String(links?.contactPhone || links?.phone || '').trim();
+    const contactEmailRaw = String(links?.contactEmail || links?.email || '').trim();
+
+    footerInstitutionalContent.siteName = siteName;
+    footerInstitutionalContent.about = aboutTextRaw && !isLikelyUrlText(aboutTextRaw)
+        ? aboutTextRaw
+        : getDefaultAboutText(siteName);
+    footerInstitutionalContent.privacy = privacyTextRaw && !isLikelyUrlText(privacyTextRaw)
+        ? privacyTextRaw
+        : getDefaultPrivacyText(siteName);
+    footerInstitutionalContent.terms = termsTextRaw && !isLikelyUrlText(termsTextRaw)
+        ? termsTextRaw
+        : getDefaultTermsText(siteName);
+
+    const contactTextEl = document.getElementById('footerContactTextEl');
+    if (contactTextEl) {
+        if (contactTextRaw) {
+            contactTextEl.textContent = contactTextRaw;
+            contactTextEl.style.display = 'block';
+        } else {
+            contactTextEl.textContent = '';
+            contactTextEl.style.display = 'none';
         }
     }
+
+    const contactPhoneEl = document.getElementById('footerContactPhoneEl');
+    if (contactPhoneEl) {
+        if (contactPhoneRaw) {
+            contactPhoneEl.textContent = contactPhoneRaw;
+            contactPhoneEl.href = getPhoneHref(contactPhoneRaw) || '#';
+            contactPhoneEl.style.display = 'flex';
+        } else {
+            contactPhoneEl.style.display = 'none';
+        }
+    }
+
+    const contactEmailEl = document.getElementById('footerContactEmailEl');
+    if (contactEmailEl) {
+        const normalizedConfigEmail = String(contactEmailRaw || '').trim().replace(/\s+/g, '');
+        const fallbackEmail = String(contactEmailEl.textContent || '').trim().replace(/\s+/g, '');
+        const emailToUse = EMAIL_REGEX.test(normalizedConfigEmail)
+            ? normalizedConfigEmail
+            : (EMAIL_REGEX.test(fallbackEmail) ? fallbackEmail : DEFAULT_VISIBLE_FOOTER_EMAIL);
+        contactEmailEl.textContent = emailToUse;
+        contactEmailEl.href = `mailto:${emailToUse}`;
+        contactEmailEl.style.display = 'flex';
+    }
+
+    const social = links?.social || {};
+    const socialMap = [
+        { id: 'footerSocialInstagramEl', value: social.instagram },
+        { id: 'footerSocialFacebookEl', value: social.facebook },
+        { id: 'footerSocialTwitterEl', value: social.twitter },
+        { id: 'footerSocialYoutubeEl', value: social.youtube }
+    ];
+
+    socialMap.forEach(item => {
+        const el = document.getElementById(item.id);
+        if (!el) return;
+        if (isValidSocialLink(item.value)) {
+            el.href = item.value.trim();
+            el.style.display = 'flex';
+        } else {
+            el.style.display = 'none';
+        }
+    });
+
+    updateFooterInstitutionalLinks();
+    persistInstitutionalContent(siteName);
 }
 
 // Stories functionality
@@ -2538,19 +2673,33 @@ function createInstagramCard(news) {
     const dateObj = new Date(news.date);
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    
-    // Usar likes e comments salvos com parse robusto
-    const likes = pickBestInstagramCount(news.instagramLikes, news.likes, 0);
-    const comments = pickBestInstagramCount(news.instagramComments, news.comments, 0);
+
+    const cachedPost = instagramPostsData[news.id] || {};
+
+    // Prioriza valores atualizados em runtime para não voltar a zero após re-render
+    const likes = pickBestInstagramCount(
+        cachedPost.likes,
+        cachedPost.instagramLikes,
+        news.instagramLikes,
+        news.likes,
+        0
+    );
+    const comments = pickBestInstagramCount(
+        cachedPost.comments,
+        cachedPost.instagramComments,
+        news.instagramComments,
+        news.comments,
+        0
+    );
     const instagramUrl = news.instagramUrl || news.sourceUrl || '#';
     const rawContent = news.content || news.excerpt || '';
     const content = cleanInstagramCaptionForDisplay(rawContent) || rawContent;
     const profileMeta = normalizeInstagramMeta({
         likes,
         comments,
-        username: news.instagramUsername,
-        displayName: news.instagramDisplayName,
-        profileImage: news.instagramProfileImage,
+        username: cachedPost.instagramUsername || news.instagramUsername,
+        displayName: cachedPost.instagramDisplayName || news.instagramDisplayName,
+        profileImage: cachedPost.instagramProfileImage || news.instagramProfileImage,
         description: rawContent,
         title: news.title || ''
     }, instagramUrl);
@@ -2580,8 +2729,10 @@ function createInstagramCard(news) {
     const totalMedia = allMedia.length;
     
     // Guardar dados para uso no modal
+    const existingPostData = instagramPostsData[news.id] || {};
     instagramPostsData[news.id] = {
         ...news,
+        ...existingPostData,
         likes: profileMeta.likes,
         comments: profileMeta.comments,
         instagramUrl,
@@ -3246,11 +3397,10 @@ function formatNumber(num) {
 
 // Atualizar estatísticas no card
 function updateInstagramCardStats(newsId, stats) {
-    const likesEl = document.querySelector(`.instagram-likes-count[data-id="${newsId}"]`);
-    const commentsEl = document.querySelector(`.instagram-comments-count[data-id="${newsId}"]`);
-    const usernameEl = document.querySelector(`.instagram-card-username[data-id="${newsId}"]`);
-    const avatarWrapperEl = document.querySelector(`.instagram-card-avatar[data-id="${newsId}"]`);
-    const profileImgEl = document.querySelector(`.instagram-profile-img[data-id="${newsId}"]`);
+    const likesEls = document.querySelectorAll(`.instagram-likes-count[data-id="${newsId}"]`);
+    const commentsEls = document.querySelectorAll(`.instagram-comments-count[data-id="${newsId}"]`);
+    const usernameEls = document.querySelectorAll(`.instagram-card-username[data-id="${newsId}"]`);
+    const avatarWrapperEls = document.querySelectorAll(`.instagram-card-avatar[data-id="${newsId}"]`);
     
     const current = instagramPostsData[newsId] || {};
     const currentLikes = pickBestInstagramCount(current.likes, current.instagramLikes, current.rawLikes, 0);
@@ -3260,12 +3410,12 @@ function updateInstagramCardStats(newsId, stats) {
     const finalLikesValue = incomingLikes > 0 ? incomingLikes : currentLikes;
     const finalCommentsValue = incomingComments > 0 ? incomingComments : currentComments;
 
-    if (likesEl) {
-        likesEl.textContent = formatNumber(finalLikesValue);
-    }
-    if (commentsEl) {
-        commentsEl.textContent = formatNumber(finalCommentsValue);
-    }
+    likesEls.forEach((el) => {
+        el.textContent = formatNumber(finalLikesValue);
+    });
+    commentsEls.forEach((el) => {
+        el.textContent = formatNumber(finalCommentsValue);
+    });
 
     const officialProfile = getInstagramOfficialProfile();
     const safeCurrentUsername = sanitizeInstagramHandle(current.instagramUsername || '');
@@ -3278,14 +3428,15 @@ function updateInstagramCardStats(newsId, stats) {
         ''
     );
 
-    if (usernameEl) {
-        usernameEl.textContent = finalName;
-    }
+    usernameEls.forEach((el) => {
+        el.textContent = finalName;
+    });
 
-    if (avatarWrapperEl) {
+    avatarWrapperEls.forEach((avatarWrapperEl) => {
+        const existingImg = avatarWrapperEl.querySelector('.instagram-profile-img');
         if (finalProfileImage) {
             avatarWrapperEl.classList.remove('is-empty');
-            let imgEl = profileImgEl;
+            let imgEl = existingImg;
             if (!imgEl) {
                 imgEl = document.createElement('img');
                 imgEl.className = 'instagram-profile-img';
@@ -3301,23 +3452,41 @@ function updateInstagramCardStats(newsId, stats) {
             };
         } else {
             avatarWrapperEl.classList.add('is-empty');
-            if (profileImgEl) {
-                profileImgEl.remove();
+            if (existingImg) {
+                existingImg.remove();
             }
         }
-    }
+    });
 
     if (instagramPostsData[newsId]) {
         instagramPostsData[newsId] = {
             ...instagramPostsData[newsId],
             likes: finalLikesValue,
             comments: finalCommentsValue,
+            instagramLikes: finalLikesValue,
+            instagramComments: finalCommentsValue,
             instagramUsername: finalUsername,
             instagramDisplayName: finalName,
             instagramProfileImage: finalProfileImage || '',
             instagramCollaborators: [],
             instagramHasCollaborator: false
         };
+    }
+
+    if (Array.isArray(allInstagramNews)) {
+        const index = allInstagramNews.findIndex(item => item && item.id === newsId);
+        if (index >= 0) {
+            allInstagramNews[index] = {
+                ...allInstagramNews[index],
+                likes: finalLikesValue,
+                comments: finalCommentsValue,
+                instagramLikes: finalLikesValue,
+                instagramComments: finalCommentsValue,
+                instagramUsername: finalUsername,
+                instagramDisplayName: finalName,
+                instagramProfileImage: finalProfileImage || allInstagramNews[index].instagramProfileImage || ''
+            };
+        }
     }
 }
 
