@@ -1,33 +1,149 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Notícias de Mirador, região e Brasil">
+    <meta name="description" content="Not&iacute;cias de Mirador, regi&atilde;o e Brasil">
     <meta name="robots" content="index, follow">
-    <title id="siteTitle">Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=117">
+    <title id="siteTitle">Mirador e Regi&atilde;o Online</title>
+    <link rel="stylesheet" href="css/styles.css?v=126">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         /* Logo styles for public site */
-        .site-logo {
-            max-height: 55px;
-            max-width: 280px;
-            object-fit: contain;
+        .header-content.header-content-brand {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+            align-items: center;
+            min-height: 70px;
         }
-        
-        .logo-text {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
+
+        .site-brand-text-wrap {
+            grid-column: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            line-height: 1;
+            gap: 0.1rem;
             text-decoration: none;
-            letter-spacing: -0.02em;
         }
-        
+
+        .site-brand-logo {
+            grid-column: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .site-logo {
+            max-height: 56px;
+            max-width: 210px;
+            object-fit: contain;
+            display: block;
+            filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.18));
+        }
+
+        .site-logo-fallback {
+            width: 60px;
+            height: 38px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--header-text, #ffffff);
+            font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-text {
+            font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+            font-size: 1.02rem;
+            font-weight: 600;
+            color: var(--header-text, #ffffff);
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .logo-subtitle {
+            font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+            font-size: 0.66rem;
+            font-weight: 600;
+            letter-spacing: 0.09em;
+            color: var(--header-text, #ffffff);
+            opacity: 0.84;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
         .brand-loading {
             opacity: 0.7;
+        }
+
+        @media (max-width: 1024px) {
+            .logo-text {
+                font-size: 0.94rem;
+            }
+
+            .logo-subtitle {
+                font-size: 0.6rem;
+                letter-spacing: 0.08em;
+            }
+
+            .site-logo {
+                max-height: 50px;
+                max-width: 180px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header-content.header-content-brand {
+                min-height: 64px;
+            }
+
+            .site-logo {
+                max-height: 40px;
+                max-width: 140px;
+            }
+
+            .logo-text {
+                font-size: 0.84rem;
+            }
+
+            .logo-subtitle {
+                font-size: 0.58rem;
+                letter-spacing: 0.07em;
+            }
+
+            .site-logo-fallback {
+                width: 46px;
+                height: 30px;
+                font-size: 0.67rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .logo-subtitle {
+                display: none;
+            }
+
+            .logo-text {
+                font-size: 0.9rem;
+            }
         }
     </style>
 
@@ -42,31 +158,15 @@
     <!-- Header -->
     <header class="header">
         <div class="container">
-            <div class="header-content" style="display: flex; justify-content: center; position: relative;">
-                <a href="index.html" class="logo" id="siteLogoLink" style="margin: 0 auto;">
-                    <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
-                    <span id="siteLogoText" class="logo-text">Mirador e Região Online</span>
+            <div class="header-content header-content-brand">
+                <a href="index.html" class="site-brand-text-wrap" aria-label="P&aacute;gina inicial">
+                    <span id="siteLogoText" class="logo-text">Mirador e Regi&atilde;o Online</span>
+                    <span id="siteTaglineText" class="logo-subtitle">Portal de Not&iacute;cias</span>
                 </a>
-
-
-
-                <div class="header-actions" style="position: absolute; right: 2.2rem; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 0;">
-                    <div class="header-search" style="display: flex; align-items: center; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 0.35rem 0.75rem;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="flex-shrink: 0;">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <path d="m21 21-4.3-4.3"></path>
-                        </svg>
-                        <input type="text" placeholder="Buscar..." style="background: transparent; border: none; color: white; padding: 0.35rem 0.5rem; font-size: 0.9375rem; width: 380px; outline: none;">
-                    </div>
-                    <button class="btn-menu-mobile" aria-label="Menu" style="display: none;">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <line x1="4" x2="20" y1="12" y2="12"></line>
-                            <line x1="4" x2="20" y1="6" y2="6"></line>
-                            <line x1="4" x2="20" y1="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
+                <a href="index.html" class="site-brand-logo" id="siteLogoLink" aria-label="Logo do site">
+                    <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
+                    <span id="siteLogoFallback" class="site-logo-fallback">MRO</span>
+                </a>
             </div>
             
             <!-- Side Menu Button - Fixed at far right -->
@@ -80,25 +180,16 @@
         </div>
     </header>
 
-    <!-- Search Modal -->
-    <div class="search-modal" id="searchModal">
-        <div class="search-modal-content">
-            <button class="search-close">&times;</button>
-            <input type="text" id="searchInput" placeholder="Buscar notícias..." class="search-input">
-            <div id="searchResults" class="search-results"></div>
-        </div>
-    </div>
-
     <!-- Mobile Menu -->
     <div class="mobile-menu" id="mobileMenu">
         <button class="mobile-menu-close">&times;</button>
         <nav class="mobile-nav">
             <a href="#" data-category="mirador">Mirador</a>
-            <a href="#" data-category="regiao">Região</a>
+            <a href="#" data-category="regiao">Regi&atilde;o</a>
             <a href="#" data-category="brasil">Brasil</a>
-            <a href="#" data-category="policia">Polícia</a>
+            <a href="#" data-category="policia">Pol&iacute;cia</a>
             <a href="#" data-category="esportes">Esportes</a>
-            <a href="#" data-category="politica">Política</a>
+            <a href="#" data-category="politica">Pol&iacute;tica</a>
             <a href="#" data-category="instagram" style="color: #E4405F; font-weight: 600;">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 0.25rem;">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
@@ -129,7 +220,7 @@
             </a>
             <a href="#" class="side-panel-link" data-category="regiao">
                 <span class="side-panel-dot" style="background: #ea580c;"></span>
-                Região
+                Regi&atilde;o
             </a>
             <a href="#" class="side-panel-link" data-category="brasil">
                 <span class="side-panel-dot" style="background: #2563eb;"></span>
@@ -137,7 +228,7 @@
             </a>
             <a href="#" class="side-panel-link" data-category="policia">
                 <span class="side-panel-dot" style="background: #7c3aed;"></span>
-                Polícia
+                Pol&iacute;cia
             </a>
             <a href="#" class="side-panel-link" data-category="esportes">
                 <span class="side-panel-dot" style="background: #059669;"></span>
@@ -145,11 +236,11 @@
             </a>
             <a href="#" class="side-panel-link" data-category="politica">
                 <span class="side-panel-dot" style="background: #dc2626;"></span>
-                Política
+                Pol&iacute;tica
             </a>
             <a href="#" class="side-panel-link" data-category="instagram">
                 <span class="side-panel-dot" style="background: #E4405F;"></span>
-                📷 Instagram
+                Instagram
             </a>
         </nav>
     </aside>
@@ -162,6 +253,13 @@
                 <div class="stories-scroll" id="storiesContainer">
                     <!-- Stories will be loaded here -->
                 </div>
+            </div>
+        </section>
+
+        <!-- Top Banners Section -->
+        <section class="top-banners-section" id="topBannersSection" style="display: none;">
+            <div class="container">
+                <div class="top-banners-grid" id="topBannersGrid"></div>
             </div>
         </section>
 
@@ -212,7 +310,7 @@
                         <polyline points="15 18 9 12 15 6"></polyline>
                     </svg>
                 </button>
-                <button class="story-nav story-nav-next" id="storyNext" aria-label="Próximo">
+                <button class="story-nav story-nav-next" id="storyNext" aria-label="Pr&oacute;ximo">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="9 18 15 12 9 6"></polyline>
                     </svg>
@@ -223,9 +321,16 @@
         <!-- Instagram News Section -->
         <section class="news-section instagram-news-section">
             <div class="container">
-                <div class="section-header">
+                <div class="section-header instagram-section-header">
                     <h2 class="section-title">Instagram</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('instagram'); return false;">Ver todas →</a>
+                    <div class="instagram-section-actions">
+                        <a href="#" class="view-all" onclick="filterByCategory('instagram'); return false;">Ver todas &rarr;</a>
+                        <button type="button" class="instagram-mobile-next-btn" id="instagramTopNextBtn" onclick="scrollInstagramCarousel('instagramNewsGrid', 1, event)" aria-label="Próximo post">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
                 <div id="instagramNewsGrid" class="instagram-news-grid">
                     <!-- Instagram news will be loaded here -->
@@ -237,8 +342,8 @@
         <section class="news-section">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Últimas Notícias</h2>
-                    <a href="#" class="view-all">Ver todas →</a>
+                    <h2 class="section-title">&Uacute;ltimas Not&iacute;cias</h2>
+                    <a href="#" class="view-all">Ver todas &rarr;</a>
                 </div>
                 <div id="latestNews" class="news-grid">
                     <!-- Latest news will be loaded here -->
@@ -251,7 +356,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Esportes</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('esportes'); return false;">Ver todas →</a>
+                    <a href="#" class="view-all" onclick="filterByCategory('esportes'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryEsportes" class="news-grid">
                     <!-- Sports news will be loaded here -->
@@ -262,8 +367,8 @@
         <section class="news-section category-section" data-category="politica">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Política</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('politica'); return false;">Ver todas →</a>
+                    <h2 class="section-title">Pol&iacute;tica</h2>
+                    <a href="#" class="view-all" onclick="filterByCategory('politica'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryPolitica" class="news-grid">
                     <!-- Politics news will be loaded here -->
@@ -274,8 +379,8 @@
         <section class="news-section category-section" data-category="policia">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Polícia</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('policia'); return false;">Ver todas →</a>
+                    <h2 class="section-title">Pol&iacute;cia</h2>
+                    <a href="#" class="view-all" onclick="filterByCategory('policia'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryPolicia" class="news-grid">
                     <!-- Police news will be loaded here -->
@@ -286,8 +391,8 @@
         <section class="news-section category-section" data-category="regiao">
             <div class="container">
                 <div class="section-header">
-                    <h2 class="section-title">Região</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('regiao'); return false;">Ver todas →</a>
+                    <h2 class="section-title">Regi&atilde;o</h2>
+                    <a href="#" class="view-all" onclick="filterByCategory('regiao'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryRegiao" class="news-grid">
                     <!-- Region news will be loaded here -->
@@ -299,7 +404,7 @@
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Mirador</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('mirador'); return false;">Ver todas →</a>
+                    <a href="#" class="view-all" onclick="filterByCategory('mirador'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryMirador" class="news-grid">
                     <!-- Mirador news will be loaded here -->
@@ -311,10 +416,25 @@
             <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">Brasil</h2>
-                    <a href="#" class="view-all" onclick="filterByCategory('brasil'); return false;">Ver todas →</a>
+                    <a href="#" class="view-all" onclick="filterByCategory('brasil'); return false;">Ver todas &rarr;</a>
                 </div>
                 <div id="categoryBrasil" class="news-grid">
                     <!-- Brazil news will be loaded here -->
+                </div>
+            </div>
+        </section>
+        <section class="news-section category-section" data-category="instagram" id="instagramFeedSection" style="display: none;">
+            <div class="container">
+                <div class="section-header instagram-section-header">
+                    <h2 class="section-title">Instagram</h2>
+                    <button type="button" class="instagram-mobile-next-btn" id="instagramFeedNextBtn" onclick="scrollInstagramCarousel('categoryInstagramFeed', 1, event)" aria-label="Próximo post">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div id="categoryInstagramFeed" class="instagram-news-grid instagram-news-grid-full">
+                    <!-- Instagram feed -->
                 </div>
             </div>
         </section>
@@ -325,8 +445,8 @@
         <div class="container">
             <div class="footer-grid">
                 <div class="footer-col">
-                    <h3 class="footer-title" id="footerSiteName">Mirador e Região Online</h3>
-                    <p class="footer-text">Notícias de Mirador, região e Brasil. Informação com credibilidade e
+                    <h3 class="footer-title" id="footerSiteName">Mirador e Regi&atilde;o Online</h3>
+                    <p class="footer-text">Not&iacute;cias de Mirador, regi&atilde;o e Brasil. Informa&ccedil;&atilde;o com credibilidade e
                         agilidade.</p>
                 </div>
 
@@ -334,21 +454,21 @@
                     <h4 class="footer-heading">Categorias</h4>
                     <ul class="footer-links">
                         <li><a href="#" data-category="mirador">Mirador</a></li>
-                        <li><a href="#" data-category="regiao">Região</a></li>
+                        <li><a href="#" data-category="regiao">Regi&atilde;o</a></li>
                         <li><a href="#" data-category="brasil">Brasil</a></li>
-                        <li><a href="#" data-category="policia">Polícia</a></li>
+                        <li><a href="#" data-category="policia">Pol&iacute;cia</a></li>
                         <li><a href="#" data-category="esportes">Esportes</a></li>
-                        <li><a href="#" data-category="politica">Política</a></li>
-                        <li><a href="#" data-category="instagram" style="color: #E4405F;">📷 Instagram</a></li>
+                        <li><a href="#" data-category="politica">Pol&iacute;tica</a></li>
+                        <li><a href="#" data-category="instagram" style="color: #E4405F;">Instagram</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-col">
                     <h4 class="footer-heading">Links</h4>
                     <ul class="footer-links" id="footerLinks">
-                        <li><a href="sobre.html" id="footerLinkAboutEl">Sobre nós</a></li>
+                        <li><a href="sobre.html" id="footerLinkAboutEl">Sobre n&oacute;s</a></li>
                         <li><a href="contato.html" id="footerLinkContactEl">Contato</a></li>
-                        <li><a href="privacidade.html" id="footerLinkPrivacyEl">Política de Privacidade</a></li>
+                        <li><a href="privacidade.html" id="footerLinkPrivacyEl">Pol&iacute;tica de Privacidade</a></li>
                         <li><a href="termos.html" id="footerLinkTermsEl">Termos de Uso</a></li>
                     </ul>
                 </div>
@@ -381,7 +501,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p id="footerCopyright">&copy; 2026 Mirador e Região Online. Todos os direitos reservados.</p>
+                <p id="footerCopyright">&copy; 2026 Mirador e Regi&atilde;o Online. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -391,8 +511,8 @@
         // Load and apply brand settings
         (function() {
             function applyBrandSettings(settings) {
-                const siteName = settings.siteName || 'Mirador e Região Online';
-                const siteTagline = settings.siteTagline || '';
+                const siteName = settings.siteName || 'Mirador e Regi\u00e3o Online';
+                const siteTagline = (settings.siteTagline && settings.siteTagline.trim()) || 'Portal de Not\u00edcias';
                 
                 // Update title
                 document.title = siteName;
@@ -401,17 +521,38 @@
                 
                 // Update logo in header
                 var logoImg = document.getElementById('siteLogoImg');
+                var logoFallback = document.getElementById('siteLogoFallback');
                 var logoText = document.getElementById('siteLogoText');
+                var siteTaglineText = document.getElementById('siteTaglineText');
+                var initials = String(siteName || '')
+                    .trim()
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .slice(0, 2)
+                    .map(function(part) { return part.charAt(0).toUpperCase(); })
+                    .join('') || 'MRO';
                 
                 if (settings.logo && logoImg) {
                     logoImg.src = settings.logo;
                     logoImg.alt = siteName;
                     logoImg.style.display = 'block';
-                    if (logoText) logoText.style.display = 'none';
-                } else if (logoText) {
-                    if (logoImg) logoImg.style.display = 'none';
+                    if (logoFallback) logoFallback.style.display = 'none';
+                } else if (logoImg) {
+                    logoImg.style.display = 'none';
+                    if (logoFallback) {
+                        logoFallback.style.display = 'flex';
+                        logoFallback.textContent = initials;
+                    }
+                }
+
+                if (logoText) {
                     logoText.style.display = 'block';
                     logoText.textContent = siteName;
+                }
+
+                if (siteTaglineText) {
+                    siteTaglineText.style.display = 'block';
+                    siteTaglineText.textContent = siteTagline;
                 }
                 
                 // Update footer
@@ -435,8 +576,9 @@
     </script>
     
     <script src="js/firebase-config.js?v=16"></script>
-    <script src="js/firebase-db.js?v=18"></script>
-    <script src="js/app.js?v=68"></script>
+    <script src="js/firebase-db.js?v=21"></script>
+    <script src="js/app.js?v=76"></script>
 </body>
 
 </html>
+

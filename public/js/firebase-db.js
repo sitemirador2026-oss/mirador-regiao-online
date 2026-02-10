@@ -1,8 +1,8 @@
-// Firebase Database Functions v2.8 - Card Tooltip
+﻿// Firebase Database Functions v2.8 - Card Tooltip
 
 console.log('[Firebase DB] v2.2 - Script carregado');
 
-// Flag para rastrear se as configurações foram carregadas
+// Flag para rastrear se as configuraÃ§Ãµes foram carregadas
 let settingsLoaded = {
     colors: false,
     brand: false
@@ -44,7 +44,7 @@ function startRealtimeListeners() {
                 settingsLoaded.brand = true;
                 hideLoadingWarning();
             } else {
-                console.log('[Firebase DB] Documento brand NÃO EXISTE no Firebase');
+                console.log('[Firebase DB] Documento brand NÃƒO EXISTE no Firebase');
             }
         }, (error) => {
             console.error('[Firebase DB] Erro ao carregar marca:', error.code, error.message);
@@ -56,27 +56,27 @@ function startRealtimeListeners() {
         });
 }
 
-// Mostrar erro de permissão
+// Mostrar erro de permissÃ£o
 function showPermissionError() {
-    console.error('╔════════════════════════════════════════════════════════════════╗');
-    console.error('║  ERRO DE PERMISSÃO DO FIREBASE                                 ║');
-    console.error('║                                                                ║');
-    console.error('║  O site não consegue ler as configurações do painel admin.    ║');
-    console.error('║                                                                ║');
-    console.error('║  SOLUÇÃO:                                                      ║');
-    console.error('║  1. Acesse: https://console.firebase.google.com                ║');
-    console.error('║  2. Selecione o projeto: sitemirador-fb33d                     ║');
-    console.error('║  3. Vá em "Firestore Database" > "Regras"                       ║');
-    console.error('║  4. Atualize as regras para:                                   ║');
-    console.error('║                                                                ║');
-    console.error('║  match /settings/{docId} {                                     ║');
-    console.error('║    allow read: if true;  // Leitura pública                     ║');
-    console.error('║    allow write: if request.auth != null;                        ║');
-    console.error('║  }                                                             ║');
-    console.error('║                                                                ║');
-    console.error('╚════════════════════════════════════════════════════════════════╝');
+    console.error('â•”â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•—');
+    console.error('â•‘  ERRO DE PERMISSÃƒO DO FIREBASE                                 â•‘');
+    console.error('â•‘                                                                â•‘');
+    console.error('â•‘  O site nÃ£o consegue ler as configuraÃ§Ãµes do painel admin.    â•‘');
+    console.error('â•‘                                                                â•‘');
+    console.error('â•‘  SOLUÃ‡ÃƒO:                                                      â•‘');
+    console.error('â•‘  1. Acesse: https://console.firebase.google.com                â•‘');
+    console.error('â•‘  2. Selecione o projeto: sitemirador-fb33d                     â•‘');
+    console.error('â•‘  3. VÃ¡ em "Firestore Database" > "Regras"                       â•‘');
+    console.error('â•‘  4. Atualize as regras para:                                   â•‘');
+    console.error('â•‘                                                                â•‘');
+    console.error('â•‘  match /settings/{docId} {                                     â•‘');
+    console.error('â•‘    allow read: if true;  // Leitura pÃºblica                     â•‘');
+    console.error('â•‘    allow write: if request.auth != null;                        â•‘');
+    console.error('â•‘  }                                                             â•‘');
+    console.error('â•‘                                                                â•‘');
+    console.error('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
     
-    // Mostrar aviso visual após 3 segundos se as configurações não carregarem
+    // Mostrar aviso visual apÃ³s 3 segundos se as configuraÃ§Ãµes nÃ£o carregarem
     setTimeout(() => {
         if (!settingsLoaded.colors && !settingsLoaded.brand) {
             showConfigWarning();
@@ -84,9 +84,9 @@ function showPermissionError() {
     }, 3000);
 }
 
-// Mostrar aviso visual na página
+// Mostrar aviso visual na pÃ¡gina
 function showConfigWarning() {
-    // Verificar se já existe
+    // Verificar se jÃ¡ existe
     if (document.getElementById('firebase-warning')) return;
     
     const warning = document.createElement('div');
@@ -95,12 +95,12 @@ function showConfigWarning() {
         <div style="position:fixed; top:80px; right:20px; background:#fee2e2; border:2px solid #ef4444; 
                     color:#991b1b; padding:16px; border-radius:8px; max-width:350px; z-index:9999;
                     box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); font-family:sans-serif; font-size:14px;">
-            <strong style="display:block; margin-bottom:8px; font-size:16px;">⚠️ Configurações não carregadas</strong>
+            <strong style="display:block; margin-bottom:8px; font-size:16px;">âš ï¸ ConfiguraÃ§Ãµes nÃ£o carregadas</strong>
             <p style="margin:0 0 10px 0; line-height:1.5;">
-                O site não conseguiu carregar as configurações do painel admin.
+                O site nÃ£o conseguiu carregar as configuraÃ§Ãµes do painel admin.
             </p>
             <p style="margin:0 0 10px 0; font-size:13px;">
-                <strong>Provável causa:</strong> Regras de segurança do Firebase
+                <strong>ProvÃ¡vel causa:</strong> Regras de seguranÃ§a do Firebase
             </p>
             <button onclick="this.parentElement.remove()" 
                     style="background:#ef4444; color:white; border:none; padding:8px 16px; 
@@ -110,7 +110,7 @@ function showConfigWarning() {
             <button onclick="window.open('README-FIREBASE.md','_blank')" 
                     style="background:white; color:#991b1b; border:1px solid #991b1b; 
                            padding:8px 16px; border-radius:4px; cursor:pointer; margin-left:8px;">
-                Ver solução
+                Ver soluÃ§Ã£o
             </button>
         </div>
     `;
@@ -195,7 +195,7 @@ function getContrastColor(hexColor) {
     const g = parseInt(hex.substr(2, 2), 16);
     const b = parseInt(hex.substr(4, 2), 16);
     
-    // Calcular luminosidade (fórmula YIQ)
+    // Calcular luminosidade (fÃ³rmula YIQ)
     const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
     
     // Retornar branco para fundos escuros, preto para fundos claros
@@ -216,51 +216,70 @@ function adjustFooterTextColor(colors) {
 // Aplicar marca
 function applyBrand(brand) {
     console.log('[Aplicar Marca] Iniciando...', brand);
-    
+
     if (!brand) {
         console.log('[Aplicar Marca] Nenhuma marca recebida');
         return;
     }
-    
+
     // Nome do site
     if (brand.siteName) {
         document.title = brand.siteName;
         const titleEl = document.getElementById('siteTitle');
         if (titleEl) titleEl.textContent = brand.siteName;
     }
-    
-    // Logo ou texto
+
+    // Logo, nome e subtitulo no header
     const logoImg = document.getElementById('siteLogoImg');
+    const logoFallback = document.getElementById('siteLogoFallback');
     const logoText = document.getElementById('siteLogoText');
-    
-    console.log('[Aplicar Marca] Elementos - logoImg:', !!logoImg, 'logoText:', !!logoText);
+    const siteTaglineText = document.getElementById('siteTaglineText');
+    const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias';
+    const initials = String(brand.siteName || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map(part => part.charAt(0).toUpperCase())
+        .join('') || 'MRO';
+
+    console.log('[Aplicar Marca] Elementos - logoImg:', !!logoImg, 'logoFallback:', !!logoFallback, 'logoText:', !!logoText, 'tagline:', !!siteTaglineText);
     console.log('[Aplicar Marca] Tem logo?', !!brand.logo);
-    
+
     if (brand.logo && logoImg) {
         console.log('[Aplicar Marca] Aplicando logo...');
         logoImg.src = brand.logo;
         logoImg.style.display = 'block';
         logoImg.alt = brand.siteName || 'Logo';
-        if (logoText) logoText.style.display = 'none';
-        console.log('[Aplicar Marca] ✅ Logo aplicada!');
-    } else if (brand.siteName && logoText) {
+        if (logoFallback) logoFallback.style.display = 'none';
+        console.log('[Aplicar Marca] Logo aplicada!');
+    } else if (logoImg) {
+        logoImg.style.display = 'none';
+        if (logoFallback) {
+            logoFallback.style.display = 'flex';
+            logoFallback.textContent = initials;
+        }
+    }
+
+    if (brand.siteName && logoText) {
         console.log('[Aplicar Marca] Aplicando texto:', brand.siteName);
         logoText.textContent = brand.siteName;
         logoText.style.display = 'block';
-        if (logoImg) logoImg.style.display = 'none';
-        console.log('[Aplicar Marca] ✅ Texto aplicado!');
-    } else {
-        console.log('[Aplicar Marca] ❌ Não foi possível aplicar marca');
+        console.log('[Aplicar Marca] Texto aplicado!');
     }
-    
+
+    if (siteTaglineText) {
+        siteTaglineText.textContent = siteTagline;
+        siteTaglineText.style.display = 'block';
+    }
+
     // Footer
     const footerSiteName = document.getElementById('footerSiteName');
     if (footerSiteName && brand.siteName) {
         footerSiteName.textContent = brand.siteName;
     }
 }
-
-// Funções de carregamento
+// FunÃ§Ãµes de carregamento
 async function loadColorsFromFirebase() {
     try {
         const doc = await db.collection('settings').doc('colors').get();
@@ -281,7 +300,7 @@ async function loadBrandFromFirebase() {
     }
 }
 
-// Funções principais
+// FunÃ§Ãµes principais
 async function applyFirebaseColors() {
     const colors = await loadColorsFromFirebase();
     if (colors) {
@@ -304,7 +323,7 @@ async function applyFirebaseBrand() {
     return false;
 }
 
-// Carregar notícias
+// Carregar notÃ­cias
 async function loadNewsFromFirebase() {
     try {
         const snapshot = await db.collection('news').orderBy('date', 'desc').get();
@@ -312,7 +331,7 @@ async function loadNewsFromFirebase() {
         snapshot.forEach(doc => news.push({ id: doc.id, ...doc.data() }));
         return news;
     } catch (error) {
-        console.error('[Firebase DB] Erro ao carregar notícias:', error);
+        console.error('[Firebase DB] Erro ao carregar notÃ­cias:', error);
         return [];
     }
 }
@@ -343,13 +362,17 @@ function applyLayout(layout) {
     
     const cardsPerRow = layout.cardsPerRow || 3;
     const instagramPostsVisible = Math.max(1, Math.min(12, Number(layout.instagramPostsVisible) || 4));
+    const topBanners = layout.topBanners && typeof layout.topBanners === 'object'
+        ? layout.topBanners
+        : {};
     const root = document.documentElement;
     
     root.style.setProperty('--news-columns', cardsPerRow.toString());
     root.style.setProperty('--instagram-columns', instagramPostsVisible.toString());
     window.publicSiteLayoutConfig = {
         cardsPerRow,
-        instagramPostsVisible
+        instagramPostsVisible,
+        topBanners
     };
     window.dispatchEvent(new CustomEvent('public-layout-updated', {
         detail: window.publicSiteLayoutConfig
@@ -380,7 +403,7 @@ async function applyFirebaseLayout() {
     return false;
 }
 
-// Inicialização
+// InicializaÃ§Ã£o
 document.addEventListener('DOMContentLoaded', function() {
     console.log('[Firebase DB] DOM carregado, iniciando...');
     
@@ -402,7 +425,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Exportar funções
+// Exportar funÃ§Ãµes
 window.applyFirebaseColors = applyFirebaseColors;
 window.applyFirebaseBrand = applyFirebaseBrand;
 window.loadNewsFromFirebase = loadNewsFromFirebase;
@@ -410,3 +433,4 @@ window.loadNewsById = loadNewsById;
 window.incrementViews = incrementViews;
 
 console.log('[Firebase DB] v2.2 - Pronto!');
+

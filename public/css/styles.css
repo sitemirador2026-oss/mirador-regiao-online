@@ -65,22 +65,27 @@ body {
 .header-content {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 64px;
+    justify-content: flex-start;
+    min-height: 74px;
     position: relative;
+    padding-right: 3.75rem;
 }
 
-.header-content[style*="center"] {
-    justify-content: center !important;
+.header-content-brand {
+    justify-content: flex-start;
 }
 
 .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
     font-family: Georgia, 'Times New Roman', serif;
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: var(--header-text, var(--primary));
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--header-text, #ffffff);
     text-decoration: none;
-    letter-spacing: -0.02em;
+    letter-spacing: 0.01em;
+    max-width: min(100%, 960px);
 }
 
 .nav-desktop {
@@ -280,7 +285,7 @@ body {
     border: none;
     padding: 0.5rem;
     cursor: pointer;
-    color: #fff;
+    color: var(--header-text, #ffffff);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -290,6 +295,21 @@ body {
 
 .btn-side-menu-fixed:hover {
     opacity: 0.7;
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        min-height: 66px;
+        padding-right: 3.25rem;
+    }
+
+    .logo {
+        gap: 0.6rem;
+    }
+
+    .btn-side-menu-fixed {
+        right: 0.6rem;
+    }
 }
 
 /* Side Panel Backdrop - escurece o site */
@@ -397,7 +417,7 @@ body {
 /* Main */
 .main {
     flex: 1;
-    padding: var(--spacing-xl) 0;
+    padding: 0 0 var(--spacing-xl);
 }
 
 /* Sections */
@@ -489,6 +509,90 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Top Banners */
+.top-banners-section {
+    padding: 0.2rem 0 1rem;
+    background: var(--background);
+}
+
+.top-banners-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--top-banner-columns, 2), minmax(0, 1fr));
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.top-banner-card {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    border-radius: var(--radius, 8px);
+    border: 1px solid var(--border);
+    overflow: hidden;
+    aspect-ratio: 1080 / 200;
+    background: #e5e7eb;
+}
+
+.top-banner-card.is-empty {
+    display: none;
+}
+
+.top-banner-track {
+    position: absolute;
+    inset: 0;
+}
+
+.top-banner-image,
+.top-banner-slide {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
+}
+
+.top-banner-slide {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.top-banner-card.transition-fade .top-banner-slide,
+.top-banner-card.transition-zoom .top-banner-slide {
+    opacity: 0;
+    transform: scale(1);
+    transition: opacity 0.75s ease, transform 0.75s ease;
+}
+
+.top-banner-card.transition-fade .top-banner-slide.active,
+.top-banner-card.transition-zoom .top-banner-slide.active {
+    opacity: 1;
+}
+
+.top-banner-card.transition-zoom .top-banner-slide {
+    transform: scale(1.06);
+}
+
+.top-banner-card.transition-zoom .top-banner-slide.active {
+    transform: scale(1);
+}
+
+.top-banner-card.transition-slide .top-banner-slide {
+    opacity: 1;
+    transform: translateX(calc(var(--offset, 1) * 100%));
+    transition: transform 0.7s ease;
+}
+
+@media (max-width: 980px) {
+    .top-banner-card {
+        min-width: 0;
+    }
 }
 
 /* Story Modal */
@@ -707,11 +811,6 @@ body {
     }
 }
 
-/* Header Search */
-.header-search input::placeholder {
-    color: rgba(255, 255, 255, 0.7);
-}
-
 /* Instagram News Section - Layout tipo feed do Instagram */
 .instagram-news-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
@@ -721,6 +820,38 @@ body {
 
 .instagram-news-section .section-title {
     color: #E4405F;
+}
+
+.instagram-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.instagram-section-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.instagram-mobile-next-btn {
+    display: none;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    border: 1px solid rgba(228, 64, 95, 0.35);
+    background: #fff;
+    color: #E4405F;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.instagram-mobile-next-btn:hover {
+    background: #fff1f5;
+    border-color: rgba(228, 64, 95, 0.6);
 }
 
 /* Card "Ver Todos" */
@@ -820,7 +951,7 @@ body {
     width: 100%;
     height: 100%;
     object-fit: contain;
-    background: #000;
+    background: #f0f0f0;
 }
 
 .instagram-card.expanded .instagram-card-content {
@@ -937,7 +1068,7 @@ body {
     height: 100%;
     object-fit: contain;
     display: block;
-    background: #000;
+    background: #f0f0f0;
 }
 
 /* Indicador de galeria no card fechado */
@@ -1040,7 +1171,7 @@ body {
 }
 
 .instagram-gallery-container video {
-    background: #000;
+    background: #f0f0f0;
 }
 
 /* Conteúdo do card - Compacto */
@@ -1102,6 +1233,10 @@ body {
 
 /* Corpo do card - Legenda - Escondido em cards compactos */
 .instagram-card-body {
+    display: none;
+}
+
+.instagram-card-caption-mobile {
     display: none;
 }
 
@@ -1316,6 +1451,14 @@ body {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
+}
+
+.news-mobile-item {
+    min-width: 0;
+}
+
+.news-mobile-wide {
+    grid-column: 1 / -1;
 }
 
 @media (min-width: 768px) {
@@ -1632,6 +1775,12 @@ body {
     overflow: hidden;
 }
 
+.instagram-news-grid.instagram-news-grid-full {
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    overflow: visible;
+}
+
 .news-card-horizontal-footer {
     display: flex;
     flex-direction: column;
@@ -1848,6 +1997,95 @@ body {
     
     .featured-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .news-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+    }
+
+    .news-grid .news-row-horizontal {
+        display: none;
+    }
+
+    .news-card {
+        height: auto;
+        min-height: 220px;
+    }
+
+    .news-mobile-wide {
+        grid-column: 1 / -1;
+    }
+
+    .news-mobile-wide .news-card {
+        min-height: 258px;
+    }
+
+    .news-mobile-wide .news-card-image-wrapper {
+        height: 188px;
+    }
+
+    .instagram-mobile-next-btn {
+        display: inline-flex;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel {
+        display: flex;
+        overflow-x: auto;
+        gap: 0.75rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.35rem;
+        grid-template-columns: none;
+        grid-auto-rows: auto;
+        overflow-y: hidden;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel {
+        scrollbar-width: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card {
+        flex: 0 0 100%;
+        scroll-snap-align: start;
+        width: 100%;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-image-wrapper {
+        aspect-ratio: 4 / 5;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-header,
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-actions,
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-time,
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-title-preview {
+        display: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-content {
+        padding: 0.8rem 0.85rem;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card-caption-mobile {
+        display: -webkit-box;
+        -webkit-line-clamp: 4;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        font-size: 0.86rem;
+        line-height: 1.45;
+        color: #1f2937;
+        min-height: 2.4em;
     }
 }
 

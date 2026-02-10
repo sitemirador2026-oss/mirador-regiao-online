@@ -25,7 +25,7 @@
     <script src="js/r2-client.js"></script>
 
     <style>
-        /* CSS Version: 2025-02-04-012 - CARD FIX */
+        /* CSS Version: 2026-02-09-001 - MEDIA LIBRARY */
         :root {
             /* Cores Principais - Paleta sofisticada */
             --primary: #1e40af;
@@ -1101,6 +1101,264 @@
             color: var(--text-muted);
         }
 
+        /* Media Library */
+        .media-library-section {
+            padding: 1.25rem;
+        }
+
+        .media-toolbar {
+            margin-bottom: 1rem;
+        }
+
+        .media-toolbar-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .media-search-wrap {
+            position: relative;
+            flex: 1;
+            min-width: 260px;
+        }
+
+        .media-search-wrap svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .media-search-wrap .form-input {
+            padding-left: 2.25rem;
+        }
+
+        .media-filter-select {
+            width: 210px;
+            max-width: 100%;
+            min-width: 170px;
+        }
+
+        .media-summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .media-summary-card {
+            padding: 0.85rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--bg-primary);
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .media-summary-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .media-summary-value {
+            font-size: 1.25rem;
+            line-height: 1.1;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .media-status-text {
+            margin-bottom: 1rem;
+            font-size: 0.8125rem;
+            color: var(--text-muted);
+        }
+
+        .media-grid {
+            display: grid;
+            grid-template-columns: repeat(10, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .media-card {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg-card);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            min-height: 100%;
+        }
+
+        .media-preview-wrap {
+            aspect-ratio: 16 / 9;
+            background: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .media-preview-wrap img,
+        .media-preview-wrap video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            object-fit: cover;
+        }
+
+        .media-preview-wrap video {
+            background: #000;
+        }
+
+        .media-preview-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            font-size: 0.8125rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            background:
+                linear-gradient(135deg, rgba(148, 163, 184, 0.16) 0%, rgba(148, 163, 184, 0.08) 100%);
+        }
+
+        .media-kind-badge,
+        .media-size-badge {
+            position: absolute;
+            top: 0.28rem;
+            padding: 0.18rem 0.36rem;
+            border-radius: 999px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            line-height: 1;
+            color: #fff;
+            backdrop-filter: blur(2px);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        .media-kind-badge {
+            left: 0.28rem;
+        }
+
+        .media-size-badge {
+            right: 0.28rem;
+        }
+
+        .media-card-body {
+            padding: 0.45rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.32rem;
+            flex: 1;
+        }
+
+        .media-key {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.64rem;
+            color: var(--text-secondary);
+            word-break: normal;
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-owner-line {
+            font-size: 0.66rem;
+            color: var(--text-secondary);
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-owner-chip-wrap {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.22rem;
+        }
+
+        .media-owner-chip {
+            font-size: 0.58rem;
+            padding: 0.16rem 0.32rem;
+            border-radius: var(--radius-sm);
+            background: var(--info-light);
+            color: #1e3a8a;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .media-owner-chip.locked {
+            background: var(--warning-light);
+            color: #92400e;
+        }
+
+        .media-owner-chip.orphan {
+            background: var(--danger-light);
+            color: #991b1b;
+        }
+
+        .media-meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.3rem;
+            font-size: 0.62rem;
+            color: var(--text-muted);
+        }
+
+        .media-meta-row span {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .media-actions {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.25rem;
+        }
+
+        .media-actions .btn {
+            min-height: 24px;
+            padding: 0.2rem 0.38rem;
+            font-size: 0.64rem;
+        }
+
+        .media-delete-btn[disabled] {
+            opacity: 0.55;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        @media (max-width: 1400px) {
+            .media-grid {
+                grid-template-columns: repeat(8, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .media-grid {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 992px) {
+            .media-grid {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
         /* News Table Styles - OVERRIDE data-table */
         .news-table {
             table-layout: fixed !important;
@@ -1607,6 +1865,23 @@
             .news-title {
                 max-width: 150px;
             }
+
+            .media-toolbar-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .media-search-wrap {
+                min-width: 0;
+            }
+
+            .media-filter-select {
+                width: 100%;
+            }
+
+            .media-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Mobile menu toggle */
@@ -1718,6 +1993,11 @@
             color: var(--info);
         }
 
+        .modal-icon.warning {
+            background: var(--warning-light);
+            color: #b45309;
+        }
+
         .modal-icon svg {
             width: 28px;
             height: 28px;
@@ -1735,12 +2015,18 @@
             color: var(--text-secondary);
             line-height: 1.5;
             white-space: pre-line;
+            word-break: break-word;
         }
 
         .modal-footer {
             padding: 1rem 1.5rem 1.5rem;
             display: flex;
             justify-content: center;
+        }
+
+        .modal-footer.confirm-actions {
+            justify-content: flex-end;
+            gap: 0.75rem;
         }
 
         .modal-btn {
@@ -1769,6 +2055,27 @@
 
         .modal-btn-secondary:hover {
             background: var(--border);
+        }
+
+        .modal-btn-danger {
+            background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+            color: #fff;
+        }
+
+        .modal-btn-danger:hover {
+            background: #b91c1c;
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 520px) {
+            .modal-footer.confirm-actions {
+                flex-direction: column-reverse;
+                justify-content: stretch;
+            }
+
+            .modal-footer.confirm-actions .modal-btn {
+                width: 100%;
+            }
         }
 
     </style>
@@ -2199,23 +2506,78 @@
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Midia</h1>
-                            <p class="page-subtitle">Gerencie imagens e arquivos</p>
+                            <p class="page-subtitle">Gerencie arquivos no Cloudflare R2 e seus vinculos com o site</p>
                         </div>
-                        <button class="btn btn-primary" onclick="showModal('Em breve!', 'Upload de midia em desenvolvimento.', 'info')">
+                        <button class="btn btn-secondary" onclick="loadMediaLibrary(true)">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582M20 20v-5h-.581M4.582 9A8 8 0 0118 6.34L20 9M4 15l2 2.66A8 8 0 0019.418 15"/>
                             </svg>
-                            Upload
+                            Atualizar
                         </button>
                     </div>
 
-                    <div class="content-section">
-                        <div style="padding: 3rem; text-align: center;">
-                            <svg width="64" height="64" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin: 0 auto 1rem; color: var(--text-muted);">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                            </svg>
-                            <h3 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem;">Biblioteca de Midia</h3>
-                            <p style="color: var(--text-muted);">Funcionalidade em desenvolvimento.</p>
+                    <div class="content-section media-library-section">
+                        <div class="media-toolbar">
+                            <div class="media-toolbar-controls">
+                                <div class="media-search-wrap">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m1.85-5.15a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                    </svg>
+                                    <input
+                                        type="text"
+                                        id="mediaSearchInput"
+                                        class="form-input"
+                                        placeholder="Buscar por chave, titulo, tipo..."
+                                        oninput="handleMediaFiltersChange()">
+                                </div>
+                                <select id="mediaOwnerTypeFilter" class="form-input media-filter-select" onchange="handleMediaFiltersChange()">
+                                    <option value="all">Todos os tipos</option>
+                                    <option value="noticia">Noticias</option>
+                                    <option value="post">Posts</option>
+                                    <option value="story">Stories</option>
+                                    <option value="logo">Logos</option>
+                                    <option value="perfil">Foto de perfil</option>
+                                    <option value="banner">Banners</option>
+                                    <option value="orphan">Sem vinculo</option>
+                                </select>
+                                <select id="mediaStatusFilter" class="form-input media-filter-select" onchange="handleMediaFiltersChange()">
+                                    <option value="all">Todos os status</option>
+                                    <option value="locked">Exclusao bloqueada</option>
+                                    <option value="deletable">Pode excluir</option>
+                                    <option value="linked">Com vinculo</option>
+                                    <option value="orphan">Orfas</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="media-summary-grid">
+                            <div class="media-summary-card">
+                                <span class="media-summary-label">Arquivos no R2</span>
+                                <strong class="media-summary-value" id="mediaSummaryTotal">0</strong>
+                            </div>
+                            <div class="media-summary-card">
+                                <span class="media-summary-label">Com vinculo</span>
+                                <strong class="media-summary-value" id="mediaSummaryLinked">0</strong>
+                            </div>
+                            <div class="media-summary-card">
+                                <span class="media-summary-label">Orfas</span>
+                                <strong class="media-summary-value" id="mediaSummaryOrphan">0</strong>
+                            </div>
+                            <div class="media-summary-card">
+                                <span class="media-summary-label">Exclusao bloqueada</span>
+                                <strong class="media-summary-value" id="mediaSummaryLocked">0</strong>
+                            </div>
+                        </div>
+
+                        <p id="mediaLibraryStatus" class="media-status-text">Carregue a biblioteca para listar os arquivos.</p>
+
+                        <div id="mediaLibraryList" class="media-grid">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <p>Nenhuma midia carregada.</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3247,6 +3609,270 @@
                             border-radius: var(--radius);
                             height: 80px;
                         }
+
+                        .banner-settings-grid {
+                            display: grid;
+                            grid-template-columns: repeat(2, minmax(0, 1fr));
+                            gap: 1rem;
+                        }
+
+                        .top-banner-controls {
+                            display: flex;
+                            align-items: center;
+                            justify-content: space-between;
+                            gap: 1rem;
+                            margin-bottom: 1rem;
+                            flex-wrap: wrap;
+                        }
+
+                        .layout-select {
+                            min-width: 110px;
+                            padding: 0.5rem 0.75rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            background: var(--bg-card);
+                            color: var(--text-primary);
+                            font-size: 0.875rem;
+                        }
+
+                        .top-banners-mobile-controls {
+                            gap: 0.5rem;
+                            flex-wrap: wrap;
+                        }
+
+                        .banner-slot-card {
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius-lg);
+                            background: var(--bg-primary);
+                            padding: 1rem;
+                            display: grid;
+                            gap: 0.875rem;
+                        }
+
+                        .banner-slot-head {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            gap: 0.75rem;
+                        }
+
+                        .banner-slot-title {
+                            font-size: 0.9375rem;
+                            font-weight: 700;
+                            color: var(--text-primary);
+                        }
+
+                        .banner-slot-dim {
+                            font-size: 0.75rem;
+                            color: var(--text-muted);
+                            font-weight: 500;
+                        }
+
+                        .banner-slot-head-actions {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                        }
+
+                        .banner-remove-slot-btn {
+                            border: 1px solid #fecaca;
+                            color: #dc2626;
+                            background: #fff1f2;
+                            border-radius: 999px;
+                            padding: 0.18rem 0.55rem;
+                            font-size: 0.72rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: var(--transition);
+                        }
+
+                        .banner-remove-slot-btn:hover {
+                            background: #ffe4e6;
+                            border-color: #fca5a5;
+                        }
+
+                        .banner-field {
+                            display: grid;
+                            gap: 0.4rem;
+                        }
+
+                        .banner-field label {
+                            font-size: 0.8125rem;
+                            font-weight: 600;
+                            color: var(--text-secondary);
+                        }
+
+                        .banner-field input,
+                        .banner-field select {
+                            width: 100%;
+                            padding: 0.6rem 0.75rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            background: var(--bg-card);
+                            color: var(--text-primary);
+                            font-size: 0.875rem;
+                        }
+
+                        .banner-upload-dropzone {
+                            border: 2px dashed var(--border);
+                            border-radius: var(--radius);
+                            background: var(--bg-card);
+                            padding: 0.9rem;
+                            text-align: center;
+                            cursor: pointer;
+                            transition: var(--transition);
+                        }
+
+                        .banner-upload-dropzone:hover {
+                            border-color: var(--primary-light);
+                            background: var(--info-light);
+                        }
+
+                        .banner-upload-dropzone p {
+                            margin: 0;
+                            font-size: 0.8125rem;
+                            color: var(--text-secondary);
+                        }
+
+                        .banner-upload-dropzone small {
+                            display: block;
+                            margin-top: 0.25rem;
+                            color: var(--text-muted);
+                            font-size: 0.75rem;
+                        }
+
+                        .banner-upload-status {
+                            font-size: 0.75rem;
+                            color: var(--text-muted);
+                            min-height: 1rem;
+                        }
+
+                        .banner-preview-box {
+                            width: 100%;
+                            aspect-ratio: 1080 / 200;
+                            border-radius: var(--radius);
+                            border: 1px solid var(--border);
+                            overflow: hidden;
+                            background: #e5e7eb;
+                            position: relative;
+                        }
+
+                        .banner-preview-box img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            display: block;
+                        }
+
+                        .banner-preview-empty {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 0.75rem;
+                            color: var(--text-muted);
+                            background: repeating-linear-gradient(
+                                -45deg,
+                                #eef2f7 0,
+                                #eef2f7 10px,
+                                #f7f9fc 10px,
+                                #f7f9fc 20px
+                            );
+                        }
+
+                        .banner-media-list {
+                            display: grid;
+                            gap: 0.5rem;
+                            max-height: 180px;
+                            overflow-y: auto;
+                        }
+
+                        .banner-media-item {
+                            display: grid;
+                            grid-template-columns: 40px 1fr auto;
+                            align-items: center;
+                            gap: 0.5rem;
+                            border: 1px solid var(--border);
+                            border-radius: var(--radius);
+                            background: var(--bg-card);
+                            padding: 0.4rem;
+                        }
+
+                        .banner-media-thumb {
+                            width: 40px;
+                            height: 40px;
+                            border-radius: 6px;
+                            overflow: hidden;
+                            border: 1px solid var(--border);
+                            background: #e2e8f0;
+                        }
+
+                        .banner-media-thumb img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover;
+                            display: block;
+                        }
+
+                        .banner-media-name {
+                            font-size: 0.75rem;
+                            color: var(--text-secondary);
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: ellipsis;
+                        }
+
+                        .banner-media-actions {
+                            display: flex;
+                            gap: 0.25rem;
+                        }
+
+                        .banner-mini-btn {
+                            width: 28px;
+                            height: 28px;
+                            border-radius: 6px;
+                            border: 1px solid var(--border);
+                            background: var(--bg-card);
+                            color: var(--text-secondary);
+                            cursor: pointer;
+                            display: inline-flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 0.875rem;
+                            transition: var(--transition);
+                        }
+
+                        .banner-mini-btn:hover {
+                            background: var(--bg-secondary);
+                            color: var(--text-primary);
+                        }
+
+                        .banner-mini-btn.danger {
+                            border-color: #fecaca;
+                            color: #dc2626;
+                        }
+
+                        .banner-mini-btn.danger:hover {
+                            background: #fee2e2;
+                            border-color: #fca5a5;
+                        }
+
+                        .banner-slots-empty {
+                            border: 1px dashed var(--border);
+                            border-radius: var(--radius-lg);
+                            background: var(--bg-card);
+                            color: var(--text-muted);
+                            font-size: 0.875rem;
+                            text-align: center;
+                            padding: 1.25rem;
+                        }
+
+                        @media (max-width: 1100px) {
+                            .banner-settings-grid {
+                                grid-template-columns: 1fr;
+                            }
+                        }
                     </style>
 
                     <div class="content-section" style="max-width: 600px; margin-top: 1.5rem;">
@@ -3284,6 +3910,54 @@
                                 <div class="layout-preview-card"></div>
                                 <div class="layout-preview-card"></div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="content-section" style="max-width: 1100px; margin-top: 1.5rem;">
+                        <div class="section-header">
+                            <h2 class="section-title"> Banners entre Cabecalho e Instagram</h2>
+                            <div class="section-actions">
+                                <button class="btn btn-secondary btn-sm" onclick="resetTopBannersSettings()">Limpar Banners</button>
+                                <button class="btn btn-primary btn-sm" onclick="saveTopBannersSettings()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Salvar Banners
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="padding: 1.5rem;">
+                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                                Esta area controla os banners exibidos no site entre o cabecalho e a secao Instagram (proporcao 1080 x 200).
+                            </p>
+
+                            <div class="top-banner-controls">
+                                <div class="layout-input-group" style="margin-bottom: 0;">
+                                    <label for="topBannersDisplayCount">Quantidade exibida no site:</label>
+                                    <div class="layout-input-wrapper">
+                                        <input type="number" id="topBannersDisplayCount" class="layout-input" value="2" min="1" max="20" onchange="handleTopBannersDisplayCountChange()">
+                                        <span class="layout-unit">banners</span>
+                                    </div>
+                                </div>
+                                <div class="layout-input-group" style="margin-bottom: 0;">
+                                    <label for="topBannersMobileTransition">Celular (banner unico):</label>
+                                    <div class="layout-input-wrapper top-banners-mobile-controls">
+                                        <select id="topBannersMobileTransition" class="layout-select" onchange="handleTopBannersMobileSettingsChange()">
+                                            <option value="fade">Fade</option>
+                                            <option value="slide">Slide</option>
+                                            <option value="zoom">Zoom</option>
+                                        </select>
+                                        <input type="number" id="topBannersMobileInterval" class="layout-input" value="3" min="1" max="30" onchange="handleTopBannersMobileSettingsChange()">
+                                        <span class="layout-unit">segundos</span>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="addTopBannerSlot()">
+                                    + Adicionar banner
+                                </button>
+                            </div>
+
+                            <div class="banner-settings-grid" id="topBannersSlotsContainer"></div>
                         </div>
                     </div>
                 </div>
@@ -3854,7 +4528,7 @@
                 <h3 class="modal-title" id="modalTitle">Sucesso!</h3>
                 <p class="modal-message" id="modalMessage">Operacao realizada com sucesso.</p>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer" id="modalFooter">
                 <button class="modal-btn" onclick="closeModal()">OK</button>
             </div>
         </div>
@@ -4007,6 +4681,11 @@
                 setTimeout(() => loadStorageInfo(), 100);
             }
 
+            if (pageName === 'media') {
+                // Pequeno delay para garantir que o DOM esta pronto
+                setTimeout(() => loadMediaLibrary(), 100);
+            }
+
             const pageId = pageMap[pageName];
             if (pageId) {
                 document.getElementById(pageId).style.display = 'block';
@@ -4151,6 +4830,86 @@
             return typeof value === 'string' && value.trim().startsWith('data:image/');
         }
 
+        function getConfiguredR2Hosts() {
+            const hosts = new Set(['pub-5b94009c2499437d9f5b2fb46285265a.r2.dev']);
+            try {
+                if (typeof R2_CONFIG !== 'undefined' && R2_CONFIG.publicUrl) {
+                    hosts.add(new URL(R2_CONFIG.publicUrl).hostname.toLowerCase());
+                }
+            } catch (_error) {}
+            return hosts;
+        }
+
+        function extractR2KeyFromUrl(value) {
+            if (typeof value !== 'string') return '';
+            const url = value.trim();
+            if (!url || url.startsWith('data:')) return '';
+
+            try {
+                const parsed = new URL(url);
+                const host = parsed.hostname.toLowerCase();
+                const configuredHosts = getConfiguredR2Hosts();
+                const isR2Host = host.endsWith('.r2.dev') || configuredHosts.has(host);
+                if (!isR2Host) return '';
+
+                return decodeURIComponent(parsed.pathname.replace(/^\/+/, ''));
+            } catch (_error) {
+                return '';
+            }
+        }
+
+        function collectR2KeysFromNewsData(newsData = {}) {
+            const urls = [];
+            if (newsData && typeof newsData.image === 'string') urls.push(newsData.image);
+            if (newsData && typeof newsData.instagramVideoUrl === 'string') urls.push(newsData.instagramVideoUrl);
+
+            if (newsData && Array.isArray(newsData.gallery)) {
+                newsData.gallery.forEach(item => {
+                    if (item && typeof item.url === 'string') {
+                        urls.push(item.url);
+                    }
+                });
+            }
+
+            return Array.from(new Set(urls.map(extractR2KeyFromUrl).filter(Boolean)));
+        }
+
+        function collectR2KeysFromStoryData(storyData = {}) {
+            const key = extractR2KeyFromUrl(storyData && typeof storyData.image === 'string' ? storyData.image : '');
+            return key ? [key] : [];
+        }
+
+        async function deleteR2MediaKeys(keys = []) {
+            const uniqueKeys = Array.from(new Set((keys || []).filter(Boolean)));
+            if (uniqueKeys.length === 0) return { deleted: 0, failed: [] };
+
+            if (!r2Client) initR2Client();
+
+            const results = await Promise.allSettled(
+                uniqueKeys.map(key => r2Client.deleteFile(key))
+            );
+
+            const failed = [];
+            let deleted = 0;
+
+            results.forEach((result, index) => {
+                if (result.status === 'fulfilled') {
+                    deleted += 1;
+                } else {
+                    failed.push({
+                        key: uniqueKeys[index],
+                        error: result.reason?.message || 'Falha ao remover arquivo do R2'
+                    });
+                }
+            });
+
+            if (failed.length > 0) {
+                console.warn('[Admin] Falhas ao remover midias do R2:', failed);
+            }
+
+            return { deleted, failed };
+        }
+
         // Testar conexao R2
         async function testR2Connection() {
             try {
@@ -4229,6 +4988,724 @@
                 document.getElementById('r2FileCount').innerText = '--';
                 const overageEl = document.getElementById('r2OverageRate');
                 if (overageEl) overageEl.innerText = '--';
+            }
+        }
+
+        // Biblioteca de Midia (R2 + vinculos Firestore)
+        let mediaLibraryData = [];
+        let mediaLibraryLoading = false;
+        let mediaLibraryWarnings = [];
+        let mediaLibraryLastSync = null;
+
+        function escapeHtml(value = '') {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function normalizeSearchText(value = '') {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .trim();
+        }
+
+        function parseDateInput(value) {
+            if (!value) return null;
+            if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+
+            if (typeof value === 'string' || typeof value === 'number') {
+                const parsed = new Date(value);
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            }
+
+            if (value && typeof value.toDate === 'function') {
+                try {
+                    const parsed = value.toDate();
+                    return parsed instanceof Date && !Number.isNaN(parsed.getTime()) ? parsed : null;
+                } catch (_error) {
+                    return null;
+                }
+            }
+
+            if (value && typeof value.seconds === 'number') {
+                const parsed = new Date(value.seconds * 1000);
+                return Number.isNaN(parsed.getTime()) ? null : parsed;
+            }
+
+            return null;
+        }
+
+        function formatDateOnly(value) {
+            const date = parseDateInput(value);
+            return date ? date.toLocaleDateString('pt-BR') : 'Sem data';
+        }
+
+        function formatDateTime(value) {
+            const date = parseDateInput(value);
+            if (!date) return 'Sem data';
+            return date.toLocaleString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function getInitialsFromText(value = '', fallback = '--') {
+            const words = String(value || '')
+                .trim()
+                .split(/\s+/)
+                .filter(Boolean);
+            if (!words.length) return fallback;
+
+            const first = (words[0] || '').charAt(0);
+            const second = words.length > 1
+                ? (words[1] || '').charAt(0)
+                : ((words[0] || '').charAt(1) || '');
+            const initials = `${first}${second}`.toUpperCase();
+            return initials || fallback;
+        }
+
+        function getMediaKindFromKey(key = '') {
+            const ext = String(key).split('.').pop().toLowerCase();
+            const imageExt = new Set(['jpg', 'jpeg', 'png', 'webp', 'gif', 'bmp', 'svg', 'avif']);
+            const videoExt = new Set(['mp4', 'mov', 'webm', 'm4v', 'avi', 'mkv', 'mpeg']);
+
+            if (imageExt.has(ext)) return 'image';
+            if (videoExt.has(ext)) return 'video';
+            return 'file';
+        }
+
+        function getMediaKindLabel(kind = '') {
+            const labels = {
+                image: 'Imagem',
+                video: 'Video',
+                file: 'Arquivo'
+            };
+            return labels[kind] || 'Arquivo';
+        }
+
+        function getMediaOwnerTypeLabel(type = '') {
+            const labels = {
+                noticia: 'Noticia',
+                post: 'Post',
+                story: 'Story',
+                logo: 'Logo',
+                perfil: 'Perfil',
+                banner: 'Banner'
+            };
+            return labels[type] || 'Midia';
+        }
+
+        function resolveNewsOwnerType(newsData = {}) {
+            const source = String(newsData.source || '').toLowerCase();
+            const category = String(newsData.category || '').toLowerCase();
+            if (source.includes('instagram') || category === 'instagram' || newsData.isImported === true) {
+                return 'post';
+            }
+            return 'noticia';
+        }
+
+        function buildR2PublicUrlFromKey(key = '') {
+            if (!key) return '';
+            const baseUrl = (typeof getR2PublicUrl === 'function' ? getR2PublicUrl() : DEFAULT_CLOUDFLARE_PUBLIC_URL) || DEFAULT_CLOUDFLARE_PUBLIC_URL;
+            const safeBase = String(baseUrl).replace(/\/+$/, '');
+            const safeKey = String(key)
+                .split('/')
+                .map(part => encodeURIComponent(part))
+                .join('/');
+            return `${safeBase}/${safeKey}`;
+        }
+
+        function addOwnerToIndex(ownerIndex, key, owner) {
+            if (!key) return;
+            const current = ownerIndex.get(key) || [];
+            current.push(owner);
+            ownerIndex.set(key, current);
+        }
+
+        function dedupeMediaOwners(owners = []) {
+            const seen = new Set();
+            const result = [];
+            owners.forEach(owner => {
+                const signature = [
+                    owner.ownerType || '',
+                    owner.collection || '',
+                    owner.docId || '',
+                    owner.reference || '',
+                    owner.locked ? '1' : '0'
+                ].join('|');
+
+                if (seen.has(signature)) return;
+                seen.add(signature);
+                result.push(owner);
+            });
+            return result;
+        }
+
+        function collectR2KeysFromNewsForLibrary(newsData = {}) {
+            const keys = new Set(collectR2KeysFromNewsData(newsData));
+            const profileKeys = [
+                newsData.instagramProfileImage,
+                newsData.profileImage,
+                newsData.authorImage
+            ]
+                .map(extractR2KeyFromUrl)
+                .filter(Boolean);
+
+            profileKeys.forEach(key => keys.add(key));
+            return Array.from(keys);
+        }
+
+        function collectInstagramProfileCandidates(settingsData = {}) {
+            const nested = settingsData && typeof settingsData.instagramProfile === 'object'
+                ? settingsData.instagramProfile
+                : {};
+
+            const candidates = [
+                settingsData.instagramProfileImage,
+                settingsData.instagramProfilePhoto,
+                settingsData.instagramAvatar,
+                settingsData.profileImage,
+                settingsData.profile_image,
+                settingsData.profilePhoto,
+                settingsData.profile_photo,
+                settingsData.avatar,
+                settingsData.avatarUrl,
+                settingsData.avatar_url,
+                settingsData.photo,
+                settingsData.photoUrl,
+                settingsData.image,
+                nested.profileImage,
+                nested.profilePhoto,
+                nested.avatar
+            ];
+
+            return candidates.filter(value => typeof value === 'string' && value.trim());
+        }
+
+        function collectTopBannerMediaCandidates(slotData = {}) {
+            const source = slotData && typeof slotData === 'object' ? slotData : {};
+            const mediaItems = Array.isArray(source.media)
+                ? source.media
+                : Array.isArray(source.images)
+                    ? source.images
+                    : Array.isArray(source.urls)
+                        ? source.urls
+                        : [];
+
+            const urls = mediaItems
+                .map(item => {
+                    if (typeof item === 'string') return item;
+                    if (item && typeof item.url === 'string') return item.url;
+                    return '';
+                })
+                .filter(Boolean);
+
+            if (urls.length === 0 && typeof source.url === 'string' && source.url.trim()) {
+                urls.push(source.url);
+            }
+            if (urls.length === 0 && typeof source.gifUrl === 'string' && source.gifUrl.trim()) {
+                urls.push(source.gifUrl);
+            }
+
+            return urls;
+        }
+
+        async function buildMediaLibraryOwnerIndex() {
+            const ownerIndex = new Map();
+            const warnings = [];
+
+            const addOwnerFromUrl = (url, owner) => {
+                const key = extractR2KeyFromUrl(url);
+                if (!key) return;
+                addOwnerToIndex(ownerIndex, key, owner);
+            };
+
+            const readCollectionWithFallback = async (collectionName, fallbackData = [], label = collectionName, options = {}) => {
+                const silent = Boolean(options.silent);
+                try {
+                    const snapshot = await db.collection(collectionName).get();
+                    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                } catch (error) {
+                    console.warn(`[Admin] Falha ao carregar colecao "${collectionName}" para biblioteca de midia:`, error);
+                    if (!silent) {
+                        warnings.push(`Sem permissao em ${label}.`);
+                    }
+                    return Array.isArray(fallbackData) ? fallbackData : [];
+                }
+            };
+
+            const newsDocs = await readCollectionWithFallback('news', cachedNewsData, 'noticias/posts');
+            const storiesDocs = await readCollectionWithFallback('stories', cachedStoriesData, 'stories ativos');
+            const archivedStoriesDocs = await readCollectionWithFallback('storiesArchive', [], 'stories arquivados', { silent: true });
+            const settingsDocs = await readCollectionWithFallback('settings', cachedSettingsData, 'configuracoes');
+
+            newsDocs.forEach(news => {
+                const ownerType = resolveNewsOwnerType(news);
+                const title = String(news.title || (ownerType === 'post' ? 'Post Instagram' : 'Noticia')).trim();
+                const isLocked = isPublishedNews(news);
+                const publicationDate = parseDateInput(news.date || news.createdAt || news.updatedAt);
+                const baseOwner = {
+                    ownerType,
+                    collection: 'news',
+                    docId: news.id || '',
+                    title: title || (ownerType === 'post' ? 'Post Instagram' : 'Noticia'),
+                    initials: getInitialsFromText(title || ownerType, ownerType === 'post' ? 'PT' : 'NT'),
+                    date: publicationDate,
+                    locked: isLocked,
+                    reference: `news/${news.id || ''}`
+                };
+
+                const contentKeys = collectR2KeysFromNewsData(news);
+                contentKeys.forEach(key => addOwnerToIndex(ownerIndex, key, baseOwner));
+
+                const profileKeys = collectR2KeysFromNewsForLibrary(news).filter(key => !contentKeys.includes(key));
+                if (profileKeys.length > 0) {
+                    const profileOwner = {
+                        ...baseOwner,
+                        ownerType: 'perfil',
+                        title: `Perfil Instagram - ${baseOwner.title}`,
+                        initials: getInitialsFromText(baseOwner.title, 'PF')
+                    };
+                    profileKeys.forEach(key => addOwnerToIndex(ownerIndex, key, profileOwner));
+                }
+            });
+
+            storiesDocs.forEach(story => {
+                const title = String(story.title || 'Story').trim() || 'Story';
+                const owner = {
+                    ownerType: 'story',
+                    collection: 'stories',
+                    docId: story.id || '',
+                    title,
+                    initials: getInitialsFromText(title, 'ST'),
+                    date: parseDateInput(story.date || story.createdAt || story.updatedAt),
+                    locked: true,
+                    reference: `stories/${story.id || ''}`
+                };
+
+                collectR2KeysFromStoryData(story).forEach(key => addOwnerToIndex(ownerIndex, key, owner));
+            });
+
+            archivedStoriesDocs.forEach(story => {
+                const title = String(story.title || 'Story arquivado').trim() || 'Story arquivado';
+                const owner = {
+                    ownerType: 'story',
+                    collection: 'storiesArchive',
+                    docId: story.id || '',
+                    title,
+                    initials: getInitialsFromText(title, 'ST'),
+                    date: parseDateInput(story.archivedAt || story.date || story.updatedAt),
+                    locked: false,
+                    reference: `storiesArchive/${story.id || ''}`
+                };
+
+                collectR2KeysFromStoryData(story).forEach(key => addOwnerToIndex(ownerIndex, key, owner));
+            });
+
+            const settingsById = new Map();
+            settingsDocs.forEach(docData => {
+                if (docData && docData.id) {
+                    settingsById.set(docData.id, docData);
+                }
+            });
+
+            const brandSettings = settingsById.get('brand') || {};
+            const layoutSettings = settingsById.get('layout') || {};
+            const instagramProfileSettings = settingsById.get('instagramProfile') || {};
+
+            const brandLogoKey = extractR2KeyFromUrl(brandSettings.logo || '');
+            if (brandLogoKey) {
+                addOwnerToIndex(ownerIndex, brandLogoKey, {
+                    ownerType: 'logo',
+                    collection: 'settings',
+                    docId: 'brand',
+                    title: String(brandSettings.siteName || 'Logo do site'),
+                    initials: getInitialsFromText(brandSettings.siteName || 'Logo', 'LG'),
+                    date: parseDateInput(brandSettings.updatedAt),
+                    locked: true,
+                    reference: 'settings/brand/logo'
+                });
+            }
+
+            const profileSources = [
+                { docId: 'instagramProfile', data: instagramProfileSettings },
+                { docId: 'layout', data: layoutSettings },
+                { docId: 'brand', data: brandSettings }
+            ];
+
+            profileSources.forEach(source => {
+                const profileUrls = collectInstagramProfileCandidates(source.data);
+                profileUrls.forEach(url => {
+                    addOwnerFromUrl(url, {
+                        ownerType: 'perfil',
+                        collection: 'settings',
+                        docId: source.docId,
+                        title: 'Perfil Instagram oficial',
+                        initials: 'PF',
+                        date: parseDateInput(source.data?.updatedAt || source.data?.instagramProfileUpdatedAt),
+                        locked: true,
+                        reference: `settings/${source.docId}/instagramProfile`
+                    });
+                });
+            });
+
+            const topBannerSettings = layoutSettings && typeof layoutSettings.topBanners === 'object'
+                ? layoutSettings.topBanners
+                : {};
+            const normalizedTopBanners = normalizeTopBannersSettingsAdmin(topBannerSettings);
+            const topBannerItems = Array.isArray(normalizedTopBanners.items)
+                ? normalizedTopBanners.items
+                : [];
+            const visibleCount = Math.max(
+                1,
+                Math.min(
+                    20,
+                    Number(normalizedTopBanners.displayCount) || topBannerItems.length || 2
+                )
+            );
+
+            const topBannerItemsWithMedia = topBannerItems
+                .map((slotData, slotIndex) => ({
+                    slotData,
+                    slotIndex,
+                    slotUrls: collectTopBannerMediaCandidates(slotData)
+                }))
+                .filter(entry => entry.slotUrls.length > 0);
+
+            topBannerItemsWithMedia.forEach((entry, mediaIndex) => {
+                const isVisibleOnSite = mediaIndex < visibleCount;
+                const title = isVisibleOnSite
+                    ? `Banner topo ${entry.slotIndex + 1}`
+                    : `Banner topo ${entry.slotIndex + 1} (reserva)`;
+                const initials = `B${entry.slotIndex + 1}`;
+
+                entry.slotUrls.forEach(url => {
+                    addOwnerFromUrl(url, {
+                        ownerType: 'banner',
+                        collection: 'settings',
+                        docId: 'layout',
+                        title,
+                        initials,
+                        date: parseDateInput(entry.slotData.updatedAt || topBannerSettings.updatedAt || layoutSettings.updatedAt),
+                        locked: true,
+                        reference: `settings/layout/topBanners/items/${entry.slotIndex}`
+                    });
+                });
+            });
+
+            ownerIndex.forEach((owners, key) => {
+                const deduped = dedupeMediaOwners(owners).sort((a, b) => {
+                    const lockedDiff = Number(b.locked) - Number(a.locked);
+                    if (lockedDiff !== 0) return lockedDiff;
+
+                    const dateA = parseDateInput(a.date);
+                    const dateB = parseDateInput(b.date);
+                    const timeA = dateA ? dateA.getTime() : 0;
+                    const timeB = dateB ? dateB.getTime() : 0;
+                    return timeB - timeA;
+                });
+
+                ownerIndex.set(key, deduped);
+            });
+
+            return { ownerIndex, warnings };
+        }
+
+        function updateMediaLibrarySummary() {
+            const total = mediaLibraryData.length;
+            const linked = mediaLibraryData.filter(item => item.hasOwner).length;
+            const orphan = mediaLibraryData.filter(item => !item.hasOwner).length;
+            const locked = mediaLibraryData.filter(item => item.locked).length;
+
+            const setCounter = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = Number(value).toLocaleString('pt-BR');
+            };
+
+            setCounter('mediaSummaryTotal', total);
+            setCounter('mediaSummaryLinked', linked);
+            setCounter('mediaSummaryOrphan', orphan);
+            setCounter('mediaSummaryLocked', locked);
+        }
+
+        function updateMediaLibraryStatusMessage(filteredCount = null) {
+            const statusEl = document.getElementById('mediaLibraryStatus');
+            if (!statusEl) return;
+
+            if (!mediaLibraryLastSync) {
+                statusEl.textContent = 'Carregue a biblioteca para listar os arquivos.';
+                return;
+            }
+
+            const total = mediaLibraryData.length;
+            const shown = Number.isFinite(filteredCount) ? filteredCount : total;
+            const syncTime = mediaLibraryLastSync.toLocaleTimeString('pt-BR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+
+            const messages = [
+                `Mostrando ${shown} de ${total} arquivo(s)`,
+                `Atualizado as ${syncTime}`
+            ];
+
+            if (mediaLibraryWarnings.length > 0) {
+                messages.push(`Aviso: ${mediaLibraryWarnings.join(' ')}`);
+            }
+
+            statusEl.textContent = `${messages.join(' | ')}.`;
+        }
+
+        function getFilteredMediaLibraryItems() {
+            const ownerTypeFilter = (document.getElementById('mediaOwnerTypeFilter')?.value || 'all').toLowerCase();
+            const statusFilter = (document.getElementById('mediaStatusFilter')?.value || 'all').toLowerCase();
+            const searchTerm = normalizeSearchText(document.getElementById('mediaSearchInput')?.value || '');
+
+            return mediaLibraryData.filter(item => {
+                if (ownerTypeFilter === 'orphan' && item.hasOwner) return false;
+                if (ownerTypeFilter !== 'all' && ownerTypeFilter !== 'orphan') {
+                    const hasOwnerType = item.owners.some(owner => owner.ownerType === ownerTypeFilter);
+                    if (!hasOwnerType) return false;
+                }
+
+                if (statusFilter === 'locked' && !item.locked) return false;
+                if (statusFilter === 'deletable' && item.locked) return false;
+                if (statusFilter === 'linked' && !item.hasOwner) return false;
+                if (statusFilter === 'orphan' && item.hasOwner) return false;
+
+                if (!searchTerm) return true;
+
+                const ownerText = item.owners.map(owner => [
+                    owner.title,
+                    owner.initials,
+                    getMediaOwnerTypeLabel(owner.ownerType),
+                    owner.reference
+                ].join(' ')).join(' ');
+
+                const searchable = normalizeSearchText([
+                    item.key,
+                    item.mainOwner?.title || '',
+                    ownerText
+                ].join(' '));
+
+                return searchable.includes(searchTerm);
+            });
+        }
+
+        function getMediaOwnerChipLabel(owner = {}) {
+            const ownerTypeLabel = getMediaOwnerTypeLabel(owner.ownerType);
+            const dateLabel = formatDateOnly(owner.date);
+            const initials = owner.initials || '--';
+            return `${ownerTypeLabel} ${dateLabel} ${initials}`;
+        }
+
+        function renderMediaPreview(item) {
+            const safeUrl = escapeHtml(item.url || '');
+            const kind = item.mediaKind;
+
+            if (kind === 'image') {
+                return `<img src="${safeUrl}" alt="Preview de midia" loading="lazy">`;
+            }
+
+            if (kind === 'video') {
+                return `<video src="${safeUrl}" preload="metadata" playsinline muted></video>`;
+            }
+
+            const extension = escapeHtml(String(item.key).split('.').pop().toUpperCase() || 'ARQ');
+            return `<div class="media-preview-placeholder">${extension}</div>`;
+        }
+
+        function renderMediaLibrary() {
+            const listContainer = document.getElementById('mediaLibraryList');
+            if (!listContainer) return;
+
+            const filteredItems = getFilteredMediaLibraryItems();
+            updateMediaLibraryStatusMessage(filteredItems.length);
+
+            if (!filteredItems.length) {
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <p>Nenhuma midia encontrada com os filtros atuais.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listContainer.innerHTML = filteredItems.map(item => {
+                const kindLabel = getMediaKindLabel(item.mediaKind);
+                const ownerChips = item.owners.length
+                    ? `${item.owners.slice(0, 2).map(owner => `
+                        <span class="media-owner-chip ${owner.locked ? 'locked' : ''}" title="${escapeHtml(owner.title || '')}">
+                            ${escapeHtml(getMediaOwnerChipLabel(owner))}
+                        </span>
+                    `).join('')}
+                    ${item.owners.length > 2 ? `<span class="media-owner-chip">+${item.owners.length - 2}</span>` : ''}`
+                    : '<span class="media-owner-chip orphan">Sem vinculo</span>';
+
+                const ownerDescription = item.mainOwner
+                    ? `${getMediaOwnerTypeLabel(item.mainOwner.ownerType)} - ${item.mainOwner.title || 'Sem titulo'}`
+                    : 'Sem publicacao ativa vinculada';
+
+                const deleteButton = item.locked
+                    ? `<button class="btn btn-secondary btn-sm media-delete-btn" disabled title="Midia vinculada a conteudo ativo.">Excluir bloqueado</button>`
+                    : `<button class="btn btn-primary btn-sm media-delete-btn" onclick="deleteMediaLibraryItem(decodeURIComponent('${encodeURIComponent(item.key)}'))">Excluir</button>`;
+
+                return `
+                    <article class="media-card">
+                        <div class="media-preview-wrap">
+                            ${renderMediaPreview(item)}
+                            <span class="media-kind-badge">${escapeHtml(kindLabel)}</span>
+                            <span class="media-size-badge">${escapeHtml(formatBytes(item.size || 0))}</span>
+                        </div>
+                        <div class="media-card-body">
+                            <div class="media-key" title="${escapeHtml(item.key)}">${escapeHtml(item.key)}</div>
+                            <div class="media-owner-chip-wrap">${ownerChips}</div>
+                            <div class="media-owner-line">${escapeHtml(ownerDescription)}</div>
+                            <div class="media-meta-row">
+                                <span>${escapeHtml(formatDateTime(item.lastModified))}</span>
+                                <span>${item.locked ? 'Protegido' : 'Liberado'}</span>
+                            </div>
+                            <div class="media-actions">
+                                ${deleteButton}
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function handleMediaFiltersChange() {
+            renderMediaLibrary();
+        }
+
+        async function loadMediaLibrary(forceReload = false) {
+            const listContainer = document.getElementById('mediaLibraryList');
+            const statusEl = document.getElementById('mediaLibraryStatus');
+            if (!listContainer) return;
+
+            const hasFreshCache = !forceReload &&
+                mediaLibraryData.length > 0 &&
+                mediaLibraryLastSync &&
+                (Date.now() - mediaLibraryLastSync.getTime()) < 15000;
+
+            if (hasFreshCache) {
+                renderMediaLibrary();
+                return;
+            }
+
+            if (mediaLibraryLoading) return;
+            mediaLibraryLoading = true;
+
+            if (statusEl) statusEl.textContent = 'Carregando midias do R2...';
+            listContainer.innerHTML = `
+                <div class="empty-state">
+                    <p>Carregando biblioteca de midia...</p>
+                </div>
+            `;
+
+            try {
+                if (!r2Client) initR2Client();
+
+                const [filesResponse, ownerInfo] = await Promise.all([
+                    r2Client.listFiles(),
+                    buildMediaLibraryOwnerIndex()
+                ]);
+
+                const files = Array.isArray(filesResponse?.files) ? filesResponse.files : [];
+                const ownerIndex = ownerInfo?.ownerIndex instanceof Map ? ownerInfo.ownerIndex : new Map();
+
+                mediaLibraryWarnings = Array.isArray(ownerInfo?.warnings) ? ownerInfo.warnings : [];
+                mediaLibraryLastSync = new Date();
+
+                mediaLibraryData = files
+                    .map(file => {
+                        const key = String(file.key || '').trim();
+                        const owners = ownerIndex.get(key) || [];
+                        const locked = owners.some(owner => owner.locked);
+                        const mainOwner = owners.find(owner => owner.locked) || owners[0] || null;
+                        const fileUrl = typeof file.url === 'string' && file.url.trim()
+                            ? file.url
+                            : buildR2PublicUrlFromKey(key);
+
+                        return {
+                            key,
+                            url: fileUrl,
+                            size: Number(file.size) || 0,
+                            lastModified: parseDateInput(file.lastModified),
+                            mediaKind: getMediaKindFromKey(key),
+                            owners,
+                            mainOwner,
+                            hasOwner: owners.length > 0,
+                            locked
+                        };
+                    })
+                    .sort((a, b) => {
+                        const timeA = a.lastModified ? a.lastModified.getTime() : 0;
+                        const timeB = b.lastModified ? b.lastModified.getTime() : 0;
+                        if (timeA !== timeB) return timeB - timeA;
+                        return a.key.localeCompare(b.key);
+                    });
+
+                updateMediaLibrarySummary();
+                renderMediaLibrary();
+            } catch (error) {
+                console.error('[Admin] Erro ao carregar biblioteca de midia:', error);
+                if (statusEl) {
+                    statusEl.textContent = 'Erro ao carregar midias do R2.';
+                }
+                listContainer.innerHTML = `
+                    <div class="empty-state">
+                        <p>Nao foi possivel carregar a biblioteca de midia.</p>
+                    </div>
+                `;
+            } finally {
+                mediaLibraryLoading = false;
+            }
+        }
+
+        async function deleteMediaLibraryItem(key) {
+            const item = mediaLibraryData.find(media => media.key === key);
+            if (!item) {
+                showModal('Atencao', 'Arquivo nao encontrado na lista atual.', 'info');
+                return;
+            }
+
+            if (item.locked) {
+                showModal('Exclusao bloqueada', 'Esta midia esta vinculada a conteudo ativo no site e nao pode ser removida.', 'info');
+                return;
+            }
+
+            const confirmed = await showConfirmModal({
+                title: 'Excluir midia do R2?',
+                message: `Esta acao e permanente e nao pode ser desfeita.\n\nArquivo:\n${key}`,
+                confirmText: 'Sim, excluir',
+                cancelText: 'Cancelar'
+            });
+            if (!confirmed) return;
+
+            try {
+                if (!r2Client) initR2Client();
+                await r2Client.deleteFile(key);
+
+                mediaLibraryData = mediaLibraryData.filter(media => media.key !== key);
+                updateMediaLibrarySummary();
+                renderMediaLibrary();
+                loadR2StorageInfo();
+                showModal('Sucesso!', 'Midia excluida do Cloudflare R2.', 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao excluir midia manualmente:', error);
+                showModal('Erro!', 'Nao foi possivel excluir a midia selecionada.', 'error');
             }
         }
 
@@ -4691,8 +6168,22 @@
             if (!confirm('Tem certeza que deseja excluir esta noticia?')) return;
 
             try {
-                await db.collection('news').doc(id).delete();
-                showModal('Sucesso!', 'Noticia excluida com sucesso!', 'success');
+                const docRef = db.collection('news').doc(id);
+                const docSnapshot = await docRef.get();
+                const r2Keys = docSnapshot.exists ? collectR2KeysFromNewsData(docSnapshot.data() || {}) : [];
+
+                await docRef.delete();
+                const cleanup = await deleteR2MediaKeys(r2Keys);
+
+                if (cleanup.failed.length > 0) {
+                    showModal(
+                        'Sucesso com aviso',
+                        `Noticia excluida, mas ${cleanup.failed.length} arquivo(s) de midia nao foram removidos do R2.`,
+                        'info'
+                    );
+                } else {
+                    showModal('Sucesso!', 'Noticia excluida com sucesso!', 'success');
+                }
                 loadDashboard();
                 loadNewsPage();
             } catch (error) {
@@ -4838,16 +6329,28 @@
             const instagramPostsVisible = parseInt(document.getElementById('instagramPostsVisible')?.value) || 4;
             const validCards = Math.max(1, Math.min(6, cardsPerRow));
             const validInstagramPosts = Math.max(1, Math.min(12, instagramPostsVisible));
+            let savedLayout = {};
+            try {
+                savedLayout = JSON.parse(localStorage.getItem('siteLayout') || '{}');
+            } catch (_e) {
+                savedLayout = {};
+            }
             
             const layoutConfig = {
+                ...savedLayout,
                 cardsPerRow: validCards,
                 instagramPostsVisible: validInstagramPosts,
                 updatedAt: new Date().toISOString()
             };
             
             try {
-                await db.collection('settings').doc('layout').set(layoutConfig, { merge: true });
+                await db.collection('settings').doc('layout').set({
+                    cardsPerRow: validCards,
+                    instagramPostsVisible: validInstagramPosts,
+                    updatedAt: layoutConfig.updatedAt
+                }, { merge: true });
                 localStorage.setItem('siteLayout', JSON.stringify(layoutConfig));
+                localStorage.setItem('publicSiteLayout', JSON.stringify(layoutConfig));
                 showModal('Sucesso!', 'Layout salvo com sucesso!', 'success');
             } catch (error) {
                 console.error('[Admin] Erro ao salvar layout:', error);
@@ -4856,11 +6359,13 @@
         }
 
         async function loadLayout() {
+            let layoutData = {};
             try {
                 const doc = await db.collection('settings').doc('layout').get();
                 if (doc.exists) {
-                    const cardsPerRow = doc.data().cardsPerRow || 3;
-                    const instagramPostsVisible = doc.data().instagramPostsVisible || 4;
+                    layoutData = doc.data() || {};
+                    const cardsPerRow = layoutData.cardsPerRow || 3;
+                    const instagramPostsVisible = layoutData.instagramPostsVisible || 4;
                     document.getElementById('cardsPerRow').value = cardsPerRow;
                     const instagramInput = document.getElementById('instagramPostsVisible');
                     if (instagramInput) instagramInput.value = instagramPostsVisible;
@@ -4871,7 +6376,655 @@
                 }
             } catch (error) {
                 console.log('[Admin] Erro ao carregar layout:', error);
+                try {
+                    layoutData = JSON.parse(localStorage.getItem('siteLayout') || '{}');
+                } catch (_e) {
+                    layoutData = {};
+                }
             }
+            applyTopBannersFromLayoutData(layoutData);
+        }
+
+        // ========================================
+        // TOP BANNERS (SITE PUBLICO)
+        // ========================================
+
+        const TOP_BANNER_TRANSITIONS_ADMIN = ['fade', 'slide', 'zoom'];
+        const TOP_BANNERS_DEFAULT_DISPLAY_ADMIN = 2;
+        const TOP_BANNERS_MAX_DISPLAY_ADMIN = 20;
+        const TOP_BANNERS_MOBILE_DEFAULTS_ADMIN = {
+            transition: 'fade',
+            intervalSeconds: 3
+        };
+        const TOP_BANNER_DEFAULT_SLOT_ADMIN = {
+            mode: 'photos',
+            transition: 'fade',
+            intervalSeconds: 5,
+            media: []
+        };
+        let topBannersSettingsAdmin = normalizeTopBannersSettingsAdmin({});
+
+        function normalizeTopBannerMediaAdmin(entry) {
+            if (typeof entry === 'string') {
+                const url = entry.trim();
+                return url ? { url, key: '', name: '', type: '' } : null;
+            }
+            if (!entry || typeof entry !== 'object') return null;
+            const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+            if (!url) return null;
+            return {
+                url,
+                key: typeof entry.key === 'string' ? entry.key : '',
+                name: typeof entry.name === 'string' ? entry.name : '',
+                type: typeof entry.type === 'string' ? entry.type : ''
+            };
+        }
+
+        function normalizeTopBannerSlotAdmin(slot = {}) {
+            const rawMode = String(slot.mode || TOP_BANNER_DEFAULT_SLOT_ADMIN.mode).toLowerCase();
+            const mode = rawMode === 'gif' ? 'gif' : 'photos';
+            const rawTransition = String(slot.transition || TOP_BANNER_DEFAULT_SLOT_ADMIN.transition).toLowerCase();
+            const transition = TOP_BANNER_TRANSITIONS_ADMIN.includes(rawTransition)
+                ? rawTransition
+                : TOP_BANNER_DEFAULT_SLOT_ADMIN.transition;
+
+            const rawInterval = Number(slot.intervalSeconds);
+            const intervalSeconds = Math.max(
+                1,
+                Math.min(30, Number.isFinite(rawInterval) ? rawInterval : TOP_BANNER_DEFAULT_SLOT_ADMIN.intervalSeconds)
+            );
+
+            const sourceMedia = Array.isArray(slot.media)
+                ? slot.media
+                : Array.isArray(slot.images)
+                    ? slot.images
+                    : Array.isArray(slot.urls)
+                        ? slot.urls
+                        : [];
+
+            const media = sourceMedia
+                .map(normalizeTopBannerMediaAdmin)
+                .filter(Boolean);
+
+            if (media.length === 0) {
+                const fallback = normalizeTopBannerMediaAdmin(slot.url || slot.gifUrl || '');
+                if (fallback) media.push(fallback);
+            }
+
+            return {
+                mode,
+                transition,
+                intervalSeconds,
+                media: mode === 'gif' ? media.slice(0, 1) : media
+            };
+        }
+
+        function normalizeTopBannersMobileSettingsAdmin(settings = {}) {
+            const source = settings && typeof settings === 'object' ? settings : {};
+            const rawTransition = String(source.transition || TOP_BANNERS_MOBILE_DEFAULTS_ADMIN.transition).toLowerCase();
+            const transition = TOP_BANNER_TRANSITIONS_ADMIN.includes(rawTransition)
+                ? rawTransition
+                : TOP_BANNERS_MOBILE_DEFAULTS_ADMIN.transition;
+
+            const rawInterval = Number(source.intervalSeconds);
+            const intervalSeconds = Math.max(
+                1,
+                Math.min(30, Number.isFinite(rawInterval) ? rawInterval : TOP_BANNERS_MOBILE_DEFAULTS_ADMIN.intervalSeconds)
+            );
+
+            return {
+                transition,
+                intervalSeconds
+            };
+        }
+
+        function normalizeTopBannersSettingsAdmin(settings = {}) {
+            const source = settings && typeof settings === 'object' ? settings : {};
+            const slotsArray = Array.isArray(source.slots) ? source.slots : [];
+            const legacyItems = [
+                source.slot1 || source.banner1 || source.left || null,
+                source.slot2 || source.banner2 || source.right || null
+            ].filter(Boolean);
+
+            const sourceItems = Array.isArray(source.items)
+                ? source.items
+                : slotsArray.length > 0
+                    ? slotsArray
+                    : legacyItems;
+
+            const items = sourceItems
+                .map(normalizeTopBannerSlotAdmin)
+                .filter(item => item && typeof item === 'object')
+                .slice(0, TOP_BANNERS_MAX_DISPLAY_ADMIN);
+
+            const rawDisplayCount = Number(source.displayCount);
+            const fallbackDisplayCount = items.length > 0 ? items.length : TOP_BANNERS_DEFAULT_DISPLAY_ADMIN;
+            const displayCount = Math.max(
+                1,
+                Math.min(
+                    TOP_BANNERS_MAX_DISPLAY_ADMIN,
+                    Number.isFinite(rawDisplayCount) ? Math.round(rawDisplayCount) : fallbackDisplayCount
+                )
+            );
+
+            const nextItems = items.length > 0 ? [...items] : [];
+            while (nextItems.length < Math.min(displayCount, TOP_BANNERS_MAX_DISPLAY_ADMIN)) {
+                nextItems.push(normalizeTopBannerSlotAdmin({}));
+            }
+            if (nextItems.length === 0) {
+                nextItems.push(normalizeTopBannerSlotAdmin({}));
+            }
+
+            return {
+                displayCount,
+                items: nextItems,
+                mobile: normalizeTopBannersMobileSettingsAdmin(source.mobile || source.mobileCarousel || {})
+            };
+        }
+
+        function getTopBannerPrefixAdmin(slotIndex) {
+            return `topBannerSlot${slotIndex}`;
+        }
+
+        function normalizeTopBannerSlotIndexAdmin(slotIndex) {
+            const parsed = Number(slotIndex);
+            if (!Number.isFinite(parsed)) return -1;
+            return Math.max(0, Math.floor(parsed));
+        }
+
+        function getTopBannerSlotAdmin(slotIndex) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return normalizeTopBannerSlotAdmin({});
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? topBannersSettingsAdmin.items : [];
+            return slots[normalizedIndex] || normalizeTopBannerSlotAdmin({});
+        }
+
+        function setTopBannersDisplayCountInputAdmin() {
+            const input = document.getElementById('topBannersDisplayCount');
+            if (!input) return;
+            input.value = String(topBannersSettingsAdmin.displayCount || TOP_BANNERS_DEFAULT_DISPLAY_ADMIN);
+        }
+
+        function setTopBannersMobileInputsAdmin() {
+            const transitionInput = document.getElementById('topBannersMobileTransition');
+            const intervalInput = document.getElementById('topBannersMobileInterval');
+            const mobile = normalizeTopBannersMobileSettingsAdmin(topBannersSettingsAdmin.mobile || {});
+
+            if (transitionInput) transitionInput.value = mobile.transition;
+            if (intervalInput) intervalInput.value = String(mobile.intervalSeconds);
+        }
+
+        function ensureTopBannerSlotsForDisplayAdmin() {
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? topBannersSettingsAdmin.items : [];
+            const target = Math.max(
+                1,
+                Math.min(
+                    TOP_BANNERS_MAX_DISPLAY_ADMIN,
+                    Number(topBannersSettingsAdmin.displayCount) || TOP_BANNERS_DEFAULT_DISPLAY_ADMIN
+                )
+            );
+
+            while (slots.length < target && slots.length < TOP_BANNERS_MAX_DISPLAY_ADMIN) {
+                slots.push(normalizeTopBannerSlotAdmin({}));
+            }
+            if (slots.length === 0) slots.push(normalizeTopBannerSlotAdmin({}));
+
+            topBannersSettingsAdmin.items = slots.slice(0, TOP_BANNERS_MAX_DISPLAY_ADMIN);
+            topBannersSettingsAdmin.displayCount = target;
+        }
+
+        function setTopBannerUploadStatusAdmin(slotIndex, message) {
+            const prefix = getTopBannerPrefixAdmin(slotIndex);
+            const statusEl = document.getElementById(`${prefix}UploadStatus`);
+            if (statusEl) statusEl.textContent = message || '';
+        }
+
+        function updateTopBannerUploadModeAdmin(slotIndex) {
+            const prefix = getTopBannerPrefixAdmin(slotIndex);
+            const slot = getTopBannerSlotAdmin(slotIndex);
+            const input = document.getElementById(`${prefix}Upload`);
+            const hint = document.getElementById(`${prefix}UploadHint`);
+
+            if (!input || !hint) return;
+
+            if (slot.mode === 'gif') {
+                input.multiple = false;
+                hint.textContent = 'Em GIF: envie apenas 1 arquivo .gif';
+            } else {
+                input.multiple = true;
+                hint.textContent = 'Em Fotos: pode enviar varias imagens';
+            }
+        }
+
+        function renderTopBannerPreviewAdmin(slotIndex) {
+            const prefix = getTopBannerPrefixAdmin(slotIndex);
+            const previewEl = document.getElementById(`${prefix}Preview`);
+            if (!previewEl) return;
+
+            const slot = getTopBannerSlotAdmin(slotIndex);
+            const media = Array.isArray(slot.media) ? slot.media : [];
+
+            if (media.length === 0) {
+                previewEl.innerHTML = '<div class="banner-preview-empty">Sem midia</div>';
+                return;
+            }
+
+            const first = media[0];
+            const countBadge = slot.mode === 'photos' && media.length > 1
+                ? `<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(15, 23, 42, 0.75); color: #fff; font-size: 0.6875rem; padding: 0.2rem 0.45rem; border-radius: 999px;">${media.length} fotos</div>`
+                : '';
+
+            previewEl.innerHTML = `
+                <img src="${escapeHtml(first.url)}" alt="Preview banner" loading="lazy">
+                ${countBadge}
+            `;
+        }
+
+        function renderTopBannerMediaListAdmin(slotIndex) {
+            const prefix = getTopBannerPrefixAdmin(slotIndex);
+            const listEl = document.getElementById(`${prefix}MediaList`);
+            if (!listEl) return;
+
+            const slot = getTopBannerSlotAdmin(slotIndex);
+            const media = Array.isArray(slot.media) ? slot.media : [];
+
+            if (media.length === 0) {
+                listEl.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-muted);">Nenhum arquivo enviado.</div>';
+                return;
+            }
+
+            listEl.innerHTML = media.map((item, index) => {
+                const name = item.name || item.key || `arquivo-${index + 1}`;
+                const showOrderButtons = slot.mode === 'photos' && media.length > 1;
+                return `
+                    <div class="banner-media-item">
+                        <div class="banner-media-thumb">
+                            <img src="${escapeHtml(item.url)}" alt="${escapeHtml(name)}" loading="lazy">
+                        </div>
+                        <div class="banner-media-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+                        <div class="banner-media-actions">
+                            ${showOrderButtons ? `<button type="button" class="banner-mini-btn" title="Mover para cima" onclick="moveTopBannerMedia(${slotIndex}, ${index}, -1)">↑</button>` : ''}
+                            ${showOrderButtons ? `<button type="button" class="banner-mini-btn" title="Mover para baixo" onclick="moveTopBannerMedia(${slotIndex}, ${index}, 1)">↓</button>` : ''}
+                            <button type="button" class="banner-mini-btn danger" title="Remover" onclick="removeTopBannerMedia(${slotIndex}, ${index})">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildTopBannerSlotCardMarkup(slot, slotIndex, totalSlots) {
+            const prefix = getTopBannerPrefixAdmin(slotIndex);
+            const removeButton = totalSlots > 1
+                ? `<button type="button" class="banner-remove-slot-btn" onclick="removeTopBannerSlot(${slotIndex})">Remover</button>`
+                : '';
+
+            return `
+                <article class="banner-slot-card">
+                    <div class="banner-slot-head">
+                        <div>
+                            <div class="banner-slot-title">Banner ${slotIndex + 1}</div>
+                            <span class="banner-slot-dim">Ordem ${slotIndex + 1}</span>
+                        </div>
+                        <div class="banner-slot-head-actions">
+                            ${removeButton}
+                        </div>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Mode">Formato</label>
+                        <select id="${prefix}Mode" onchange="handleTopBannerModeChange(${slotIndex})">
+                            <option value="photos"${slot.mode === 'photos' ? ' selected' : ''}>Fotos (1 ou mais)</option>
+                            <option value="gif"${slot.mode === 'gif' ? ' selected' : ''}>GIF (apenas 1 arquivo)</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Transition">Transicao</label>
+                        <select id="${prefix}Transition" onchange="handleTopBannerFieldChange(${slotIndex})">
+                            <option value="fade"${slot.transition === 'fade' ? ' selected' : ''}>Fade</option>
+                            <option value="slide"${slot.transition === 'slide' ? ' selected' : ''}>Slide</option>
+                            <option value="zoom"${slot.transition === 'zoom' ? ' selected' : ''}>Zoom</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Interval">Tempo entre transicoes (segundos)</label>
+                        <input type="number" id="${prefix}Interval" min="1" max="30" value="${slot.intervalSeconds}" onchange="handleTopBannerFieldChange(${slotIndex})">
+                    </div>
+
+                    <div class="banner-field">
+                        <label>Upload de midias</label>
+                        <div class="banner-upload-dropzone" onclick="document.getElementById('${prefix}Upload').click()">
+                            <input type="file" id="${prefix}Upload" accept="image/*" multiple style="display: none;" onchange="handleTopBannerUpload(${slotIndex}, event)">
+                            <p>Clique para enviar arquivos</p>
+                            <small id="${prefix}UploadHint">Em Fotos: pode enviar varias imagens</small>
+                        </div>
+                        <div id="${prefix}UploadStatus" class="banner-upload-status"></div>
+                    </div>
+
+                    <div class="banner-preview-box" id="${prefix}Preview"></div>
+                    <div class="banner-media-list" id="${prefix}MediaList"></div>
+                </article>
+            `;
+        }
+
+        function renderTopBannersAdmin() {
+            ensureTopBannerSlotsForDisplayAdmin();
+            setTopBannersDisplayCountInputAdmin();
+            setTopBannersMobileInputsAdmin();
+
+            const container = document.getElementById('topBannersSlotsContainer');
+            if (!container) return;
+
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? topBannersSettingsAdmin.items : [];
+            if (slots.length === 0) {
+                container.innerHTML = '<div class="banner-slots-empty">Nenhum banner configurado.</div>';
+                return;
+            }
+
+            container.innerHTML = slots
+                .map((slot, index) => buildTopBannerSlotCardMarkup(slot, index, slots.length))
+                .join('');
+
+            slots.forEach((_slot, index) => {
+                updateTopBannerUploadModeAdmin(index);
+                renderTopBannerPreviewAdmin(index);
+                renderTopBannerMediaListAdmin(index);
+                setTopBannerUploadStatusAdmin(index, '');
+            });
+        }
+
+        function updateTopBannerSlotAdmin(slotIndex, slotData) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? [...topBannersSettingsAdmin.items] : [];
+            if (!slots[normalizedIndex]) return;
+            slots[normalizedIndex] = normalizeTopBannerSlotAdmin(slotData);
+            topBannersSettingsAdmin.items = slots;
+        }
+
+        function handleTopBannersDisplayCountChange() {
+            const input = document.getElementById('topBannersDisplayCount');
+            const nextValue = Number(input?.value);
+            const clamped = Math.max(
+                1,
+                Math.min(
+                    TOP_BANNERS_MAX_DISPLAY_ADMIN,
+                    Number.isFinite(nextValue) ? Math.round(nextValue) : TOP_BANNERS_DEFAULT_DISPLAY_ADMIN
+                )
+            );
+            topBannersSettingsAdmin.displayCount = clamped;
+            ensureTopBannerSlotsForDisplayAdmin();
+            renderTopBannersAdmin();
+        }
+
+        function handleTopBannersMobileSettingsChange() {
+            const transitionInput = document.getElementById('topBannersMobileTransition');
+            const intervalInput = document.getElementById('topBannersMobileInterval');
+            const rawTransition = transitionInput ? transitionInput.value : TOP_BANNERS_MOBILE_DEFAULTS_ADMIN.transition;
+            const rawInterval = intervalInput ? Number(intervalInput.value) : TOP_BANNERS_MOBILE_DEFAULTS_ADMIN.intervalSeconds;
+
+            topBannersSettingsAdmin.mobile = normalizeTopBannersMobileSettingsAdmin({
+                transition: rawTransition,
+                intervalSeconds: rawInterval
+            });
+
+            if (intervalInput) {
+                intervalInput.value = String(topBannersSettingsAdmin.mobile.intervalSeconds);
+            }
+        }
+
+        function addTopBannerSlot() {
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? [...topBannersSettingsAdmin.items] : [];
+            if (slots.length >= TOP_BANNERS_MAX_DISPLAY_ADMIN) {
+                showModal('Limite atingido', `Voce pode configurar no maximo ${TOP_BANNERS_MAX_DISPLAY_ADMIN} banners.`, 'info');
+                return;
+            }
+
+            slots.push(normalizeTopBannerSlotAdmin({}));
+            topBannersSettingsAdmin.items = slots;
+            if (topBannersSettingsAdmin.displayCount < slots.length) {
+                topBannersSettingsAdmin.displayCount = slots.length;
+            }
+            renderTopBannersAdmin();
+        }
+
+        function removeTopBannerSlot(slotIndex) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            if (!confirm(`Deseja remover o banner ${normalizedIndex + 1}?`)) return;
+
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? [...topBannersSettingsAdmin.items] : [];
+            if (!slots[normalizedIndex]) return;
+            slots.splice(normalizedIndex, 1);
+
+            if (slots.length === 0) {
+                slots.push(normalizeTopBannerSlotAdmin({}));
+            }
+
+            topBannersSettingsAdmin.items = slots;
+            topBannersSettingsAdmin.displayCount = Math.max(1, Math.min(topBannersSettingsAdmin.displayCount, slots.length));
+            renderTopBannersAdmin();
+        }
+
+        function handleTopBannerFieldChange(slotIndex) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getTopBannerPrefixAdmin(normalizedIndex);
+            const slot = getTopBannerSlotAdmin(normalizedIndex);
+
+            const transitionInput = document.getElementById(`${prefix}Transition`);
+            const intervalInput = document.getElementById(`${prefix}Interval`);
+
+            const transition = transitionInput ? String(transitionInput.value || 'fade').toLowerCase() : slot.transition;
+            const intervalValue = intervalInput ? Number(intervalInput.value) : slot.intervalSeconds;
+
+            slot.transition = TOP_BANNER_TRANSITIONS_ADMIN.includes(transition) ? transition : 'fade';
+            slot.intervalSeconds = Math.max(1, Math.min(30, Number.isFinite(intervalValue) ? intervalValue : 5));
+            if (intervalInput) intervalInput.value = slot.intervalSeconds;
+
+            updateTopBannerSlotAdmin(normalizedIndex, slot);
+            renderTopBannerPreviewAdmin(normalizedIndex);
+        }
+
+        function handleTopBannerModeChange(slotIndex) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getTopBannerPrefixAdmin(normalizedIndex);
+            const modeInput = document.getElementById(`${prefix}Mode`);
+            const nextMode = modeInput && modeInput.value === 'gif' ? 'gif' : 'photos';
+            const slot = getTopBannerSlotAdmin(normalizedIndex);
+            slot.mode = nextMode;
+
+            if (slot.mode === 'gif' && slot.media.length > 1) {
+                slot.media = slot.media.slice(0, 1);
+                showModal('Aviso', 'No formato GIF apenas um arquivo pode ficar no banner.', 'info');
+            }
+
+            updateTopBannerSlotAdmin(normalizedIndex, slot);
+            renderTopBannersAdmin();
+        }
+
+        async function handleTopBannerUpload(slotIndex, event) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getTopBannerPrefixAdmin(normalizedIndex);
+            const input = document.getElementById(`${prefix}Upload`);
+            const slot = getTopBannerSlotAdmin(normalizedIndex);
+            const files = Array.from(event?.target?.files || []);
+            if (!files.length) return;
+
+            if (!r2Client) initR2Client();
+
+            const uploadFiles = slot.mode === 'gif' ? [files[0]] : files.slice(0, 20);
+            const uploaded = [];
+
+            try {
+                for (let i = 0; i < uploadFiles.length; i += 1) {
+                    const file = uploadFiles[i];
+                    if (!file.type || !file.type.startsWith('image/')) {
+                        continue;
+                    }
+                    const isGifFile = file.type === 'image/gif' || /\.gif$/i.test(file.name || '');
+
+                    if (slot.mode === 'gif') {
+                        if (!isGifFile) {
+                            showModal('Erro', 'No formato GIF envie apenas arquivo .gif.', 'error');
+                            continue;
+                        }
+                    } else if (isGifFile) {
+                        showModal('Aviso', 'No formato Fotos envie imagens comuns (JPG, PNG, WebP, AVIF).', 'info');
+                        continue;
+                    }
+
+                    setTopBannerUploadStatusAdmin(normalizedIndex, `Enviando ${i + 1}/${uploadFiles.length}...`);
+                    const result = await r2Client.uploadFile(file, 'banners');
+                    uploaded.push({
+                        url: result?.url || '',
+                        key: result?.key || '',
+                        name: file.name || result?.key || 'arquivo',
+                        type: file.type || result?.type || ''
+                    });
+                }
+
+                if (uploaded.length === 0) {
+                    setTopBannerUploadStatusAdmin(normalizedIndex, '');
+                    if (input) input.value = '';
+                    return;
+                }
+
+                if (slot.mode === 'gif') {
+                    slot.media = [uploaded[0]];
+                } else {
+                    slot.media = [...slot.media, ...uploaded];
+                }
+
+                updateTopBannerSlotAdmin(normalizedIndex, slot);
+                renderTopBannersAdmin();
+                setTopBannerUploadStatusAdmin(normalizedIndex, `${uploaded.length} arquivo(s) enviado(s).`);
+            } catch (error) {
+                console.error('[Admin] Erro no upload de banner:', error);
+                showModal('Erro', 'Nao foi possivel enviar a midia do banner.', 'error');
+                setTopBannerUploadStatusAdmin(normalizedIndex, '');
+            } finally {
+                if (input) input.value = '';
+            }
+        }
+
+        function moveTopBannerMedia(slotIndex, index, direction) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slot = getTopBannerSlotAdmin(normalizedIndex);
+            const media = [...slot.media];
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= media.length) return;
+            const [item] = media.splice(index, 1);
+            media.splice(targetIndex, 0, item);
+            slot.media = media;
+            updateTopBannerSlotAdmin(normalizedIndex, slot);
+            renderTopBannersAdmin();
+        }
+
+        function removeTopBannerMedia(slotIndex, index) {
+            const normalizedIndex = normalizeTopBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slot = getTopBannerSlotAdmin(normalizedIndex);
+            slot.media = slot.media.filter((_, itemIndex) => itemIndex !== index);
+            updateTopBannerSlotAdmin(normalizedIndex, slot);
+            renderTopBannersAdmin();
+        }
+
+        function syncTopBannerFieldsFromDomAdmin() {
+            const slots = Array.isArray(topBannersSettingsAdmin.items) ? [...topBannersSettingsAdmin.items] : [];
+            const normalizedSlots = slots.map((slot, index) => {
+                const prefix = getTopBannerPrefixAdmin(index);
+                const modeInput = document.getElementById(`${prefix}Mode`);
+                const transitionInput = document.getElementById(`${prefix}Transition`);
+                const intervalInput = document.getElementById(`${prefix}Interval`);
+
+                const rawSlot = {
+                    ...slot,
+                    mode: modeInput && modeInput.value === 'gif' ? 'gif' : (slot.mode || 'photos'),
+                    transition: transitionInput ? transitionInput.value : slot.transition,
+                    intervalSeconds: intervalInput ? Number(intervalInput.value) : slot.intervalSeconds,
+                    media: Array.isArray(slot.media) ? slot.media : []
+                };
+                return normalizeTopBannerSlotAdmin(rawSlot);
+            });
+            topBannersSettingsAdmin.items = normalizedSlots;
+        }
+
+        function buildTopBannersPayloadAdmin() {
+            syncTopBannerFieldsFromDomAdmin();
+            handleTopBannersMobileSettingsChange();
+            const normalizedItems = (topBannersSettingsAdmin.items || [])
+                .map(normalizeTopBannerSlotAdmin)
+                .slice(0, TOP_BANNERS_MAX_DISPLAY_ADMIN);
+
+            const displayCount = Math.max(
+                1,
+                Math.min(
+                    TOP_BANNERS_MAX_DISPLAY_ADMIN,
+                    Number(topBannersSettingsAdmin.displayCount) || TOP_BANNERS_DEFAULT_DISPLAY_ADMIN
+                )
+            );
+
+            return {
+                displayCount,
+                items: normalizedItems,
+                mobile: normalizeTopBannersMobileSettingsAdmin(topBannersSettingsAdmin.mobile || {}),
+                slots: normalizedItems,
+                slot1: normalizedItems[0] || normalizeTopBannerSlotAdmin({}),
+                slot2: normalizedItems[1] || normalizeTopBannerSlotAdmin({}),
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        function applyTopBannersFromLayoutData(layoutData = {}) {
+            const source = layoutData && typeof layoutData === 'object' ? layoutData.topBanners || {} : {};
+            topBannersSettingsAdmin = normalizeTopBannersSettingsAdmin(source);
+            renderTopBannersAdmin();
+        }
+
+        async function saveTopBannersSettings() {
+            const payload = buildTopBannersPayloadAdmin();
+
+            try {
+                await db.collection('settings').doc('layout').set({
+                    topBanners: payload,
+                    updatedAt: payload.updatedAt
+                }, { merge: true });
+
+                let savedLayout = {};
+                try {
+                    savedLayout = JSON.parse(localStorage.getItem('siteLayout') || '{}');
+                } catch (_e) {
+                    savedLayout = {};
+                }
+                const nextLayout = {
+                    ...savedLayout,
+                    topBanners: payload,
+                    updatedAt: payload.updatedAt
+                };
+                localStorage.setItem('siteLayout', JSON.stringify(nextLayout));
+                localStorage.setItem('publicSiteLayout', JSON.stringify(nextLayout));
+
+                topBannersSettingsAdmin = normalizeTopBannersSettingsAdmin(payload);
+                renderTopBannersAdmin();
+                showModal('Sucesso!', 'Banners salvos com sucesso!', 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar banners:', error);
+                showModal('Erro!', 'Nao foi possivel salvar os banners.', 'error');
+            }
+        }
+
+        function resetTopBannersSettings() {
+            if (!confirm('Deseja limpar todos os banners?')) return;
+            topBannersSettingsAdmin = normalizeTopBannersSettingsAdmin({});
+            renderTopBannersAdmin();
         }
 
         // ========================================
@@ -5982,45 +8135,124 @@
         // ========================================
         // NOTIFICATION MODAL FUNCTIONS
         // ========================================
-        function showModal(title, message, type = 'success') {
-            const modal = document.getElementById('notificationModal');
-            const iconEl = document.getElementById('modalIcon');
-            const titleEl = document.getElementById('modalTitle');
-            const messageEl = document.getElementById('modalMessage');
-            
-            // Configurar icone baseado no tipo
+        let pendingModalConfirmResolve = null;
+
+        function getModalElements() {
+            return {
+                modal: document.getElementById('notificationModal'),
+                iconEl: document.getElementById('modalIcon'),
+                titleEl: document.getElementById('modalTitle'),
+                messageEl: document.getElementById('modalMessage'),
+                footerEl: document.getElementById('modalFooter')
+            };
+        }
+
+        function getModalIconMarkup(type = 'success') {
             const icons = {
                 success: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>',
                 error: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>',
-                info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>'
+                info: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+                warning: '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86l-7.4 12.8A1 1 0 003.76 18h16.48a1 1 0 00.87-1.34l-7.4-12.8a1 1 0 00-1.74 0z"/></svg>'
             };
-            
+
+            return icons[type] || icons.info;
+        }
+
+        function setModalDefaultFooter() {
+            const { footerEl } = getModalElements();
+            if (!footerEl) return;
+            footerEl.classList.remove('confirm-actions');
+            footerEl.innerHTML = '<button class="modal-btn" onclick="closeModal()">OK</button>';
+        }
+
+        function openNotificationModal() {
+            const { modal } = getModalElements();
+            if (!modal) return;
+
+            modal.classList.add('active');
+            modal.onclick = function (e) {
+                if (e.target !== modal) return;
+                if (pendingModalConfirmResolve) {
+                    resolveConfirmModal(false);
+                    return;
+                }
+                closeModal();
+            };
+
+            document.addEventListener('keydown', handleEscKey);
+        }
+
+        function finalizeNotificationModal(confirmChoice = null) {
+            const { modal } = getModalElements();
+            if (!modal) return;
+
+            modal.classList.remove('active');
+            modal.onclick = null;
+            document.removeEventListener('keydown', handleEscKey);
+
+            const resolver = pendingModalConfirmResolve;
+            pendingModalConfirmResolve = null;
+            setModalDefaultFooter();
+
+            if (resolver) {
+                resolver(Boolean(confirmChoice));
+            }
+        }
+
+        function showModal(title, message, type = 'success') {
+            const { iconEl, titleEl, messageEl } = getModalElements();
+            pendingModalConfirmResolve = null;
+
             iconEl.className = 'modal-icon ' + type;
-            iconEl.innerHTML = icons[type] || icons.success;
+            iconEl.innerHTML = getModalIconMarkup(type);
             titleEl.textContent = title;
             messageEl.textContent = message;
-            
-            modal.classList.add('active');
-            
-            // Fechar ao clicar fora
-            modal.onclick = function(e) {
-                if (e.target === modal) {
-                    closeModal();
+
+            setModalDefaultFooter();
+            openNotificationModal();
+        }
+
+        function showConfirmModal({
+            title = 'Confirmar exclusao',
+            message = '',
+            confirmText = 'Excluir',
+            cancelText = 'Cancelar'
+        } = {}) {
+            return new Promise((resolve) => {
+                pendingModalConfirmResolve = resolve;
+                const { iconEl, titleEl, messageEl, footerEl } = getModalElements();
+
+                iconEl.className = 'modal-icon warning';
+                iconEl.innerHTML = getModalIconMarkup('warning');
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+
+                if (footerEl) {
+                    footerEl.classList.add('confirm-actions');
+                    footerEl.innerHTML = `
+                        <button type="button" class="modal-btn modal-btn-secondary" onclick="resolveConfirmModal(false)">${escapeHtml(cancelText)}</button>
+                        <button type="button" class="modal-btn modal-btn-danger" onclick="resolveConfirmModal(true)">${escapeHtml(confirmText)}</button>
+                    `;
                 }
-            };
-            
-            // Fechar com ESC
-            document.addEventListener('keydown', handleEscKey);
+
+                openNotificationModal();
+            });
+        }
+
+        function resolveConfirmModal(confirmed) {
+            finalizeNotificationModal(Boolean(confirmed));
         }
         
         function closeModal() {
-            const modal = document.getElementById('notificationModal');
-            modal.classList.remove('active');
-            document.removeEventListener('keydown', handleEscKey);
+            finalizeNotificationModal(false);
         }
         
         function handleEscKey(e) {
             if (e.key === 'Escape') {
+                if (pendingModalConfirmResolve) {
+                    resolveConfirmModal(false);
+                    return;
+                }
                 closeModal();
             }
         }
@@ -6040,7 +8272,7 @@
 
         // Force reload if cache is old
         (function() {
-            const cssVersion = '2025-02-04-023';
+            const cssVersion = '2026-02-09-002';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
@@ -6921,9 +9153,11 @@
 
         async function saveInstagramNews() {
             const captionContent = document.getElementById('instagramNewsCaption').value.trim();
-            const image = document.getElementById('instagramNewsImageUrl').value;
-            const videoUrl = document.getElementById('instagramNewsVideoUrl')?.value || '';
+            let image = (document.getElementById('instagramNewsImageUrl').value || '').trim();
+            const videoUrl = (document.getElementById('instagramNewsVideoUrl')?.value || '').trim();
             const mediaType = (document.getElementById('instagramNewsMediaType')?.value || 'image') === 'video' ? 'video' : 'image';
+            const hasVideo = Boolean(videoUrl);
+            const resolvedMediaType = hasVideo ? 'video' : mediaType;
             const category = document.getElementById('instagramNewsCategory').value;
             const instagramUrl = document.getElementById('instagramNewsUrl').value.trim();
             const likes = parseInt(document.getElementById('instagramLikesCount').value) || 0;
@@ -6956,11 +9190,6 @@
                 showModal('Atencao', 'O video do post e obrigatorio. Faca upload do video.', 'warning');
                 return;
             }
-
-            if (mediaType === 'image' && !image) {
-                showModal('Atencao', 'A imagem e obrigatoria. Faca upload da imagem do post.', 'warning');
-                return;
-            }
             
             if (!captionContent) {
                 showModal('Atencao', 'A legenda do post e obrigatoria.', 'warning');
@@ -6985,7 +9214,44 @@
             } catch (e) {
                 console.error('[Admin] Erro ao parsear galeria:', e);
             }
-            
+
+            if (isInlineImageDataUrl(image)) {
+                try {
+                    if (!r2Client) initR2Client();
+                    const imageFile = await dataUrlToFile(image, `${Date.now()}-instagram-thumb.jpg`);
+                    const uploadResult = await r2Client.uploadFile(imageFile, 'instagram');
+                    image = (uploadResult?.url || '').trim();
+                    const imageInput = document.getElementById('instagramNewsImageUrl');
+                    if (imageInput) imageInput.value = image;
+                } catch (uploadError) {
+                    console.error('[Admin] Erro ao migrar thumbnail inline do Instagram para R2:', uploadError);
+                    showModal('Erro', 'Nao foi possivel enviar a miniatura do video para o R2.', 'error');
+                    return;
+                }
+            }
+
+            if (Array.isArray(gallery) && gallery.length > 0) {
+                for (let i = 0; i < gallery.length; i++) {
+                    const item = gallery[i];
+                    if (!item || !isInlineImageDataUrl(item.url)) continue;
+                    try {
+                        if (!r2Client) initR2Client();
+                        const imageFile = await dataUrlToFile(item.url, `${Date.now()}-instagram-gallery-${i}.jpg`);
+                        const uploadResult = await r2Client.uploadFile(imageFile, 'instagram');
+                        const migratedUrl = (uploadResult?.url || '').trim();
+                        if (migratedUrl) {
+                            gallery[i] = { ...item, url: migratedUrl };
+                        }
+                    } catch (galleryUploadError) {
+                        console.error('[Admin] Erro ao migrar item inline da galeria para R2:', galleryUploadError);
+                        showModal('Erro', `Nao foi possivel enviar a midia ${i + 1} da galeria para o R2.`, 'error');
+                        return;
+                    }
+                }
+            }
+
+            const hasImage = Boolean(image);
+             
             // Verificar tamanho estimado do documento (limite 1MB = 1.048.576 bytes)
             const estimatedSize = JSON.stringify({
                 title, captionContent, image, videoUrl, mediaType, gallery, instagramUrl
@@ -7007,9 +9273,11 @@
                 title,
                 excerpt: captionContent.substring(0, 200) + (captionContent.length > 200 ? '...' : ''),
                 content: captionContent,
-                image: image || 'https://via.placeholder.com/800x400?text=Sem+Imagem',
-                instagramMediaType: mediaType,
-                instagramVideoUrl: mediaType === 'video' ? videoUrl : '',
+                image: resolvedMediaType === 'video'
+                    ? (hasImage ? image : '')
+                    : (hasImage ? image : 'https://via.placeholder.com/800x400?text=Sem+Imagem'),
+                instagramMediaType: resolvedMediaType,
+                instagramVideoUrl: resolvedMediaType === 'video' ? videoUrl : '',
                 category,
                 categoryName,
                 date: new Date().toISOString(),
@@ -8154,8 +10422,22 @@
             if (!confirm('Tem certeza que deseja excluir este story?')) return;
             
             try {
-                await db.collection('stories').doc(id).delete();
-                showModal('Sucesso!', 'Story excluido com sucesso!', 'success');
+                const docRef = db.collection('stories').doc(id);
+                const docSnapshot = await docRef.get();
+                const r2Keys = docSnapshot.exists ? collectR2KeysFromStoryData(docSnapshot.data() || {}) : [];
+
+                await docRef.delete();
+                const cleanup = await deleteR2MediaKeys(r2Keys);
+
+                if (cleanup.failed.length > 0) {
+                    showModal(
+                        'Sucesso com aviso',
+                        `Story excluido, mas ${cleanup.failed.length} arquivo(s) de midia nao foram removidos do R2.`,
+                        'info'
+                    );
+                } else {
+                    showModal('Sucesso!', 'Story excluido com sucesso!', 'success');
+                }
                 loadStoriesAdmin();
             } catch (error) {
                 console.error('[Admin] Erro ao excluir story:', error);

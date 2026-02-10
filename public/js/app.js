@@ -81,6 +81,15 @@ function formatDateTime(dateString) {
     return `${dateStr} • ${timeStr}`;
 }
 
+function escapeHtml(value) {
+    return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function getDomainFromUrl(url) {
     if (!url) return '';
     try {
@@ -452,6 +461,317 @@ function getInstagramVisiblePostsCount() {
     }
 }
 
+function isMobileViewport() {
+    return window.matchMedia('(max-width: 768px)').matches;
+}
+
+const TOP_BANNER_TRANSITIONS = ['fade', 'slide', 'zoom'];
+const TOP_BANNER_MOBILE_DEFAULTS = {
+    transition: 'fade',
+    intervalSeconds: 3
+};
+const DEFAULT_TOP_BANNER_SLOT = {
+    mode: 'photos',
+    transition: 'fade',
+    intervalSeconds: 5,
+    media: []
+};
+const topBannerTimers = {};
+const topBannerStates = {};
+
+function normalizeTopBannerMediaEntry(entry) {
+    if (typeof entry === 'string') {
+        const url = entry.trim();
+        return url ? { url, key: '', name: '', type: '' } : null;
+    }
+    if (!entry || typeof entry !== 'object') return null;
+    const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+    if (!url) return null;
+    return {
+        url,
+        key: typeof entry.key === 'string' ? entry.key : '',
+        name: typeof entry.name === 'string' ? entry.name : '',
+        type: typeof entry.type === 'string' ? entry.type : ''
+    };
+}
+
+function normalizeTopBannerSlot(slot = {}) {
+    const rawMode = String(slot.mode || DEFAULT_TOP_BANNER_SLOT.mode).toLowerCase();
+    const mode = rawMode === 'gif' ? 'gif' : 'photos';
+
+    const rawTransition = String(slot.transition || DEFAULT_TOP_BANNER_SLOT.transition).toLowerCase();
+    const transition = TOP_BANNER_TRANSITIONS.includes(rawTransition) ? rawTransition : DEFAULT_TOP_BANNER_SLOT.transition;
+
+    const interval = Number(slot.intervalSeconds);
+    const intervalSeconds = Math.max(1, Math.min(30, Number.isFinite(interval) ? interval : DEFAULT_TOP_BANNER_SLOT.intervalSeconds));
+
+    const sourceMedia = Array.isArray(slot.media)
+        ? slot.media
+        : Array.isArray(slot.images)
+            ? slot.images
+            : Array.isArray(slot.urls)
+                ? slot.urls
+                : [];
+
+    const media = sourceMedia
+        .map(normalizeTopBannerMediaEntry)
+        .filter(Boolean);
+
+    if (media.length === 0) {
+        const fallbackEntry = normalizeTopBannerMediaEntry(slot.url || slot.gifUrl || '');
+        if (fallbackEntry) media.push(fallbackEntry);
+    }
+
+    const normalizedMedia = mode === 'gif' ? media.slice(0, 1) : media;
+
+    return {
+        mode,
+        transition,
+        intervalSeconds,
+        media: normalizedMedia
+    };
+}
+
+function normalizeTopBannersConfig(config = {}) {
+    const source = config && typeof config === 'object' ? config : {};
+    const slotsArray = Array.isArray(source.slots) ? source.slots : [];
+
+    const legacySlots = [
+        source.slot1 || source.banner1 || source.left || null,
+        source.slot2 || source.banner2 || source.right || null
+    ].filter(Boolean);
+
+    const sourceItems = Array.isArray(source.items)
+        ? source.items
+        : slotsArray.length > 0
+            ? slotsArray
+            : legacySlots;
+
+    const items = sourceItems
+        .map(normalizeTopBannerSlot)
+        .filter(item => item && typeof item === 'object');
+
+    const configuredDisplayCount = Number(source.displayCount);
+    const fallbackDisplayCount = items.length;
+    const displayCount = Math.max(
+        0,
+        Math.min(20, Number.isFinite(configuredDisplayCount) ? Math.round(configuredDisplayCount) : fallbackDisplayCount)
+    );
+
+    const mobileSourceRaw = source.mobile || source.mobileCarousel || {};
+    const mobileSource = mobileSourceRaw && typeof mobileSourceRaw === 'object' ? mobileSourceRaw : {};
+    const rawMobileTransition = String(mobileSource.transition || TOP_BANNER_MOBILE_DEFAULTS.transition).toLowerCase();
+    const mobileTransition = TOP_BANNER_TRANSITIONS.includes(rawMobileTransition)
+        ? rawMobileTransition
+        : TOP_BANNER_MOBILE_DEFAULTS.transition;
+    const rawMobileInterval = Number(mobileSource.intervalSeconds);
+    const mobileIntervalSeconds = Math.max(
+        1,
+        Math.min(30, Number.isFinite(rawMobileInterval) ? rawMobileInterval : TOP_BANNER_MOBILE_DEFAULTS.intervalSeconds)
+    );
+
+    return {
+        displayCount,
+        items,
+        mobile: {
+            transition: mobileTransition,
+            intervalSeconds: mobileIntervalSeconds
+        }
+    };
+}
+
+function getTopBannersLayoutConfig() {
+    try {
+        const runtimeLayout = window.publicSiteLayoutConfig || {};
+        const savedLayout = JSON.parse(localStorage.getItem('publicSiteLayout') || '{}');
+        const source = runtimeLayout.topBanners || savedLayout.topBanners || {};
+        return normalizeTopBannersConfig(source);
+    } catch (_error) {
+        return normalizeTopBannersConfig({});
+    }
+}
+
+function clearTopBannerTimer(slotId) {
+    if (topBannerTimers[slotId]) {
+        clearInterval(topBannerTimers[slotId]);
+        delete topBannerTimers[slotId];
+    }
+}
+
+function clearAllTopBannerTimers() {
+    Object.keys(topBannerTimers).forEach(clearTopBannerTimer);
+}
+
+function getWrappedSlideOffset(index, currentIndex, total) {
+    let offset = index - currentIndex;
+    if (total > 1) {
+        const half = total / 2;
+        if (offset > half) offset -= total;
+        if (offset < -half) offset += total;
+    }
+    return offset;
+}
+
+function applyTopBannerSlideState(slotId) {
+    const state = topBannerStates[slotId];
+    if (!state || !state.card) return;
+    const slides = state.card.querySelectorAll('.top-banner-slide');
+    if (!slides.length) return;
+
+    slides.forEach((slide, index) => {
+        const isActive = index === state.currentIndex;
+        const offset = getWrappedSlideOffset(index, state.currentIndex, slides.length);
+        slide.classList.toggle('active', isActive);
+        slide.style.setProperty('--offset', String(offset));
+        slide.style.zIndex = isActive ? '2' : '1';
+    });
+}
+
+function startTopBannerRotation(slotId, intervalSeconds) {
+    clearTopBannerTimer(slotId);
+    const state = topBannerStates[slotId];
+    if (!state || state.total <= 1) return;
+
+    const intervalMs = Math.max(1000, Math.round(intervalSeconds * 1000));
+    topBannerTimers[slotId] = setInterval(() => {
+        const currentState = topBannerStates[slotId];
+        if (!currentState || currentState.total <= 1) return;
+        currentState.currentIndex = (currentState.currentIndex + 1) % currentState.total;
+        applyTopBannerSlideState(slotId);
+    }, intervalMs);
+}
+
+function createTopBannerImageElement(url, alt = '') {
+    const img = document.createElement('img');
+    img.className = 'top-banner-image';
+    img.src = url;
+    img.alt = alt;
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    return img;
+}
+
+function collectTopBannerMediaForMobile(items = []) {
+    const media = [];
+    (items || []).forEach(item => {
+        if (!item || !Array.isArray(item.media) || item.media.length === 0) return;
+        const first = item.media.find(entry => entry && entry.url);
+        if (first) media.push(first);
+    });
+    return media;
+}
+
+function renderTopBannerSlot(slotId, slotConfig, card) {
+    if (!card) return false;
+
+    clearTopBannerTimer(slotId);
+    delete topBannerStates[slotId];
+
+    card.classList.remove('is-empty', 'transition-fade', 'transition-slide', 'transition-zoom');
+    card.innerHTML = '';
+
+    const media = Array.isArray(slotConfig.media) ? slotConfig.media.filter(item => item && item.url) : [];
+    if (media.length === 0) {
+        card.classList.add('is-empty');
+        return false;
+    }
+
+    const transition = TOP_BANNER_TRANSITIONS.includes(slotConfig.transition)
+        ? slotConfig.transition
+        : DEFAULT_TOP_BANNER_SLOT.transition;
+    card.classList.add(`transition-${transition}`);
+
+    const track = document.createElement('div');
+    track.className = 'top-banner-track';
+    card.appendChild(track);
+
+    const mode = slotConfig.mode === 'gif' ? 'gif' : 'photos';
+    if (mode === 'gif' || media.length === 1) {
+        track.appendChild(createTopBannerImageElement(media[0].url, `Banner ${slotId}`));
+        return true;
+    }
+
+    media.forEach((entry, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'top-banner-slide';
+        if (index === 0) slide.classList.add('active');
+        slide.style.backgroundImage = `url("${entry.url}")`;
+        track.appendChild(slide);
+    });
+
+    topBannerStates[slotId] = {
+        card,
+        currentIndex: 0,
+        total: media.length
+    };
+
+    applyTopBannerSlideState(slotId);
+    startTopBannerRotation(slotId, slotConfig.intervalSeconds);
+    return true;
+}
+
+function renderTopBanners() {
+    const section = document.getElementById('topBannersSection');
+    const grid = document.getElementById('topBannersGrid') || (section ? section.querySelector('.top-banners-grid') : null);
+    if (!section || !grid) return;
+
+    clearAllTopBannerTimers();
+    Object.keys(topBannerStates).forEach(slotId => {
+        delete topBannerStates[slotId];
+    });
+
+    grid.innerHTML = '';
+
+    const config = getTopBannersLayoutConfig();
+    const items = Array.isArray(config.items)
+        ? config.items.filter(item => Array.isArray(item.media) && item.media.some(media => media && media.url))
+        : [];
+
+    const maxVisible = config.displayCount > 0 ? config.displayCount : items.length;
+    const itemsToRender = items.slice(0, maxVisible);
+
+    if (isMobileViewport()) {
+        const mobileMedia = collectTopBannerMediaForMobile(itemsToRender);
+        if (mobileMedia.length === 0) {
+            section.style.display = 'none';
+            return;
+        }
+
+        const card = document.createElement('article');
+        card.className = 'top-banner-card top-banner-card-mobile';
+        grid.appendChild(card);
+
+        renderTopBannerSlot('mobile-combined', {
+            mode: 'photos',
+            transition: (config.mobile && config.mobile.transition) || TOP_BANNER_MOBILE_DEFAULTS.transition,
+            intervalSeconds: (config.mobile && config.mobile.intervalSeconds) || TOP_BANNER_MOBILE_DEFAULTS.intervalSeconds,
+            media: mobileMedia
+        }, card);
+
+        grid.style.setProperty('--top-banner-columns', '1');
+        section.style.display = 'block';
+        return;
+    }
+
+    let visibleCount = 0;
+    itemsToRender.forEach((slotConfig, index) => {
+        const slotId = `banner-${index + 1}`;
+        const card = document.createElement('article');
+        card.className = 'top-banner-card';
+        card.dataset.bannerId = slotId;
+        grid.appendChild(card);
+
+        if (renderTopBannerSlot(slotId, slotConfig, card)) {
+            visibleCount += 1;
+        }
+    });
+
+    grid.style.setProperty('--top-banner-columns', String(Math.max(1, visibleCount)));
+    section.style.display = visibleCount > 0 ? 'block' : 'none';
+}
+
+window.addEventListener('beforeunload', clearAllTopBannerTimers);
+
 // Obter logo do site configurada no admin
 function getSiteLogo() {
     const brandSettings = localStorage.getItem('publicSiteBrand');
@@ -579,7 +899,30 @@ function createHorizontalNewsCard(news) {
 
 // Renderizar notícias com layout alternado
 // Renderizar bloco de notícias com padrão: 2 normais + 1 especial
+function renderNewsBlockMobile(newsItems, container) {
+    let html = '';
+    let index = 0;
+    let cycleIndex = 0;
+
+    while (index < newsItems.length) {
+        const cardHtml = createNewsCard(newsItems[index++]);
+        const isWide = cycleIndex === 0;
+        html += `<div class="news-mobile-item ${isWide ? 'news-mobile-wide' : ''}">${cardHtml}</div>`;
+        cycleIndex = (cycleIndex + 1) % 7; // 1 grande + 6 cards (3 fileiras de 2)
+    }
+
+    if (container) {
+        container.innerHTML = html || '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+    }
+
+    return index;
+}
+
 function renderNewsBlock(newsItems, startIndex, container) {
+    if (isMobileViewport()) {
+        return renderNewsBlockMobile(newsItems, container);
+    }
+
     const cardsPerRow = 5;
     const cardsInSpecialRow = 4;
     let html = '';
@@ -660,8 +1003,7 @@ async function renderNews() {
             { id: 'policia', containerId: 'categoryPolicia' },
             { id: 'regiao', containerId: 'categoryRegiao' },
             { id: 'mirador', containerId: 'categoryMirador' },
-            { id: 'brasil', containerId: 'categoryBrasil' },
-            { id: 'instagram', containerId: 'categoryInstagram' }
+            { id: 'brasil', containerId: 'categoryBrasil' }
         ];
         
         categories.forEach(cat => {
@@ -691,12 +1033,6 @@ async function renderNews() {
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html?id=' + id;
-}
-
-// Filtrar por categoria
-async function filterByCategory(category) {
-    localStorage.setItem('selectedCategory', category);
-    window.location.href = 'categoria.html?cat=' + category;
 }
 
 // Busca
@@ -789,14 +1125,32 @@ function resetSidePanelTimer() {
 
 // Filtrar por categoria
 async function filterByCategory(category) {
+    const normalizedCategory = String(category || '').toLowerCase();
+
+    if (normalizedCategory === 'instagram') {
+        await goToInstagramFeedSection();
+
+        // Fechar menu mobile se estiver aberto
+        const mobileMenuEl = document.getElementById('mobileMenu');
+        if (mobileMenuEl?.classList.contains('active')) {
+            toggleMobileMenu();
+        }
+
+        // Fechar painel lateral se estiver aberto
+        closeSidePanel();
+        return;
+    }
+
     const news = await loadNewsFromFirebase();
-    const filtered = news.filter(n => n.category === category);
+    const filtered = news.filter(n => n.category === normalizedCategory);
     const container = document.getElementById('latestNews');
     
     if (container) {
-        container.innerHTML = filtered.length > 0
-            ? filtered.map(createNewsCard).join('')
-            : '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
+        if (filtered.length > 0) {
+            renderNewsBlock(filtered, 0, container);
+        } else {
+            container.innerHTML = '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
+        }
         container.scrollIntoView({ behavior: 'smooth' });
     }
     
@@ -805,6 +1159,8 @@ async function filterByCategory(category) {
     if (mobileMenu?.classList.contains('active')) {
         toggleMobileMenu();
     }
+
+    closeSidePanel();
 }
 
 // Inicialização
@@ -870,6 +1226,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     
     // Carregar stories
     loadStories();
+
+    // Carregar banners do topo
+    renderTopBanners();
     
     // Carregar notícias do Instagram
     await loadInstagramProfileSettings();
@@ -958,12 +1317,16 @@ async function loadStories() {
 
 function renderStories() {
     const container = document.getElementById('storiesContainer');
+    const storiesSection = document.querySelector('.stories-section');
     if (!container) return;
     
     if (storiesData.length === 0) {
         container.innerHTML = '';
+        if (storiesSection) storiesSection.style.display = 'none';
         return;
     }
+
+    if (storiesSection) storiesSection.style.display = 'block';
     
     container.innerHTML = storiesData.map((story, index) => {
         let avatarContent = '';
@@ -1145,7 +1508,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Instagram News functionality
 let allInstagramNews = [];
-let showingAllInstagram = false;
 const DEFAULT_INSTAGRAM_PROFILE_SETTINGS = {
     displayName: 'Mirador e Região Online',
     username: 'mirador_e_regiao_online',
@@ -1360,12 +1722,107 @@ async function loadInstagramProfileSettings() {
     return instagramProfileSettings;
 }
 
+function renderInstagramFeedSection(newsItems = []) {
+    const section = document.getElementById('instagramFeedSection');
+    const container = document.getElementById('categoryInstagramFeed');
+    if (!section || !container) return;
+
+    const items = Array.isArray(newsItems) ? newsItems : [];
+    if (items.length === 0) {
+        section.style.display = 'none';
+        container.innerHTML = '';
+        updateInstagramMobileCarousels();
+        return;
+    }
+
+    section.style.display = 'block';
+    container.innerHTML = items.map(createInstagramCard).join('');
+    primeInstagramCardVideos(container);
+    updateInstagramMobileCarousels();
+}
+
+function scrollInstagramCarousel(containerId, direction = 1, event = null) {
+    if (event) event.preventDefault();
+    const container = document.getElementById(containerId);
+    if (!container || !isMobileViewport()) return;
+
+    const firstCard = container.querySelector('.instagram-card');
+    const gap = parseFloat(getComputedStyle(container).columnGap || getComputedStyle(container).gap || '0') || 0;
+    const step = firstCard ? firstCard.getBoundingClientRect().width + gap : container.clientWidth;
+
+    container.scrollBy({
+        left: Math.max(1, direction) * step,
+        behavior: 'smooth'
+    });
+}
+
+function updateInstagramMobileCarousels() {
+    const isMobile = isMobileViewport();
+    const sections = [
+        { containerId: 'instagramNewsGrid', buttonId: 'instagramTopNextBtn' },
+        { containerId: 'categoryInstagramFeed', buttonId: 'instagramFeedNextBtn' }
+    ];
+
+    sections.forEach(entry => {
+        const container = document.getElementById(entry.containerId);
+        const button = document.getElementById(entry.buttonId);
+        if (!container) return;
+
+        if (isMobile) {
+            container.classList.add('instagram-mobile-carousel');
+            if (button) {
+                const cardCount = container.querySelectorAll('.instagram-card').length;
+                button.style.display = cardCount > 1 ? 'inline-flex' : 'none';
+            }
+        } else {
+            container.classList.remove('instagram-mobile-carousel');
+            container.scrollLeft = 0;
+            if (button) {
+                button.style.display = 'none';
+            }
+        }
+    });
+}
+
+async function goToInstagramFeedSection() {
+    if (!Array.isArray(allInstagramNews) || allInstagramNews.length === 0) {
+        await loadInstagramNews();
+    } else {
+        renderInstagramFeedSection(allInstagramNews);
+    }
+
+    const section = document.getElementById('instagramFeedSection');
+    if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
 window.addEventListener('public-layout-updated', async () => {
+    renderTopBanners();
     if (typeof loadInstagramNews === 'function') {
-        showingAllInstagram = false;
         await loadInstagramProfileSettings();
         loadInstagramNews();
     }
+});
+
+let lastMobileViewportState = isMobileViewport();
+let responsiveViewportTimer = null;
+
+window.addEventListener('resize', () => {
+    clearTimeout(responsiveViewportTimer);
+    responsiveViewportTimer = setTimeout(async () => {
+        const isMobileNow = isMobileViewport();
+        renderTopBanners();
+        updateInstagramMobileCarousels();
+
+        if (isMobileNow !== lastMobileViewportState) {
+            lastMobileViewportState = isMobileNow;
+            await renderNews();
+            if (typeof loadInstagramNews === 'function') {
+                loadInstagramNews();
+            }
+        }
+    }, 180);
 });
 
 async function loadInstagramNews() {
@@ -1379,7 +1836,6 @@ async function loadInstagramNews() {
                 .where('source', '==', 'Instagram')
                 .where('status', '==', 'published')
                 .orderBy('date', 'desc')
-                .limit(20)
                 .get();
             
             snapshot.forEach(doc => {
@@ -1390,7 +1846,6 @@ async function loadInstagramNews() {
             console.log('[App] Usando fallback para carregar notícias do Instagram');
             const snapshot = await db.collection('news')
                 .orderBy('date', 'desc')
-                .limit(50)
                 .get();
             
             snapshot.forEach(doc => {
@@ -1408,34 +1863,19 @@ async function loadInstagramNews() {
         
         if (news.length === 0) {
             container.innerHTML = '';
+            renderInstagramFeedSection([]);
+            updateInstagramMobileCarousels();
             return;
         }
         
         // Mostrar quantidade configurada no painel (fallback: 4)
         const instagramVisiblePosts = getInstagramVisiblePostsCount();
-        const newsToShow = showingAllInstagram ? news : news.slice(0, instagramVisiblePosts);
+        const newsToShow = news.slice(0, instagramVisiblePosts);
         
-        let html = newsToShow.map(createInstagramCard).join('');
-        
-        // Adicionar botão "Ver Todos" se houver mais posts do que o limite configurado
-        if (news.length > instagramVisiblePosts && !showingAllInstagram) {
-            html += `
-                <div class="instagram-card instagram-view-all-card" onclick="toggleInstagramViewAll()">
-                    <div style="aspect-ratio: 1; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);">
-                        <div style="text-align: center; color: white;">
-                            <svg width="48" height="48" fill="currentColor" viewBox="0 0 24 24" style="margin-bottom: 0.5rem;">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z"/>
-                                <path d="M12 6c-3.313 0-6 2.687-6 6s2.687 6 6 6 6-2.687 6-6-2.687-6-6-6zm0 10c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4z"/>
-                            </svg>
-                            <div style="font-size: 1rem; font-weight: 600;">Ver Todos</div>
-                            <div style="font-size: 0.875rem; opacity: 0.9;">+${news.length - instagramVisiblePosts} posts</div>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-        
-        container.innerHTML = html;
+        container.innerHTML = newsToShow.map(createInstagramCard).join('');
+        primeInstagramCardVideos(container);
+        renderInstagramFeedSection(news);
+        updateInstagramMobileCarousels();
         
         // Atualizar contagens reais de curtidas/comentários
         updateInstagramStats(newsToShow);
@@ -1443,12 +1883,6 @@ async function loadInstagramNews() {
     } catch (error) {
         console.error('[App] Erro ao carregar notícias do Instagram:', error);
     }
-}
-
-// Toggle entre mostrar limite configurado ou todos
-function toggleInstagramViewAll() {
-    showingAllInstagram = !showingAllInstagram;
-    loadInstagramNews();
 }
 
 // Atualizar estatísticas do Instagram (curtidas e comentários)
@@ -1473,19 +1907,399 @@ async function updateInstagramStats(newsItems) {
 let instagramPostsData = {};
 
 function getInstagramPrimaryMedia(post = {}) {
-    const isVideo = (post.instagramMediaType === 'video' || post.mediaType === 'video') && Boolean(post.instagramVideoUrl);
-    if (isVideo) {
+    const allMedia = getInstagramAllMedia(post);
+    if (allMedia.length > 0) {
+        return allMedia[0];
+    }
+
+    const fallbackVideo = resolveInstagramVideoUrl(post);
+    if (fallbackVideo) {
         return {
             type: 'video',
-            url: post.instagramVideoUrl,
-            poster: post.image || ''
+            url: fallbackVideo,
+            poster: sanitizeMediaUrl(post.image)
         };
     }
+
+    const fallbackImage = sanitizeMediaUrl(post.image);
+    if (fallbackImage) {
+        return {
+            type: isLikelyVideoUrl(fallbackImage) ? 'video' : 'image',
+            url: fallbackImage,
+            poster: ''
+        };
+    }
+
+    return { type: 'image', url: '', poster: '' };
+}
+
+function isLikelyVideoUrl(url) {
+    if (!url || typeof url !== 'string') return false;
+    const clean = url.trim().toLowerCase();
+    if (!clean) return false;
+    return /\.(mp4|webm|mov|m4v|ogv|ogg)(\?|#|$)/i.test(clean) || /\/video\//i.test(clean);
+}
+
+function sanitizeMediaUrl(url) {
+    if (!url || typeof url !== 'string') return '';
+    const clean = url.trim();
+    if (!clean) return '';
+
+    const lowered = clean.toLowerCase();
+    const invalidValues = ['undefined', 'null', 'none', 'nan', 'false', '#', 'about:blank'];
+    if (invalidValues.includes(lowered)) return '';
+
+    return clean;
+}
+
+function isLikelyPosterImage(url) {
+    const clean = sanitizeMediaUrl(url).toLowerCase();
+    if (!clean) return false;
+    if (clean.startsWith('data:image/')) return true;
+    if (/thumbnail|thumb|poster|preview|frame/i.test(clean)) return true;
+    if (/via\.placeholder\.com|placehold\.co/i.test(clean)) return true;
+    if (/sem\+imagem|sem-imagem/i.test(clean)) return true;
+    return false;
+}
+
+function extractVideoUrlFromGalleryItems(gallery = []) {
+    if (!Array.isArray(gallery)) return '';
+
+    for (const item of gallery) {
+        if (!item) continue;
+
+        if (typeof item === 'string') {
+            const url = sanitizeMediaUrl(item);
+            if (url && isLikelyVideoUrl(url)) return url;
+            continue;
+        }
+
+        const url = sanitizeMediaUrl(
+            item.videoUrl ||
+            item.video ||
+            item.playableUrl ||
+            item.playable_url ||
+            item.url ||
+            item.mediaUrl ||
+            item.src
+        );
+        if (!url) continue;
+
+        const typeHints = [
+            item.type,
+            item.mediaType,
+            item.kind,
+            item.mimeType,
+            item.mime,
+            item.format
+        ]
+            .filter(value => typeof value === 'string' && value.trim())
+            .join(' ')
+            .toLowerCase();
+
+        const explicitVideo = item.isVideo === true || typeHints.includes('video') || Boolean(sanitizeMediaUrl(item.videoUrl || item.video || item.playableUrl || item.playable_url));
+        if (explicitVideo || isLikelyVideoUrl(url)) {
+            return url;
+        }
+    }
+
+    return '';
+}
+
+function resolveInstagramVideoUrl(post = {}) {
+    const candidates = [
+        post.instagramVideoUrl,
+        post.videoUrl,
+        post.video,
+        post.instagramVideo,
+        post.mediaUrl
+    ];
+    const ambiguousCandidates = [];
+
+    for (const candidate of candidates) {
+        const value = sanitizeMediaUrl(candidate);
+        if (!value) continue;
+        if (isLikelyVideoUrl(value)) return value;
+        ambiguousCandidates.push(value);
+    }
+
+    const galleryVideo = extractVideoUrlFromGalleryItems(post.gallery);
+    if (galleryVideo) return galleryVideo;
+
+    if (ambiguousCandidates.length > 0) {
+        return ambiguousCandidates[0];
+    }
+
+    const imageAsVideo = sanitizeMediaUrl(post.image);
+    if (isLikelyVideoUrl(imageAsVideo)) return imageAsVideo;
+
+    return '';
+}
+
+function normalizeInstagramMediaItem(item = {}, fallbackPoster = '') {
+    if (typeof item === 'string') {
+        const stringUrl = sanitizeMediaUrl(item);
+        if (!stringUrl) return null;
+        return {
+            type: isLikelyVideoUrl(stringUrl) ? 'video' : 'image',
+            url: stringUrl,
+            poster: ''
+        };
+    }
+
+    const url = sanitizeMediaUrl(
+        item.url ||
+        item.mediaUrl ||
+        item.videoUrl ||
+        item.playableUrl ||
+        item.playable_url ||
+        item.video ||
+        item.image ||
+        item.src
+    );
+    if (!url) return null;
+
+    const declaredType = [
+        item.type,
+        item.mediaType,
+        item.kind,
+        item.mimeType,
+        item.mime,
+        item.format
+    ]
+        .find(value => typeof value === 'string' && value.trim());
+    const declaredTypeNormalized = String(declaredType || '').toLowerCase();
+    const explicitVideo =
+        item.isVideo === true ||
+        declaredTypeNormalized.includes('video') ||
+        Boolean(sanitizeMediaUrl(item.videoUrl || item.video || item.playableUrl || item.playable_url));
+    const isVideo = explicitVideo || isLikelyVideoUrl(url);
+    const poster = isVideo
+        ? (sanitizeMediaUrl(item.poster) || sanitizeMediaUrl(fallbackPoster))
+        : '';
+
     return {
-        type: 'image',
-        url: post.image || '',
-        poster: ''
+        type: isVideo ? 'video' : 'image',
+        url,
+        poster
     };
+}
+
+function getInstagramAllMedia(post = {}) {
+    const media = [];
+    const addMedia = (item) => {
+        if (!item || !item.url) return;
+        const existingByUrl = media.findIndex(existing => existing.url === item.url);
+        if (existingByUrl >= 0) {
+            if (media[existingByUrl].type === 'image' && item.type === 'video') {
+                media[existingByUrl] = item;
+            }
+            return;
+        }
+        const exists = media.some(existing => existing.url === item.url && existing.type === item.type);
+        if (exists) return;
+        media.push(item);
+    };
+
+    const rawImageUrl = sanitizeMediaUrl(post.image);
+    const imageUrl = rawImageUrl && !isLikelyVideoUrl(rawImageUrl) ? rawImageUrl : '';
+    const mediaTypeHint = (post.instagramMediaType || post.mediaType || '').toString().toLowerCase();
+    const mainVideoUrl = resolveInstagramVideoUrl(post);
+    const galleryMedia = Array.isArray(post.gallery)
+        ? post.gallery
+            .map(item => normalizeInstagramMediaItem(item, imageUrl))
+            .filter(Boolean)
+        : [];
+    const hasVideoInGallery = galleryMedia.some(item => item.type === 'video');
+    const effectiveMediaTypeHint = mediaTypeHint || (hasVideoInGallery ? 'video' : '');
+    const consumePosterFromGallery = (videoUrl = '', forceFromSingleImage = false) => {
+        if (!galleryMedia.length) return '';
+
+        // Remover videos duplicados da midia principal (nao contam como midia extra)
+        if (videoUrl) {
+            for (let i = galleryMedia.length - 1; i >= 0; i--) {
+                const item = galleryMedia[i];
+                if (item.type === 'video' && item.url === videoUrl) {
+                    galleryMedia.splice(i, 1);
+                }
+            }
+        }
+
+        const imageIndexes = [];
+        let extraVideoCount = 0;
+        galleryMedia.forEach((item, index) => {
+            if (item.type === 'image') imageIndexes.push(index);
+            if (item.type === 'video' && item.url !== videoUrl) extraVideoCount += 1;
+        });
+
+        if (imageIndexes.length === 0) return '';
+
+        const firstImageIndex = imageIndexes[0];
+        const candidatePoster = galleryMedia[firstImageIndex]?.url || '';
+        if (!candidatePoster) return '';
+
+        const hasSingleImageOnly = imageIndexes.length === 1 && extraVideoCount === 0;
+        const shouldConsume =
+            isLikelyPosterImage(candidatePoster) ||
+            (forceFromSingleImage && hasSingleImageOnly);
+
+        if (!shouldConsume) return '';
+
+        galleryMedia.splice(firstImageIndex, 1);
+        return candidatePoster;
+    };
+
+    let primary = null;
+    let primaryFromGallery = false;
+
+    if (effectiveMediaTypeHint === 'video') {
+        let chosenVideo = mainVideoUrl;
+
+        if (!chosenVideo) {
+            const galleryVideoIndex = galleryMedia.findIndex(item => item.type === 'video');
+            if (galleryVideoIndex >= 0) {
+                chosenVideo = galleryMedia[galleryVideoIndex].url;
+                galleryMedia.splice(galleryVideoIndex, 1);
+                primaryFromGallery = true;
+            }
+        }
+
+        if (chosenVideo) {
+            let poster = imageUrl;
+
+            // Quando o post e apenas video e veio "imagem extra" como miniatura,
+            // usar essa imagem como poster sem contar como segunda midia.
+            if (!poster) {
+                poster = consumePosterFromGallery(chosenVideo, primaryFromGallery || effectiveMediaTypeHint === 'video');
+            }
+
+            primary = {
+                type: 'video',
+                url: chosenVideo,
+                poster: poster || ''
+            };
+        }
+    }
+
+    if (!primary) {
+        if (mainVideoUrl && (effectiveMediaTypeHint === 'video' || !imageUrl || isLikelyVideoUrl(mainVideoUrl))) {
+            primary = {
+                type: 'video',
+                url: mainVideoUrl,
+                poster: imageUrl || ''
+            };
+        } else if (rawImageUrl) {
+            primary = {
+                type: isLikelyVideoUrl(rawImageUrl) ? 'video' : 'image',
+                url: rawImageUrl,
+                poster: ''
+            };
+        } else if (mainVideoUrl) {
+            primary = {
+                type: 'video',
+                url: mainVideoUrl,
+                poster: ''
+            };
+        } else if (galleryMedia.length > 0) {
+            primary = galleryMedia.shift();
+        }
+    }
+
+    if (
+        primary &&
+        primary.type === 'video' &&
+        !primary.poster
+    ) {
+        primary.poster = consumePosterFromGallery(primary.url, effectiveMediaTypeHint === 'video') || '';
+    }
+
+    addMedia(primary);
+    galleryMedia.forEach(addMedia);
+
+    return media;
+}
+
+function primeInstagramCardVideoFrame(videoEl) {
+    if (!videoEl) return;
+    if (videoEl.dataset.previewPrimed === '1') return;
+    if (videoEl.controls) return;
+
+    const markPrimed = () => {
+        videoEl.dataset.previewPrimed = '1';
+        try {
+            videoEl.pause();
+        } catch (_error) {}
+    };
+
+    const applyPreviewFrame = () => {
+        if (videoEl.dataset.previewPrimed === '1') return;
+        const duration = Number(videoEl.duration) || 0;
+        if (!Number.isFinite(duration) || duration <= 0) {
+            markPrimed();
+            return;
+        }
+
+        const target = Math.min(0.25, Math.max(0.02, duration / 8));
+        const onSeeked = () => {
+            videoEl.removeEventListener('seeked', onSeeked);
+            markPrimed();
+        };
+        videoEl.addEventListener('seeked', onSeeked, { once: true });
+
+        try {
+            videoEl.currentTime = target;
+        } catch (_error) {
+            markPrimed();
+        }
+    };
+
+    if (videoEl.readyState >= 1) {
+        applyPreviewFrame();
+    } else {
+        videoEl.addEventListener('loadedmetadata', applyPreviewFrame, { once: true });
+        videoEl.addEventListener('error', markPrimed, { once: true });
+    }
+}
+
+function primeInstagramCardVideos(root = document) {
+    if (!root) return;
+    const videos = root.querySelectorAll('video[data-instagram-card-video="true"]');
+    videos.forEach(videoEl => primeInstagramCardVideoFrame(videoEl));
+}
+
+function getInstagramPostCaption(post = {}, newsId = '') {
+    const directCandidates = [
+        post.content,
+        post.excerpt,
+        post.rawContent,
+        post.caption,
+        post.description
+    ];
+
+    for (const candidate of directCandidates) {
+        if (typeof candidate === 'string' && candidate.trim()) {
+            return candidate.trim();
+        }
+    }
+
+    if (newsId && Array.isArray(allInstagramNews)) {
+        const originalPost = allInstagramNews.find(item => item && item.id === newsId);
+        if (originalPost) {
+            const originalCandidates = [
+                originalPost.content,
+                originalPost.excerpt,
+                originalPost.caption,
+                originalPost.description
+            ];
+            for (const candidate of originalCandidates) {
+                if (typeof candidate === 'string' && candidate.trim()) {
+                    return candidate.trim();
+                }
+            }
+        }
+    }
+
+    return '';
 }
 
 function createInstagramCard(news) {
@@ -1528,9 +2342,10 @@ function createInstagramCard(news) {
     const displayTitle = buildInstagramTitlePreview(news.title, content);
     
     // Verificar se tem galeria e tipo da midia principal
-    const primaryMedia = getInstagramPrimaryMedia(news);
-    const hasGallery = news.gallery && Array.isArray(news.gallery) && news.gallery.length > 0;
-    const totalMedia = hasGallery ? 1 + news.gallery.length : 1;
+    const allMedia = getInstagramAllMedia(news);
+    const primaryMedia = allMedia[0] || { type: 'image', url: '', poster: '' };
+    const hasGallery = allMedia.length > 1;
+    const totalMedia = allMedia.length;
     
     // Guardar dados para uso no modal
     instagramPostsData[news.id] = {
@@ -1539,12 +2354,13 @@ function createInstagramCard(news) {
         comments: profileMeta.comments,
         instagramUrl,
         content,
+        rawContent,
         dateStr,
         timeStr,
         hasGallery,
         totalMedia,
         instagramMediaType: primaryMedia.type,
-        instagramVideoUrl: primaryMedia.type === 'video' ? (news.instagramVideoUrl || '') : '',
+        instagramVideoUrl: primaryMedia.type === 'video' ? primaryMedia.url : '',
         instagramUsername: profileHandle,
         instagramDisplayName: profileName,
         instagramProfileImage: profileImage || '',
@@ -1554,12 +2370,12 @@ function createInstagramCard(news) {
     };
     
     return `
-        <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}')">
+        <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}', this)">
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper">
                 ${primaryMedia.type === 'video'
-                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted loop playsinline preload="metadata" oncanplay="if(this.paused){this.play().catch(()=>{});}"></video>`
-                    : `<img src="${news.image}" alt="${news.title}" loading="lazy">`
+                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)"></video>`
+                    : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
                 }
                 ${hasGallery ? `
                     <div class="instagram-gallery-indicator">
@@ -1596,9 +2412,13 @@ function createInstagramCard(news) {
                 <div class="instagram-card-title-preview" style="font-size: 0.8125rem; color: #262626; line-height: 1.4; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${displayTitle}
                 </div>
+
+                <div class="instagram-card-caption-mobile">
+                    ${escapeHtml(content || displayTitle || '')}
+                </div>
                 
                 <!-- Legenda completa (só aparece quando expandido) -->
-                <div class="instagram-card-caption-full" style="display: none;"></div>
+                <div class="instagram-card-caption-full"></div>
                 
                 <!-- Ações com contadores -->
                 <div class="instagram-card-actions">
@@ -1638,9 +2458,16 @@ function createInstagramCard(news) {
 // Expandir card no grid
 let expandedCardId = null;
 
-function openInstagramModal(newsId) {
+function openInstagramModal(newsId, cardElement = null) {
     const post = instagramPostsData[newsId];
     if (!post) return;
+
+    if (isMobileViewport()) {
+        if (post.instagramUrl && post.instagramUrl !== '#') {
+            window.open(post.instagramUrl, '_blank');
+        }
+        return;
+    }
 
     // Cada abertura do post conta como uma visualizacao
     void trackNewsView(newsId);
@@ -1654,11 +2481,13 @@ function openInstagramModal(newsId) {
     }
     
     // Encontrar o card clicado
-    const card = document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+    const card = (cardElement && cardElement.classList && cardElement.classList.contains('instagram-card'))
+        ? cardElement
+        : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
     if (!card) return;
     
     // PRIMEIRO: Esconder o último card para liberar espaço no grid
-    hideLastCard(newsId);
+    hideLastCard(newsId, card);
     
     // DEPOIS: Expandir o card (agora tem espaço para ocupar 2 colunas)
     card.classList.add('expanded');
@@ -1705,9 +2534,9 @@ function openInstagramModal(newsId) {
             }
         }
     }
-    captionFull.textContent = post.content;
-    captionFull.style.display = 'block';
-    captionFull.style.visibility = 'visible';
+    const captionText = getInstagramPostCaption(post, newsId);
+    captionFull.textContent = captionText || 'Sem legenda disponível.';
+    captionFull.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow-y: auto !important; margin-bottom: 0.75rem !important; padding: 0 !important;';
     
     // Atualizar contadores de curtidas e comentários
     const likesEl = card.querySelector('.instagram-likes-count');
@@ -1740,20 +2569,9 @@ function openInstagramModal(newsId) {
 function setupInstagramGallery(card, post) {
     const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
     if (!imageWrapper) return;
-    
-    // Verificar se tem galeria
-    const hasGallery = post.hasGallery && post.gallery && post.gallery.length > 0;
-    
-    // Montar array de todas as mídias (capa + galeria)
-    const allMedia = [getInstagramPrimaryMedia(post)];
-    if (hasGallery) {
-        post.gallery.forEach(item => {
-            allMedia.push({
-                type: item.type || 'image',
-                url: item.url
-            });
-        });
-    }
+
+    // Montar array de todas as mídias válidas (capa + galeria)
+    const allMedia = getInstagramAllMedia(post);
     
     // Se só tem uma mídia, não precisa de navegação
     if (allMedia.length <= 1) {
@@ -1790,7 +2608,7 @@ function setupInstagramGallery(card, post) {
         }
         const existingVideo = imageWrapper.querySelector('video');
         if (existingVideo) {
-            existingVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #000;';
+            existingVideo.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
             galleryContainer.appendChild(existingVideo);
         }
         
@@ -1803,12 +2621,12 @@ function setupInstagramGallery(card, post) {
         controls = document.createElement('div');
         controls.className = 'instagram-gallery-controls';
         controls.innerHTML = `
-            <button class="instagram-gallery-prev" onclick="event.stopPropagation(); navigateGallery('${post.id}', -1)">
+            <button class="instagram-gallery-prev" onclick="event.stopPropagation(); navigateGallery(this.closest('.instagram-card'), -1)">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
                 </svg>
             </button>
-            <button class="instagram-gallery-next" onclick="event.stopPropagation(); navigateGallery('${post.id}', 1)">
+            <button class="instagram-gallery-next" onclick="event.stopPropagation(); navigateGallery(this.closest('.instagram-card'), 1)">
                 <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                 </svg>
@@ -1833,25 +2651,23 @@ function setupInstagramGallery(card, post) {
 }
 
 // Navegar na galeria
-function navigateGallery(newsId, direction) {
-    const card = document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+function navigateGallery(cardOrNewsId, direction) {
+    const card = (cardOrNewsId && typeof cardOrNewsId === 'object' && cardOrNewsId.nodeType === 1)
+        ? cardOrNewsId
+        : document.querySelector(`.instagram-card[data-instagram-id="${cardOrNewsId}"]`);
     if (!card) return;
-    
+
+    const newsId = card.dataset.instagramId;
+    if (!newsId) return;
+
     const post = instagramPostsData[newsId];
     if (!post) return;
     
     // Montar array de mídias
-    const allMedia = [getInstagramPrimaryMedia(post)];
-    if (post.gallery && post.gallery.length > 0) {
-        post.gallery.forEach(item => {
-            allMedia.push({
-                type: item.type || 'image',
-                url: item.url
-            });
-        });
-    }
+    const allMedia = getInstagramAllMedia(post);
     
     const total = allMedia.length;
+    if (total === 0) return;
     let currentIndex = parseInt(card.dataset.galleryIndex || '0');
     
     // Calcular novo índice
@@ -1869,6 +2685,7 @@ function showGalleryMedia(card, allMedia, index) {
     if (!galleryContainer) return;
     
     const media = allMedia[index];
+    if (!media) return;
     
     // Limpar container
     galleryContainer.innerHTML = '';
@@ -1879,7 +2696,7 @@ function showGalleryMedia(card, allMedia, index) {
         video.src = media.url;
         if (media.poster) video.poster = media.poster;
         video.controls = true;
-        video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #000;';
+        video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
         galleryContainer.appendChild(video);
     } else {
         const img = document.createElement('img');
@@ -1908,7 +2725,8 @@ function closeInstagramCard(card) {
     // GARANTIR que legenda completa está totalmente escondida - ANTES de mostrar o card escondido
     const captionFull = card.querySelector('.instagram-card-caption-full');
     if (captionFull) {
-        captionFull.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important; margin: 0 !important; padding: 0 !important;';
+        captionFull.removeAttribute('style');
+        captionFull.style.display = 'none';
     }
     
     // RESTAURAR imagem de capa e remover controles da galeria
@@ -1934,11 +2752,12 @@ function closeInstagramCard(card) {
                 video.src = primary.url;
                 video.poster = primary.poster || '';
                 video.muted = true;
-                video.loop = true;
                 video.playsInline = true;
                 video.preload = 'metadata';
-                video.oncanplay = () => { if (video.paused) video.play().catch(() => {}); };
+                video.dataset.instagramCardVideo = 'true';
+                video.addEventListener('loadedmetadata', () => primeInstagramCardVideoFrame(video), { once: true });
                 imageWrapper.appendChild(video);
+                primeInstagramCardVideoFrame(video);
             } else {
                 const img = document.createElement('img');
                 img.src = primary.url;
@@ -1974,13 +2793,16 @@ function closeInstagramCard(card) {
     if (time) time.style.display = '';
     
     // DEPOIS: Mostrar o card que estava escondido (evita reflow que mostra a legenda)
-    showLastCard();
+    showLastCard(card);
 }
 
-function hideLastCard(newsIdToKeep) {
+function hideLastCard(newsIdToKeep, expandedCard = null) {
     // Sempre esconder o último card visível para manter tudo na mesma fileira
-    // (exceto o card que está sendo expandido e o "Ver Todos")
-    const allCards = document.querySelectorAll('.instagram-card:not(.instagram-view-all-card)');
+    // (exceto o card que está sendo expandido)
+    const scope = (expandedCard && typeof expandedCard.closest === 'function')
+        ? expandedCard.closest('.instagram-news-grid')
+        : null;
+    const allCards = (scope || document).querySelectorAll('.instagram-card');
     
     // Encontrar o último card que não é o que será expandido
     for (let i = allCards.length - 1; i >= 0; i--) {
@@ -1997,9 +2819,13 @@ function hideLastCard(newsIdToKeep) {
     }
 }
 
-function showLastCard() {
+function showLastCard(referenceCard = null) {
+    const scope = (referenceCard && typeof referenceCard.closest === 'function')
+        ? referenceCard.closest('.instagram-news-grid')
+        : null;
+
     // Mostrar o card que foi escondido
-    const hiddenCard = document.querySelector('.instagram-card[data-was-hidden="true"]');
+    const hiddenCard = (scope || document).querySelector('.instagram-card[data-was-hidden="true"]');
     if (hiddenCard) {
         hiddenCard.style.display = '';
         hiddenCard.dataset.wasHidden = '';
