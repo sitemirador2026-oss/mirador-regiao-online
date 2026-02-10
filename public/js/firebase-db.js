@@ -249,6 +249,22 @@ function darkenColorByPercent(color, percent = 10) {
     return `rgb(${r}, ${g}, ${b})`;
 }
 
+function normalizeBrandText(value) {
+    const text = String(value || '').normalize('NFC');
+    const fixWord = (match, correctWord) => {
+        if (match === match.toUpperCase()) return correctWord.toLocaleUpperCase('pt-BR');
+        if (match.charAt(0) === match.charAt(0).toUpperCase()) {
+            return correctWord.charAt(0).toUpperCase() + correctWord.slice(1);
+        }
+        return correctWord;
+    };
+
+    return text
+        .replace(/\bregiao\b/gi, match => fixWord(match, 'região'))
+        .replace(/\bregi\u00e3o\b/gi, match => fixWord(match, 'região'))
+        .replace(/\bnoticias\b/gi, match => fixWord(match, 'notícias'));
+}
+
 // Ajustar cor do texto do footer automaticamente
 function adjustFooterTextColor(colors) {
     const footerBg = colors.Muted || '#f1f5f9';
@@ -269,11 +285,15 @@ function applyBrand(brand) {
         return;
     }
 
+    const normalizedSiteName = normalizeBrandText(brand.siteName || '');
+    const siteName = normalizedSiteName || 'Mirador e Região Online';
+    const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias');
+
     // Nome do site
-    if (brand.siteName) {
-        document.title = brand.siteName;
+    if (siteName) {
+        document.title = siteName;
         const titleEl = document.getElementById('siteTitle');
-        if (titleEl) titleEl.textContent = brand.siteName;
+        if (titleEl) titleEl.textContent = siteName;
     }
 
     // Logo, nome e subtitulo no header
@@ -283,8 +303,7 @@ function applyBrand(brand) {
     const siteTaglineText = document.getElementById('siteTaglineText');
     const topStripName = document.getElementById('siteTopStripName');
     const topStripTagline = document.getElementById('siteTopStripTagline');
-    const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias';
-    const initials = String(brand.siteName || '')
+    const initials = String(siteName || '')
         .trim()
         .split(/\s+/)
         .filter(Boolean)
@@ -299,7 +318,7 @@ function applyBrand(brand) {
         console.log('[Aplicar Marca] Aplicando logo...');
         logoImg.src = brand.logo;
         logoImg.style.display = 'block';
-        logoImg.alt = brand.siteName || 'Logo';
+        logoImg.alt = siteName || 'Logo';
         if (logoFallback) logoFallback.style.display = 'none';
         console.log('[Aplicar Marca] Logo aplicada!');
     } else if (logoImg) {
@@ -310,19 +329,19 @@ function applyBrand(brand) {
         }
     }
 
-    if (brand.siteName && logoText) {
-        console.log('[Aplicar Marca] Aplicando texto:', brand.siteName);
-        logoText.textContent = brand.siteName;
+    if (siteName && logoText) {
+        console.log('[Aplicar Marca] Aplicando texto:', siteName);
+        logoText.textContent = siteName;
         logoText.style.display = 'block';
         console.log('[Aplicar Marca] Texto aplicado!');
     }
 
-    if (brand.siteName && topStripName) {
-        topStripName.textContent = String(brand.siteName).toUpperCase();
+    if (siteName && topStripName) {
+        topStripName.textContent = normalizeBrandText(siteName).toLocaleUpperCase('pt-BR');
     }
 
     if (topStripTagline) {
-        topStripTagline.textContent = String(siteTagline || 'Portal de Not\u00edcias').toUpperCase();
+        topStripTagline.textContent = normalizeBrandText(siteTagline || 'Portal de Not\u00edcias').toLocaleUpperCase('pt-BR');
     }
 
     if (siteTaglineText) {
@@ -332,8 +351,8 @@ function applyBrand(brand) {
 
     // Footer
     const footerSiteName = document.getElementById('footerSiteName');
-    if (footerSiteName && brand.siteName) {
-        footerSiteName.textContent = brand.siteName;
+    if (footerSiteName && siteName) {
+        footerSiteName.textContent = siteName;
     }
 }
 // FunÃ§Ãµes de carregamento

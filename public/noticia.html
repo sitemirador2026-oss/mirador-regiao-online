@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <title id="siteTitle">Notícia - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=133">
+    <link rel="stylesheet" href="css/styles.css?v=135">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -568,6 +568,22 @@
             return `rgb(${Math.round(rgb.r * factor)}, ${Math.round(rgb.g * factor)}, ${Math.round(rgb.b * factor)})`;
         }
 
+        function normalizeBrandText(value) {
+            const text = String(value || '').normalize('NFC');
+            const fixWord = (match, correctWord) => {
+                if (match === match.toUpperCase()) return correctWord.toLocaleUpperCase('pt-BR');
+                if (match.charAt(0) === match.charAt(0).toUpperCase()) {
+                    return correctWord.charAt(0).toUpperCase() + correctWord.slice(1);
+                }
+                return correctWord;
+            };
+
+            return text
+                .replace(/\bregiao\b/gi, match => fixWord(match, 'região'))
+                .replace(/\bregi\u00e3o\b/gi, match => fixWord(match, 'região'))
+                .replace(/\bnoticias\b/gi, match => fixWord(match, 'notícias'));
+        }
+
         function escapeHtml(value) {
             return String(value == null ? '' : value)
                 .replace(/&/g, '&amp;')
@@ -702,8 +718,8 @@
                 const brandDoc = await db.collection('settings').doc('brand').get();
                 if (brandDoc.exists) {
                     const brand = brandDoc.data();
-                    const siteName = brand.siteName || 'Mirador e Região Online';
-                    const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Notícias';
+                    const siteName = normalizeBrandText(brand.siteName || 'Mirador e Região Online');
+                    const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Notícias');
                     
                     // Update title
                     const siteTitleEl = document.getElementById('siteTitle');
@@ -727,11 +743,11 @@
                     }
 
                     if (topStripName) {
-                        topStripName.textContent = String(siteName).toUpperCase();
+                        topStripName.textContent = normalizeBrandText(siteName).toLocaleUpperCase('pt-BR');
                     }
 
                     if (topStripTagline) {
-                        topStripTagline.textContent = String(siteTagline).toUpperCase();
+                        topStripTagline.textContent = normalizeBrandText(siteTagline).toLocaleUpperCase('pt-BR');
                     }
                     
                     // Update footer

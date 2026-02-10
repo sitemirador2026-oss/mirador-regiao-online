@@ -27,7 +27,7 @@
     --header-top-strip-bg: #1c2737;
     --header-top-strip-bg: color-mix(in srgb, var(--header-bg, #1c2737) 90%, #000 10%);
     --font-news: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
-    --mobile-top-strip-height: 32px;
+    --mobile-top-strip-height: 34px;
     --mobile-header-height: 62px;
     
     /* Espaçamentos */
@@ -81,8 +81,8 @@ body {
     max-width: 100%;
     margin-left: 0;
     margin-right: 0;
-    padding-top: 0.2rem;
-    padding-bottom: 0.2rem;
+    padding-top: 0.26rem;
+    padding-bottom: 0.26rem;
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     min-height: var(--mobile-top-strip-height);
@@ -110,7 +110,7 @@ body {
     font-size: 0.86rem;
     font-weight: 700;
     letter-spacing: 0.02em;
-    line-height: 1;
+    line-height: 1.2;
     color: var(--header-text, #ffffff);
     text-transform: uppercase;
     white-space: nowrap;
@@ -129,7 +129,7 @@ body {
     font-size: 0.74rem;
     font-weight: 400;
     letter-spacing: 0.05em;
-    line-height: 1;
+    line-height: 1.2;
     color: var(--header-text, #ffffff);
     opacity: 0.95;
     text-transform: uppercase;
@@ -906,6 +906,11 @@ body {
 /* Instagram News Section - Layout tipo feed do Instagram */
 .instagram-news-section {
     background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    border-top: none;
+    padding-top: 0;
+}
+
+.instagram-news-section > .container {
     border-top: 3px solid #E4405F;
     padding-top: 2rem;
 }
@@ -989,6 +994,21 @@ body {
     .instagram-news-grid {
         grid-template-columns: 1fr;
         gap: 0.75rem;
+    }
+
+    .instagram-card.expanded {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .instagram-card.expanded .instagram-card-image-wrapper {
+        min-height: 240px;
+        max-height: none;
+    }
+
+    .instagram-card.expanded .instagram-card-content {
+        max-height: none;
     }
 }
 
@@ -2202,8 +2222,6 @@ body {
 
     .news-card-image-wrapper,
     .news-card-horizontal-image,
-    .instagram-card,
-    .instagram-card-image-wrapper,
     .news-card-horizontal {
         border-radius: 0;
     }
@@ -2235,64 +2253,7 @@ body {
     }
 
     .instagram-mobile-next-btn {
-        display: inline-flex;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel {
-        display: flex;
-        overflow-x: auto;
-        gap: 0.75rem;
-        scroll-snap-type: x mandatory;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 0.35rem;
-        grid-template-columns: none;
-        grid-auto-rows: auto;
-        overflow-y: hidden;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel::-webkit-scrollbar {
-        display: none;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel {
-        scrollbar-width: none;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card {
-        flex: 0 0 100%;
-        scroll-snap-align: start;
-        width: 100%;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card:hover {
-        transform: none;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-image-wrapper {
-        aspect-ratio: 4 / 5;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-header,
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-actions,
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-time,
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-title-preview {
-        display: none;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-content {
-        padding: 0.8rem 0.85rem;
-    }
-
-    .instagram-news-grid.instagram-mobile-carousel .instagram-card-caption-mobile {
-        display: -webkit-box;
-        -webkit-line-clamp: 4;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        font-size: 0.86rem;
-        line-height: 1.45;
-        color: #1f2937;
-        min-height: 2.4em;
+        display: none !important;
     }
 }
 

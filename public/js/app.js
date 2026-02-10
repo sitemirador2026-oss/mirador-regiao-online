@@ -1771,21 +1771,11 @@ function renderInstagramFeedSection(newsItems = []) {
 
 function scrollInstagramCarousel(containerId, direction = 1, event = null) {
     if (event) event.preventDefault();
-    const container = document.getElementById(containerId);
-    if (!container || !isMobileViewport()) return;
-
-    const firstCard = container.querySelector('.instagram-card');
-    const gap = parseFloat(getComputedStyle(container).columnGap || getComputedStyle(container).gap || '0') || 0;
-    const step = firstCard ? firstCard.getBoundingClientRect().width + gap : container.clientWidth;
-
-    container.scrollBy({
-        left: Math.max(1, direction) * step,
-        behavior: 'smooth'
-    });
+    // Modo carrossel foi desativado para manter o mesmo layout do desktop no mobile.
+    return;
 }
 
 function updateInstagramMobileCarousels() {
-    const isMobile = isMobileViewport();
     const sections = [
         { containerId: 'instagramNewsGrid', buttonId: 'instagramTopNextBtn' },
         { containerId: 'categoryInstagramFeed', buttonId: 'instagramFeedNextBtn' }
@@ -1796,18 +1786,10 @@ function updateInstagramMobileCarousels() {
         const button = document.getElementById(entry.buttonId);
         if (!container) return;
 
-        if (isMobile) {
-            container.classList.add('instagram-mobile-carousel');
-            if (button) {
-                const cardCount = container.querySelectorAll('.instagram-card').length;
-                button.style.display = cardCount > 1 ? 'inline-flex' : 'none';
-            }
-        } else {
-            container.classList.remove('instagram-mobile-carousel');
-            container.scrollLeft = 0;
-            if (button) {
-                button.style.display = 'none';
-            }
+        container.classList.remove('instagram-mobile-carousel');
+        container.scrollLeft = 0;
+        if (button) {
+            button.style.display = 'none';
         }
     });
 }
@@ -2490,13 +2472,6 @@ function openInstagramModal(newsId, cardElement = null) {
     const post = instagramPostsData[newsId];
     if (!post) return;
 
-    if (isMobileViewport()) {
-        if (post.instagramUrl && post.instagramUrl !== '#') {
-            window.open(post.instagramUrl, '_blank');
-        }
-        return;
-    }
-
     // Cada abertura do post conta como uma visualizacao
     void trackNewsView(newsId);
     
@@ -2514,8 +2489,10 @@ function openInstagramModal(newsId, cardElement = null) {
         : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
     if (!card) return;
     
-    // PRIMEIRO: Esconder o último card para liberar espaço no grid
-    hideLastCard(newsId, card);
+    // Em desktop, escondemos o último card para preservar a grade quando o card expande.
+    if (!isMobileViewport()) {
+        hideLastCard(newsId, card);
+    }
     
     // DEPOIS: Expandir o card (agora tem espaço para ocupar 2 colunas)
     card.classList.add('expanded');
