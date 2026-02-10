@@ -7,7 +7,7 @@
     <meta name="description" content="Not&iacute;cias de Mirador, regi&atilde;o e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Regi&atilde;o Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=130">
+    <link rel="stylesheet" href="css/styles.css?v=132">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -93,6 +93,16 @@
 
         .brand-loading {
             opacity: 0.7;
+        }
+
+        @media (min-width: 769px) {
+            .site-brand-text-wrap {
+                display: none;
+            }
+
+            .header-content.header-content-brand {
+                grid-template-columns: 1fr auto 1fr;
+            }
         }
 
         @media (max-width: 1024px) {
@@ -609,7 +619,7 @@
     
     <script src="js/firebase-config.js?v=16"></script>
     <script src="js/firebase-db.js?v=23"></script>
-    <script src="js/app.js?v=77"></script>
+    <script src="js/app.js?v=78"></script>
 </body>
 
 </html>

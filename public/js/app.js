@@ -700,7 +700,9 @@ function renderTopBannerSlot(slotId, slotConfig, card) {
         return false;
     }
 
-    applyTopBannerCardAspectRatio(card, media);
+    if (isMobileViewport()) {
+        applyTopBannerCardAspectRatio(card, media);
+    }
 
     const transition = TOP_BANNER_TRANSITIONS.includes(slotConfig.transition)
         ? slotConfig.transition
