@@ -114,6 +114,36 @@ function parseCompactNumber(value) {
     return Math.max(0, Math.round(numeric * multiplier));
 }
 
+function extractFirstIntegerByPatterns(text = '', patterns = []) {
+    for (const pattern of patterns) {
+        const match = String(text || '').match(pattern);
+        if (!match || match[1] == null) continue;
+        const parsed = parseInt(String(match[1]), 10);
+        if (Number.isFinite(parsed) && parsed >= 0) {
+            return parsed;
+        }
+    }
+    return 0;
+}
+
+function extractInstagramEngagementFromHtml(html = '') {
+    if (!html) return { likes: 0, comments: 0 };
+
+    const likes = extractFirstIntegerByPatterns(html, [
+        /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"like_count"\s*:\s*(\d+)/i
+    ]);
+
+    const comments = extractFirstIntegerByPatterns(html, [
+        /"edge_media_to_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"comment_count"\s*:\s*(\d+)/i
+    ]);
+
+    return { likes, comments };
+}
+
 function sanitizeInstagramHandle(value = '') {
     const text = String(value || '').trim().replace(/^@/, '');
     if (!text) return '';
@@ -283,10 +313,13 @@ async function scrapeInstagramMeta(instagramUrl = '') {
 
     let username = extractInstagramUsernameFromText(ogDescription) || extractInstagramUsernameFromText(ogTitle) || extractInstagramUsernameFromUrl(cleanUrl);
 
-    const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+likes?/i);
-    const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+comments?/i);
-    const likes = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
-    const comments = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+    const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
+    const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[aá]rios?)/i);
+    const likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
+    const commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+    const engagementFromHtml = extractInstagramEngagementFromHtml(html);
+    const likes = likesFromDescription > 0 ? likesFromDescription : engagementFromHtml.likes;
+    const comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
 
     let displayName = '';
     const displayFromTitle = (ogTitle || '').match(/^(.+?)\s+\(@[a-z0-9._]{2,30}\)/i);
@@ -357,6 +390,11 @@ app.get('/api/health', (req, res) => {
 
 app.get('/api/instagram/meta', async (req, res) => {
     try {
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+            Pragma: 'no-cache',
+            Expires: '0'
+        });
         const url = String(req.query.url || '').trim();
         if (!url) {
             return res.status(400).json({ success: false, error: 'Parâmetro url é obrigatório' });

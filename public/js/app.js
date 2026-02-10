@@ -383,21 +383,23 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
     };
 }
 
-async function fetchInstagramMeta(instagramUrl) {
+async function fetchInstagramMeta(instagramUrl, options = {}) {
+    const forceFresh = Boolean(options.forceFresh);
     let internalMeta = null;
     let microlinkData = null;
     let noembedData = null;
 
     const encodedUrl = encodeURIComponent(instagramUrl);
-    const workerEndpoint = `https://mirador-r2.sitemirador2026.workers.dev/api/instagram/meta?url=${encodedUrl}`;
-    const localEndpoint = `/api/instagram/meta?url=${encodedUrl}`;
+    const requestSuffix = forceFresh ? `&_t=${Date.now()}` : '';
+    const workerEndpoint = `https://mirador-r2.sitemirador2026.workers.dev/api/instagram/meta?url=${encodedUrl}${requestSuffix}`;
+    const localEndpoint = `/api/instagram/meta?url=${encodedUrl}${requestSuffix}`;
     const metaEndpoints = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
         ? [workerEndpoint]
         : [localEndpoint, workerEndpoint];
 
     for (const endpoint of metaEndpoints) {
         try {
-            const response = await fetch(endpoint);
+            const response = await fetch(endpoint, { cache: forceFresh ? 'no-store' : 'default' });
             if (!response.ok) continue;
             const payload = await response.json();
             if (payload && payload.success) {
@@ -407,36 +409,53 @@ async function fetchInstagramMeta(instagramUrl) {
         } catch (_e) {}
     }
 
-    try {
-        const response = await fetch(`https://api.microlink.io/?url=${encodeURIComponent(instagramUrl)}`);
-        if (response.ok) {
-            const payload = await response.json();
-            microlinkData = payload?.data || null;
-        }
-    } catch (_e) {}
+    const internalLikes = internalMeta?.likes != null ? parseInstagramCount(internalMeta.likes) : 0;
+    const internalComments = internalMeta?.comments != null ? parseInstagramCount(internalMeta.comments) : 0;
+    const needsExternalCountFallback = internalLikes <= 0 && internalComments <= 0;
+    const canUseMicrolinkNow = Date.now() >= instagramMicrolinkCooldownUntil;
 
-    if (!microlinkData) {
+    if (needsExternalCountFallback && canUseMicrolinkNow) {
         try {
-            const response = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(instagramUrl)}`);
+            const microlinkEndpoint = `https://api.microlink.io/?url=${encodeURIComponent(instagramUrl)}${forceFresh ? `&_t=${Date.now()}` : ''}`;
+            const response = await fetch(microlinkEndpoint, { cache: forceFresh ? 'no-store' : 'default' });
+            if (response.status === 429) {
+                instagramMicrolinkCooldownUntil = Date.now() + INSTAGRAM_MICROLINK_COOLDOWN_MS;
+            } else if (response.ok) {
+                const payload = await response.json();
+                microlinkData = payload?.data || null;
+            }
+        } catch (_e) {}
+    }
+
+    const shouldUseNoembedFallback = !internalMeta && !microlinkData;
+    if (shouldUseNoembedFallback) {
+        try {
+            const noembedEndpoint = `https://noembed.com/embed?url=${encodeURIComponent(instagramUrl)}${forceFresh ? `&_t=${Date.now()}` : ''}`;
+            const response = await fetch(noembedEndpoint, { cache: forceFresh ? 'no-store' : 'default' });
             if (response.ok) {
                 noembedData = await response.json();
             }
         } catch (_e) {}
     }
 
+    const microlinkLikes = pickBestInstagramCount(
+        microlinkData?.likes,
+        microlinkData?.like_count,
+        microlinkData?.engagement?.likes
+    );
+    const microlinkComments = pickBestInstagramCount(
+        microlinkData?.comments,
+        microlinkData?.comment_count,
+        microlinkData?.engagement?.comments
+    );
+    const resolvedLikes = internalLikes > 0 ? internalLikes : microlinkLikes;
+    const resolvedComments = internalComments > 0 ? internalComments : microlinkComments;
+    const likesSource = internalLikes > 0 ? 'instagram' : (microlinkLikes > 0 ? 'microlink' : 'none');
+    const commentsSource = internalComments > 0 ? 'instagram' : (microlinkComments > 0 ? 'microlink' : 'none');
+
     const merged = {
-        likes: pickBestInstagramCount(
-            internalMeta?.likes,
-            microlinkData?.likes,
-            microlinkData?.like_count,
-            microlinkData?.engagement?.likes
-        ),
-        comments: pickBestInstagramCount(
-            internalMeta?.comments,
-            microlinkData?.comments,
-            microlinkData?.comment_count,
-            microlinkData?.engagement?.comments
-        ),
+        likes: resolvedLikes,
+        comments: resolvedComments,
         title: internalMeta?.title || microlinkData?.title || noembedData?.title || '',
         description: internalMeta?.description || microlinkData?.description || noembedData?.title || '',
         authorName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
@@ -447,7 +466,13 @@ async function fetchInstagramMeta(instagramUrl) {
         hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
 
-    return normalizeInstagramMeta(merged, instagramUrl);
+    const normalized = normalizeInstagramMeta(merged, instagramUrl);
+    return {
+        ...normalized,
+        likesSource,
+        commentsSource,
+        source: internalMeta ? 'instagram' : (microlinkData ? 'microlink' : (noembedData ? 'noembed' : 'unknown'))
+    };
 }
 
 function getInstagramVisiblePostsCount() {
@@ -1673,6 +1698,15 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Instagram News functionality
 let allInstagramNews = [];
+const INSTAGRAM_STATS_REQUEST_GAP_MS = 600;
+const INSTAGRAM_STATS_REFRESH_INTERVAL_MS = 3 * 60 * 1000;
+const INSTAGRAM_STATS_MIN_FETCH_INTERVAL_MS = 2 * 60 * 1000;
+const INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS = 12;
+const INSTAGRAM_MICROLINK_COOLDOWN_MS = 10 * 60 * 1000;
+let instagramStatsRefreshTimer = null;
+let instagramStatsRefreshQueue = Promise.resolve();
+const instagramStatsLastFetchMap = new Map();
+let instagramMicrolinkCooldownUntil = 0;
 const DEFAULT_INSTAGRAM_PROFILE_SETTINGS = {
     displayName: 'Mirador e Região Online',
     username: 'mirador_e_regiao_online',
@@ -2054,6 +2088,11 @@ async function goToInstagramFeedSection() {
         await loadInstagramNews();
     } else {
         renderInstagramFeedSection(allInstagramNews);
+        queueInstagramStatsRefresh(allInstagramNews, {
+            force: false,
+            forceFresh: true,
+            limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
+        });
     }
 
     const section = document.getElementById('instagramFeedSection');
@@ -2130,6 +2169,7 @@ async function loadInstagramNews() {
             container.innerHTML = '';
             renderInstagramFeedSection([]);
             updateInstagramMobileCarousels();
+            stopInstagramStatsAutoRefresh();
             return;
         }
         
@@ -2143,7 +2183,8 @@ async function loadInstagramNews() {
         updateInstagramMobileCarousels();
         
         // Atualizar contagens reais de curtidas/comentários
-        updateInstagramStats(newsToShow);
+        queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: true });
+        scheduleInstagramStatsAutoRefresh();
         
     } catch (error) {
         console.error('[App] Erro ao carregar notícias do Instagram:', error);
@@ -2151,22 +2192,143 @@ async function loadInstagramNews() {
 }
 
 // Atualizar estatísticas do Instagram (curtidas e comentários)
-async function updateInstagramStats(newsItems) {
-    const requestIntervalMs = 450;
-    for (const news of newsItems) {
-        if (news.instagramUrl) {
-            try {
-                const meta = await fetchInstagramMeta(news.instagramUrl);
-                if (meta) {
-                    updateInstagramCardStats(news.id, meta);
-                }
-            } catch (e) {
-                console.log('[App] Erro ao buscar stats do Instagram:', e);
+function getInstagramStatsFetchKey(newsItem = {}) {
+    if (newsItem.id) return `id:${newsItem.id}`;
+    if (newsItem.instagramUrl) return `url:${newsItem.instagramUrl}`;
+    return '';
+}
+
+function normalizeInstagramStatsQueue(newsItems = [], limit = 0) {
+    const list = Array.isArray(newsItems) ? newsItems : [];
+    const deduped = [];
+    const seen = new Set();
+    const maxItems = Number(limit) > 0 ? Number(limit) : 0;
+
+    for (const item of list) {
+        if (!item || !item.instagramUrl) continue;
+        const key = getInstagramStatsFetchKey(item);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        deduped.push(item);
+        if (maxItems > 0 && deduped.length >= maxItems) break;
+    }
+
+    return deduped;
+}
+
+function getRenderedInstagramNews() {
+    const renderedItems = [];
+    const seen = new Set();
+    const selectors = [
+        '#instagramNewsGrid .instagram-card[data-instagram-id]',
+        '#categoryInstagramFeed .instagram-card[data-instagram-id]'
+    ];
+
+    document.querySelectorAll(selectors.join(',')).forEach((card) => {
+        const newsId = card?.dataset?.instagramId;
+        if (!newsId || seen.has(newsId)) return;
+        seen.add(newsId);
+
+        const fromAllNews = Array.isArray(allInstagramNews)
+            ? allInstagramNews.find(item => item && item.id === newsId)
+            : null;
+        if (fromAllNews && fromAllNews.instagramUrl) {
+            renderedItems.push(fromAllNews);
+            return;
+        }
+
+        const fromRuntime = instagramPostsData[newsId];
+        if (fromRuntime && fromRuntime.instagramUrl) {
+            renderedItems.push(fromRuntime);
+        }
+    });
+
+    return renderedItems;
+}
+
+function shouldRefreshInstagramStats(fetchKey, force = false) {
+    if (force) return true;
+    const lastFetchAt = instagramStatsLastFetchMap.get(fetchKey) || 0;
+    return (Date.now() - lastFetchAt) >= INSTAGRAM_STATS_MIN_FETCH_INTERVAL_MS;
+}
+
+function scheduleInstagramStatsAutoRefresh() {
+    stopInstagramStatsAutoRefresh();
+
+    if (!Array.isArray(allInstagramNews) || allInstagramNews.length === 0) return;
+
+    instagramStatsRefreshTimer = setInterval(() => {
+        if (document.hidden) return;
+        const renderedPosts = getRenderedInstagramNews();
+        if (renderedPosts.length === 0) return;
+        queueInstagramStatsRefresh(renderedPosts, {
+            force: false,
+            forceFresh: true,
+            limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
+        });
+    }, INSTAGRAM_STATS_REFRESH_INTERVAL_MS);
+}
+
+function stopInstagramStatsAutoRefresh() {
+    if (!instagramStatsRefreshTimer) return;
+    clearInterval(instagramStatsRefreshTimer);
+    instagramStatsRefreshTimer = null;
+}
+
+function queueInstagramStatsRefresh(newsItems = [], options = {}) {
+    const queueItems = normalizeInstagramStatsQueue(newsItems, options.limit || 0);
+    if (queueItems.length === 0) return Promise.resolve();
+
+    instagramStatsRefreshQueue = instagramStatsRefreshQueue
+        .catch(() => {})
+        .then(() => runInstagramStatsRefresh(queueItems, options));
+
+    return instagramStatsRefreshQueue;
+}
+
+async function runInstagramStatsRefresh(newsItems = [], options = {}) {
+    const queueItems = normalizeInstagramStatsQueue(newsItems, options.limit || 0);
+    if (queueItems.length === 0) return;
+
+    const force = Boolean(options.force);
+    const forceFresh = options.forceFresh !== false;
+
+    for (const news of queueItems) {
+        const fetchKey = getInstagramStatsFetchKey(news);
+        if (!fetchKey || !news.instagramUrl) continue;
+        if (!shouldRefreshInstagramStats(fetchKey, force)) continue;
+
+        try {
+            const meta = await fetchInstagramMeta(news.instagramUrl, { forceFresh });
+            if (meta) {
+                updateInstagramCardStats(news.id, meta);
+                instagramStatsLastFetchMap.set(fetchKey, Date.now());
             }
-            await new Promise(resolve => setTimeout(resolve, requestIntervalMs));
+        } catch (e) {
+            console.log('[App] Erro ao buscar stats do Instagram:', e);
+        }
+
+        if (INSTAGRAM_STATS_REQUEST_GAP_MS > 0) {
+            await new Promise(resolve => setTimeout(resolve, INSTAGRAM_STATS_REQUEST_GAP_MS));
         }
     }
 }
+
+async function updateInstagramStats(newsItems, options = {}) {
+    return queueInstagramStatsRefresh(newsItems, options);
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) return;
+    if (!Array.isArray(allInstagramNews) || allInstagramNews.length === 0) return;
+    const renderedPosts = getRenderedInstagramNews();
+    if (renderedPosts.length === 0) return;
+    queueInstagramStatsRefresh(renderedPosts, {
+        force: true,
+        forceFresh: true,
+        limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
+    });
+});
 
 // Variável para armazenar os dados dos posts do Instagram
 let instagramPostsData = {};
@@ -3407,8 +3569,16 @@ function updateInstagramCardStats(newsId, stats) {
     const currentComments = pickBestInstagramCount(current.comments, current.instagramComments, current.rawComments, 0);
     const incomingLikes = stats && stats.likes != null ? parseInstagramCount(stats.likes) : 0;
     const incomingComments = stats && stats.comments != null ? parseInstagramCount(stats.comments) : 0;
-    const finalLikesValue = incomingLikes > 0 ? incomingLikes : currentLikes;
-    const finalCommentsValue = incomingComments > 0 ? incomingComments : currentComments;
+    const likesSource = String(stats?.likesSource || stats?.source || '').toLowerCase();
+    const commentsSource = String(stats?.commentsSource || stats?.source || '').toLowerCase();
+    const canTrustIncomingLikes = likesSource === 'instagram';
+    const canTrustIncomingComments = commentsSource === 'instagram';
+    const finalLikesValue = incomingLikes > 0
+        ? (canTrustIncomingLikes ? incomingLikes : Math.max(currentLikes, incomingLikes))
+        : currentLikes;
+    const finalCommentsValue = incomingComments > 0
+        ? (canTrustIncomingComments ? incomingComments : Math.max(currentComments, incomingComments))
+        : currentComments;
 
     likesEls.forEach((el) => {
         el.textContent = formatNumber(finalLikesValue);

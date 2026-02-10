@@ -92,6 +92,36 @@ function parseCompactNumber(value) {
   return Math.max(0, Math.round(numeric * multiplier));
 }
 
+function extractFirstIntegerByPatterns(text = '', patterns = []) {
+  for (const pattern of patterns) {
+    const match = String(text || '').match(pattern);
+    if (!match || match[1] == null) continue;
+    const parsed = parseInt(String(match[1]), 10);
+    if (Number.isFinite(parsed) && parsed >= 0) {
+      return parsed;
+    }
+  }
+  return 0;
+}
+
+function extractInstagramEngagementFromHtml(html = '') {
+  if (!html) return { likes: 0, comments: 0 };
+
+  const likes = extractFirstIntegerByPatterns(html, [
+    /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"like_count"\s*:\s*(\d+)/i
+  ]);
+
+  const comments = extractFirstIntegerByPatterns(html, [
+    /"edge_media_to_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"comment_count"\s*:\s*(\d+)/i
+  ]);
+
+  return { likes, comments };
+}
+
 function sanitizeInstagramHandle(value = '') {
   const text = String(value || '').trim().replace(/^@/, '');
   if (!text) return '';
@@ -203,7 +233,13 @@ async function fetchTextWithRetry(url, attempts = 2) {
 
   for (let attempt = 1; attempt <= attempts; attempt++) {
     try {
-      const response = await fetch(url, { headers: instagramHeaders });
+      const response = await fetch(url, {
+        headers: instagramHeaders,
+        cf: {
+          cacheTtl: 0,
+          cacheEverything: false
+        }
+      });
       if (response.ok) {
         return await response.text();
       }
@@ -279,10 +315,13 @@ async function scrapeInstagramMeta(instagramUrl = '') {
   const htmlMarksVideo = /"is_video"\s*:\s*true/i.test(html) || /"__typename"\s*:\s*"GraphVideo"/i.test(html);
   const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
 
-  const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+likes?/i);
-  const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+comments?/i);
-  const likes = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
-  const comments = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+  const likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
+  const commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[aá]rios?)/i);
+  const likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
+  const commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
+  const engagementFromHtml = extractInstagramEngagementFromHtml(html);
+  const likes = likesFromDescription > 0 ? likesFromDescription : engagementFromHtml.likes;
+  const comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
 
   const username =
     extractInstagramUsernameFromText(ogDescription) ||
@@ -349,22 +388,29 @@ export default {
     if (path === '/api/instagram/meta') {
       try {
         const instagramUrl = url.searchParams.get('url') || '';
+        const instagramMetaHeaders = {
+          ...corsHeaders,
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        };
         if (!instagramUrl) {
           return new Response(
             JSON.stringify({ success: false, error: 'Parâmetro url é obrigatório' }),
-            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { status: 400, headers: instagramMetaHeaders }
           );
         }
 
         const data = await scrapeInstagramMeta(instagramUrl);
         return new Response(
           JSON.stringify({ success: true, ...data }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { headers: instagramMetaHeaders }
         );
       } catch (error) {
         return new Response(
           JSON.stringify({ success: false, error: error.message || 'Erro ao extrair metadados do Instagram' }),
-          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 500, headers: instagramMetaHeaders }
         );
       }
     }

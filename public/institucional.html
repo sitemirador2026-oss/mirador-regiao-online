@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Conteúdo institucional do portal Mirador e Região Online">
     <title id="siteTitle">Institucional - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=144">
+    <link rel="stylesheet" href="css/styles.css?v=148">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -372,23 +372,23 @@
             return `rgb(${darken(rgb.r)}, ${darken(rgb.g)}, ${darken(rgb.b)})`;
         }
 
-        function getContrastColor(hexColor) {
-            const normalized = String(hexColor || '').trim();
-            if (!normalized) return '#64748b';
-            const hex = normalized.replace('#', '');
-            if (hex.length !== 6) return '#64748b';
-            const r = parseInt(hex.slice(0, 2), 16);
-            const g = parseInt(hex.slice(2, 4), 16);
-            const b = parseInt(hex.slice(4, 6), 16);
-            if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) return '#64748b';
-            const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
+        function getContrastColor(colorValue) {
+            const rgb = parseCssColorToRgb(colorValue);
+            if (!rgb) return '#64748b';
+            const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
             return yiq >= 128 ? '#000000' : '#ffffff';
         }
 
         function adjustFooterTextColor(colors) {
-            const footerBg = colors.Muted || '#f1f5f9';
+            const root = document.documentElement;
+            const footerBg =
+                colors.Header ||
+                getComputedStyle(root).getPropertyValue('--footer-bg').trim() ||
+                getComputedStyle(root).getPropertyValue('--header-bg').trim() ||
+                colors.Muted ||
+                '#f1f5f9';
             const contrastColor = getContrastColor(footerBg);
-            document.documentElement.style.setProperty('--footer-text-auto', contrastColor);
+            root.style.setProperty('--footer-text-auto', contrastColor);
         }
 
         function applyColorSettings(colors) {
@@ -413,6 +413,12 @@
                     root.style.setProperty(cssVar, colors[key]);
                 }
             });
+
+            if (colors.Header) {
+                root.style.setProperty('--footer-bg', colors.Header);
+            } else {
+                root.style.removeProperty('--footer-bg');
+            }
 
             adjustFooterTextColor(colors);
         }

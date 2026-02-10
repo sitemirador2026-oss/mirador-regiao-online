@@ -3550,7 +3550,8 @@
                                             <div class="color-item">
                                                 <input type="color" id="colorHeader" value="#ffffff">
                                                 <div class="color-item-info">
-                                                    <div class="color-item-label">Cabecalho</div>
+                                                    <div class="color-item-label">Cabecalho e Rodape (fundo)</div>
+                                                    <div style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.3;">Mesma cor aplicada no fundo do cabecalho e do rodape</div>
                                                     <div class="color-item-value" id="colorHeaderValue">#FFFFFF</div>
                                                 </div>
                                             </div>
@@ -6746,18 +6747,58 @@
         }
 
         // Carregar cores salvas
-        function loadColors() {
-            const savedColors = localStorage.getItem('siteColors');
-            if (savedColors) {
-                const colors = JSON.parse(savedColors);
-                Object.keys(colors).forEach(key => {
-                    const colorInput = document.getElementById(`color${key}`);
-                    if (colorInput) {
-                        colorInput.value = colors[key];
-                    }
-                });
-                updatePreview();
+        async function loadColors() {
+            const defaultColors = {
+                Primary: '#2563eb',
+                Secondary: '#64748b',
+                Accent: '#f8fafc',
+                Background: '#ffffff',
+                Muted: '#f1f5f9',
+                Foreground: '#0f172a',
+                MutedForeground: '#64748b',
+                Header: '#ffffff',
+                HeaderText: '#0f172a',
+                Card: '#ffffff',
+                FooterText: '#64748b'
+            };
+
+            let loadedColors = null;
+
+            try {
+                const doc = await db.collection('settings').doc('colors').get();
+                if (doc.exists) {
+                    loadedColors = doc.data() || {};
+                }
+            } catch (error) {
+                console.log('[Admin] Erro ao carregar cores do Firebase:', error);
             }
+
+            if (!loadedColors) {
+                try {
+                    const savedColors = localStorage.getItem('siteColors');
+                    if (savedColors) {
+                        loadedColors = JSON.parse(savedColors);
+                    }
+                } catch (_error) {
+                    loadedColors = null;
+                }
+            }
+
+            const finalColors = {
+                ...defaultColors,
+                ...(loadedColors && typeof loadedColors === 'object' ? loadedColors : {})
+            };
+
+            Object.keys(finalColors).forEach(key => {
+                const colorInput = document.getElementById(`color${key}`);
+                if (colorInput) {
+                    colorInput.value = finalColors[key];
+                }
+            });
+
+            localStorage.setItem('siteColors', JSON.stringify(finalColors));
+            localStorage.setItem('publicSiteColors', JSON.stringify(finalColors));
+            updatePreview();
             
             // Carregar layout
             loadLayout();
@@ -6852,6 +6893,7 @@
                 
                 // Tambem salvar no localStorage para o admin
                 localStorage.setItem('siteColors', JSON.stringify(colors));
+                localStorage.setItem('publicSiteColors', JSON.stringify(colors));
                 let localBrand = {};
                 try {
                     localBrand = JSON.parse(localStorage.getItem('siteBrand') || '{}');

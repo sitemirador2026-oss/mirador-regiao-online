@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <title id="siteTitle">Notícia - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=144">
+    <link rel="stylesheet" href="css/styles.css?v=148">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -583,6 +583,13 @@
             return `rgb(${Math.round(rgb.r * factor)}, ${Math.round(rgb.g * factor)}, ${Math.round(rgb.b * factor)})`;
         }
 
+        function getContrastColor(colorValue) {
+            const rgb = parseCssColorToRgb(colorValue);
+            if (!rgb) return '#64748b';
+            const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
+            return yiq >= 128 ? '#000000' : '#ffffff';
+        }
+
         function normalizeBrandText(value) {
             const text = String(value || '').normalize('NFC');
             const fixWord = (match, correctWord) => {
@@ -721,10 +728,12 @@
                     if (colors.Border) root.style.setProperty('--border', colors.Border);
                     if (colors.Header) {
                         root.style.setProperty('--header-bg', colors.Header);
+                        root.style.setProperty('--footer-bg', colors.Header);
                         const stripColor = darkenColorByPercent(colors.Header, 10);
                         if (stripColor) {
                             root.style.setProperty('--header-top-strip-bg', stripColor);
                         }
+                        root.style.setProperty('--footer-text-auto', getContrastColor(colors.Header));
                     }
                     if (colors.HeaderText) root.style.setProperty('--header-text', colors.HeaderText);
                 }

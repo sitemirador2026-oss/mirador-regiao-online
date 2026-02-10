@@ -8,8 +8,7 @@
 
 @font-face {
     font-family: 'UOLText';
-    src: url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-light.woff2?v5') format('woff2'),
-         url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-light.woff?v5') format('woff');
+    src: url('../fonts/uol-text-light.woff2') format('woff2');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -17,8 +16,7 @@
 
 @font-face {
     font-family: 'UOLText';
-    src: url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-regular.woff2?v5') format('woff2'),
-         url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-regular.woff?v5') format('woff');
+    src: url('../fonts/uol-text-regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -26,8 +24,7 @@
 
 @font-face {
     font-family: 'UOLText';
-    src: url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-bold.woff2?v5') format('woff2'),
-         url('https://stc.uol.com/c/webfont/projeto-grafico/uol-font/uol-text-bold.woff?v5') format('woff');
+    src: url('../fonts/uol-text-bold.woff2') format('woff2');
     font-weight: 900;
     font-style: normal;
     font-display: swap;
@@ -49,6 +46,7 @@
     --radius: 8px;
     --card-bg: #ffffff;
     --news-columns: 3;
+    --footer-bg: var(--header-bg, #f1f5f9);
     --footer-text: #64748b;
     --footer-text-auto: #64748b;
     --header-top-strip-bg: #1c2737;
@@ -548,14 +546,14 @@ body {
 /* Sections */
 .hero-section,
 .news-section {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-md);
 }
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
 }
 
 .section-title {
@@ -1018,7 +1016,7 @@ body {
 
 /* Instagram News Section - Layout tipo feed do Instagram */
 .instagram-news-section {
-    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+    background: var(--background);
     border-top: none;
     padding-top: 0;
 }
@@ -1030,7 +1028,7 @@ body {
 
 .instagram-news-section > .container > .instagram-section-header {
     border-top: 3px solid #E4405F;
-    padding-top: 2rem;
+    padding-top: 1.1rem;
 }
 
 .instagram-news-section .section-title {
@@ -1062,7 +1060,7 @@ body {
     right: 0;
     bottom: 0;
     width: 2.5rem;
-    background: linear-gradient(270deg, rgba(255, 255, 255, 0.94) 15%, rgba(255, 255, 255, 0));
+    background: linear-gradient(270deg, var(--background) 15%, transparent);
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.2s ease;
@@ -2228,7 +2226,7 @@ body {
 /* Footer */
 .footer {
     margin-top: auto;
-    background: var(--muted);
+    background: var(--footer-bg, var(--header-bg, var(--muted)));
     border-top: 1px solid var(--border);
     padding: 1.35rem 0 0.85rem;
 }
