@@ -1795,6 +1795,51 @@ function bindInstagramSwipeHint(container) {
     }, { passive: true });
 }
 
+function shouldIgnoreInstagramCardOpenTarget(target) {
+    if (!target || typeof target.closest !== 'function') return false;
+    return Boolean(
+        target.closest(
+            '.instagram-card-action-btn, .instagram-card-close, .instagram-video-play-overlay, .instagram-gallery-prev, .instagram-gallery-next, a, button, input, textarea, select, label'
+        )
+    );
+}
+
+function bindInstagramMobileTapOpen(container) {
+    if (!container || container.dataset.mobileTapOpenBound === '1') return;
+    container.dataset.mobileTapOpenBound = '1';
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+
+    container.addEventListener('touchstart', (event) => {
+        const touch = event.touches && event.touches[0];
+        if (!touch) return;
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
+    }, { passive: true });
+
+    container.addEventListener('touchend', (event) => {
+        if (!isMobileViewport()) return;
+        const touch = event.changedTouches && event.changedTouches[0];
+        if (!touch) return;
+
+        const dx = Math.abs(touch.clientX - touchStartX);
+        const dy = Math.abs(touch.clientY - touchStartY);
+        if (dx > 12 || dy > 12) return;
+
+        const target = event.target;
+        if (!target || shouldIgnoreInstagramCardOpenTarget(target)) return;
+
+        const card = target.closest('.instagram-card');
+        if (!card || !container.contains(card)) return;
+        if (card.classList.contains('expanded')) return;
+
+        const newsId = card.dataset.instagramId;
+        if (!newsId) return;
+        openInstagramModal(newsId, card);
+    }, { passive: true });
+}
+
 function updateInstagramSwipeHintPosition(container, shell = null) {
     if (!container) return;
     const parentShell = shell || container.closest('.instagram-carousel-shell');
@@ -1848,6 +1893,7 @@ function updateInstagramMobileCarousels() {
         if (!container) return;
 
         bindInstagramSwipeHint(container);
+        bindInstagramMobileTapOpen(container);
 
         if (isMobile) {
             container.classList.add('instagram-mobile-carousel');
@@ -2667,6 +2713,7 @@ function openInstagramModal(newsId, cardElement = null) {
         ? cardElement
         : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
     if (!card) return;
+    if (card.classList.contains('expanded')) return;
     
     // Em desktop, escondemos o último card para preservar a grade quando o card expande.
     if (!isMobileViewport()) {
