@@ -7,6 +7,7 @@ let settingsLoaded = {
     colors: false,
     brand: false
 };
+let currentBrandSettings = null;
 
 // Iniciar listeners em tempo real
 function startRealtimeListeners() {
@@ -181,10 +182,15 @@ function applyColors(colors) {
     
     console.log('[Aplicar Cores]', count, 'cores aplicadas');
 
-    const headerColorSource = colors.Header || getComputedStyle(root).getPropertyValue('--header-bg').trim();
-    const stripColor = darkenColorByPercent(headerColorSource, 10);
-    if (stripColor) {
-        root.style.setProperty('--header-top-strip-bg', stripColor);
+    const customTopStripBg = String((currentBrandSettings && currentBrandSettings.topStripBgColor) || '').trim();
+    if (customTopStripBg) {
+        root.style.setProperty('--header-top-strip-bg', customTopStripBg);
+    } else {
+        const headerColorSource = colors.Header || getComputedStyle(root).getPropertyValue('--header-bg').trim();
+        const stripColor = darkenColorByPercent(headerColorSource, 10);
+        if (stripColor) {
+            root.style.setProperty('--header-top-strip-bg', stripColor);
+        }
     }
     
     // Ajustar cor do texto do footer baseado na cor de fundo
@@ -279,6 +285,7 @@ function adjustFooterTextColor(colors) {
 // Aplicar marca
 function applyBrand(brand) {
     console.log('[Aplicar Marca] Iniciando...', brand);
+    currentBrandSettings = brand || null;
 
     if (!brand) {
         console.log('[Aplicar Marca] Nenhuma marca recebida');
@@ -288,6 +295,10 @@ function applyBrand(brand) {
     const normalizedSiteName = normalizeBrandText(brand.siteName || '');
     const siteName = normalizedSiteName || 'Mirador e Região Online';
     const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias');
+    const topStripTitleText = normalizeBrandText((brand.topStripTitleText && String(brand.topStripTitleText).trim()) || siteName);
+    const topStripSubtitleText = normalizeBrandText((brand.topStripSubtitleText && String(brand.topStripSubtitleText).trim()) || siteTagline);
+    const topStripBgColor = String(brand.topStripBgColor || '').trim();
+    const topStripTextColor = String(brand.topStripTextColor || '').trim();
 
     // Nome do site
     if (siteName) {
@@ -303,6 +314,7 @@ function applyBrand(brand) {
     const siteTaglineText = document.getElementById('siteTaglineText');
     const topStripName = document.getElementById('siteTopStripName');
     const topStripTagline = document.getElementById('siteTopStripTagline');
+    const root = document.documentElement;
     const initials = String(siteName || '')
         .trim()
         .split(/\s+/)
@@ -336,12 +348,28 @@ function applyBrand(brand) {
         console.log('[Aplicar Marca] Texto aplicado!');
     }
 
-    if (siteName && topStripName) {
-        topStripName.textContent = normalizeBrandText(siteName).toLocaleUpperCase('pt-BR');
+    if (topStripBgColor) {
+        root.style.setProperty('--header-top-strip-bg', topStripBgColor);
+    } else {
+        const headerColorSource = getComputedStyle(root).getPropertyValue('--header-bg').trim();
+        const stripColor = darkenColorByPercent(headerColorSource, 10);
+        if (stripColor) {
+            root.style.setProperty('--header-top-strip-bg', stripColor);
+        }
+    }
+
+    if (topStripTextColor) {
+        root.style.setProperty('--header-top-strip-text', topStripTextColor);
+    } else {
+        root.style.removeProperty('--header-top-strip-text');
+    }
+
+    if (topStripName) {
+        topStripName.textContent = topStripTitleText.toLocaleUpperCase('pt-BR');
     }
 
     if (topStripTagline) {
-        topStripTagline.textContent = normalizeBrandText(siteTagline || 'Portal de Not\u00edcias').toLocaleUpperCase('pt-BR');
+        topStripTagline.textContent = topStripSubtitleText.toLocaleUpperCase('pt-BR');
     }
 
     if (siteTaglineText) {

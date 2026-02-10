@@ -53,6 +53,7 @@
     --footer-text-auto: #64748b;
     --header-top-strip-bg: #1c2737;
     --header-top-strip-bg: color-mix(in srgb, var(--header-bg, #1c2737) 90%, #000 10%);
+    --header-top-strip-text: var(--header-text, #ffffff);
     --font-news: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
     --font-uol: 'UOLText', Arial, sans-serif;
     --mobile-top-strip-height: 34px;
@@ -139,7 +140,7 @@ body {
     font-weight: 900;
     letter-spacing: 0.02em;
     line-height: 1.2;
-    color: var(--header-text, #ffffff);
+    color: var(--header-top-strip-text, var(--header-text, #ffffff));
     text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
@@ -158,7 +159,7 @@ body {
     font-weight: 400;
     letter-spacing: 0.05em;
     line-height: 1.2;
-    color: var(--header-text, #ffffff);
+    color: var(--header-top-strip-text, var(--header-text, #ffffff));
     opacity: 0.95;
     text-transform: uppercase;
     white-space: nowrap;
@@ -1023,6 +1024,11 @@ body {
 }
 
 .instagram-news-section > .container {
+    border-top: 0;
+    padding-top: 0;
+}
+
+.instagram-news-section > .container > .instagram-section-header {
     border-top: 3px solid #E4405F;
     padding-top: 2rem;
 }

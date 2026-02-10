@@ -7,7 +7,7 @@
     <meta name="description" content="Not&iacute;cias de Mirador, regi&atilde;o e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Regi&atilde;o Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=139">
+    <link rel="stylesheet" href="css/styles.css?v=141">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -585,9 +585,52 @@
                     .replace(/\bnoticias\b/gi, function(match) { return fixWord(match, 'notícias'); });
             }
 
+            function parseCssColorToRgb(value) {
+                const color = String(value || '').trim();
+                if (!color) return null;
+
+                const hexMatch = color.match(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/);
+                if (hexMatch) {
+                    const raw = hexMatch[1];
+                    const normalized = raw.length === 3 ? raw.split('').map(function(ch) { return ch + ch; }).join('') : raw;
+                    return {
+                        r: parseInt(normalized.slice(0, 2), 16),
+                        g: parseInt(normalized.slice(2, 4), 16),
+                        b: parseInt(normalized.slice(4, 6), 16)
+                    };
+                }
+
+                const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+                if (rgbMatch) {
+                    const parts = rgbMatch[1].split(',').map(function(part) { return parseFloat(part.trim()); });
+                    if (parts.length >= 3 && Number.isFinite(parts[0]) && Number.isFinite(parts[1]) && Number.isFinite(parts[2])) {
+                        return {
+                            r: Math.max(0, Math.min(255, Math.round(parts[0]))),
+                            g: Math.max(0, Math.min(255, Math.round(parts[1]))),
+                            b: Math.max(0, Math.min(255, Math.round(parts[2])))
+                        };
+                    }
+                }
+
+                return null;
+            }
+
+            function darkenColorByPercent(color, percent) {
+                var safePercent = Number.isFinite(percent) ? percent : 10;
+                var rgb = parseCssColorToRgb(color);
+                if (!rgb) return '';
+                var factor = Math.max(0, Math.min(1, 1 - (safePercent / 100)));
+                return 'rgb(' + Math.round(rgb.r * factor) + ', ' + Math.round(rgb.g * factor) + ', ' + Math.round(rgb.b * factor) + ')';
+            }
+
             function applyBrandSettings(settings) {
                 const siteName = normalizeBrandText(settings.siteName || 'Mirador e Regi\u00e3o Online');
                 const siteTagline = normalizeBrandText((settings.siteTagline && settings.siteTagline.trim()) || 'Portal de Not\u00edcias');
+                const topStripTitleText = normalizeBrandText((settings.topStripTitleText && String(settings.topStripTitleText).trim()) || siteName);
+                const topStripSubtitleText = normalizeBrandText((settings.topStripSubtitleText && String(settings.topStripSubtitleText).trim()) || siteTagline);
+                const topStripBgColor = String(settings.topStripBgColor || '').trim();
+                const topStripTextColor = String(settings.topStripTextColor || '').trim();
+                var root = document.documentElement;
                 
                 // Update title
                 document.title = siteName;
@@ -627,12 +670,28 @@
                     logoText.textContent = siteName;
                 }
 
+                if (topStripBgColor) {
+                    root.style.setProperty('--header-top-strip-bg', topStripBgColor);
+                } else {
+                    var headerColorSource = getComputedStyle(root).getPropertyValue('--header-bg').trim();
+                    var stripColor = darkenColorByPercent(headerColorSource, 10);
+                    if (stripColor) {
+                        root.style.setProperty('--header-top-strip-bg', stripColor);
+                    }
+                }
+
+                if (topStripTextColor) {
+                    root.style.setProperty('--header-top-strip-text', topStripTextColor);
+                } else {
+                    root.style.removeProperty('--header-top-strip-text');
+                }
+
                 if (topStripName) {
-                    topStripName.textContent = normalizeBrandText(siteName || '').toLocaleUpperCase('pt-BR');
+                    topStripName.textContent = topStripTitleText.toLocaleUpperCase('pt-BR');
                 }
 
                 if (topStripTagline) {
-                    topStripTagline.textContent = normalizeBrandText(siteTagline || 'Portal de Not\u00edcias').toLocaleUpperCase('pt-BR');
+                    topStripTagline.textContent = topStripSubtitleText.toLocaleUpperCase('pt-BR');
                 }
 
                 if (siteTaglineText) {
@@ -661,7 +720,7 @@
     </script>
     
     <script src="js/firebase-config.js?v=16"></script>
-    <script src="js/firebase-db.js?v=25"></script>
+    <script src="js/firebase-db.js?v=26"></script>
     <script src="js/app.js?v=84"></script>
 </body>
 

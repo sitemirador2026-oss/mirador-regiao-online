@@ -1694,6 +1694,21 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
         }
 
+        .brand-color-input {
+            height: 46px;
+            padding: 0.35rem;
+            cursor: pointer;
+        }
+
+        .brand-color-input::-webkit-color-swatch-wrapper {
+            padding: 0;
+        }
+
+        .brand-color-input::-webkit-color-swatch {
+            border: none;
+            border-radius: calc(var(--radius) - 2px);
+        }
+
         /* Sidebar logo styles */
         .sidebar-brand-logo {
             width: 60px;
@@ -2148,7 +2163,7 @@
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/>
                             </svg>
-                            Noticias
+                            Criar Notícias
                             <span class="nav-badge" id="newsCountBadge">0</span>
                         </a>
                         <a href="#" class="nav-item" onclick="showPage('instagram', this); return false;">
@@ -2158,6 +2173,7 @@
                                 <circle cx="18" cy="6" r="1" fill="currentColor"/>
                             </svg>
                             Instagram
+                            <span class="nav-badge" id="instagramCountBadge">0</span>
                         </a>
                         <a href="#" class="nav-item" onclick="showPage('importNews', this); return false;">
                             <svg class="nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2369,51 +2385,82 @@
                 <div id="newsPage" class="page-content" style="display: none;">
                     <div class="page-header">
                         <div>
-                            <h1 class="page-title">Noticias</h1>
-                            <p class="page-subtitle">Gerencie todas as suas noticias</p>
+                            <h1 class="page-title">Criar Notícias</h1>
+                            <p class="page-subtitle">Area padronizada para publicações e criação de notícias</p>
                         </div>
-                        <button class="btn btn-primary" onclick="showCreateNewsPage()">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);">
+                        <button class="btn btn-tab active" id="tabNewsPublicacoes" onclick="switchNewsTab('publicacoes')" style="background: transparent; border: none; border-bottom: 2px solid var(--primary); padding: 0.75rem 1.25rem; color: var(--primary); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8"/>
+                            </svg>
+                            Publicações
+                        </button>
+                        <button class="btn btn-tab" id="tabNewsCriar" onclick="switchNewsTab('criar')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Nova Noticia
+                            Criar Notícias
                         </button>
                     </div>
 
-                    <div class="content-section">
-                        <div class="section-header">
-                            <h2 class="section-title">Todas as Noticias</h2>
-                            <div class="section-actions">
-                                <button class="btn btn-secondary btn-sm">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
-                                    </svg>
-                                    Filtrar
-                                </button>
+                    <div id="newsPublicacoesTab" class="news-tab-content">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Todas as Noticias do Portal</h2>
+                                <div class="section-actions">
+                                    <button class="btn btn-secondary btn-sm">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                                        </svg>
+                                        Filtrar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table news-table">
+                                    <colgroup>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Capa</th>
+                                            <th>Titulo</th>
+                                            <th>Categoria</th>
+                                            <th>Data</th>
+                                            <th>Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="newsListPage">
+                                        <!-- Noticias serao inseridas aqui -->
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
-                        <div class="table-container">
-                            <table class="data-table news-table">
-                                <colgroup>
-                                    <col>
-                                    <col>
-                                    <col>
-                                    <col>
-                                    <col>
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>Capa</th>
-                                        <th>Titulo</th>
-                                        <th>Categoria</th>
-                                        <th>Data</th>
-                                        <th>Acoes</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="newsListPage">
-                                    <!-- Noticias serao inseridas aqui -->
-                                </tbody>
-                            </table>
+                    </div>
+
+                    <div id="newsCriarTab" class="news-tab-content" style="display: none;">
+                        <div class="content-section" style="max-width: 760px; margin: 0 auto;">
+                            <div style="padding: 2rem; text-align: center;">
+                                <div style="width: 56px; height: 56px; margin: 0 auto 1rem; border-radius: 50%; background: rgba(59,130,246,0.12); display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                                    <svg width="28" height="28" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                </div>
+                                <h2 class="section-title" style="margin-bottom: 0.5rem;">Criar Notícias</h2>
+                                <p style="color: var(--text-secondary); margin-bottom: 1.25rem;">Abra o editor para escrever e publicar uma nova noticia do portal.</p>
+                                <button class="btn btn-primary" onclick="showCreateNewsPage()">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                    </svg>
+                                    Abrir editor de notícias
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2587,53 +2634,71 @@
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Instagram</h1>
-                            <p class="page-subtitle">Gerencie stories e importe noticias do Instagram</p>
+                            <p class="page-subtitle">Gerencie o feed e os posts do Instagram</p>
                         </div>
                     </div>
 
                     <!-- Tabs -->
                     <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);">
-                        <button class="btn btn-tab active" id="tabStories" onclick="switchInstagramTab('stories')" style="background: transparent; border: none; border-bottom: 2px solid var(--primary); padding: 0.75rem 1.25rem; color: var(--primary); font-weight: 500;">
+                        <button class="btn btn-tab active" id="tabPosts" onclick="switchInstagramTab('posts')" style="background: transparent; border: none; border-bottom: 2px solid var(--primary); padding: 0.75rem 1.25rem; color: var(--primary); font-weight: 500;">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
-                                <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                                <circle cx="12" cy="12" r="3" fill="currentColor"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8"/>
                             </svg>
-                            Stories
+                            Posts Publicados
                         </button>
                         <button class="btn btn-tab" id="tabImport" onclick="switchInstagramTab('import')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
                             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
                             </svg>
-                            Importar Noticia
-                        </button>
-                        <button class="btn btn-tab" id="tabArchive" onclick="switchInstagramTab('archive')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                            </svg>
-                            Arquivo
+                            Feed
                         </button>
                     </div>
 
-                    <!-- Stories Tab -->
-                    <div id="instagramStoriesTab" class="instagram-tab-content">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                            <h2 class="section-title">Stories Ativos</h2>
-                            <button class="btn btn-primary" onclick="showCreateStoryModal()">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                                </svg>
-                                Novo Story
-                            </button>
-                        </div>
-                        <div id="storiesList" style="padding: 1.5rem;">
-                            <!-- Stories serao carregados aqui -->
+                    <!-- Posts Tab -->
+                    <div id="instagramPostsTab" class="instagram-tab-content">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Posts Publicados no Instagram</h2>
+                                <div class="section-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span id="instagramPostsCount" style="font-size: 0.8125rem; color: var(--text-muted);">0 post(s)</span>
+                                    <button class="btn btn-secondary btn-sm" onclick="loadInstagramPostsPage()">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0A8.003 8.003 0 015.582 15m13.837 0H15"/>
+                                        </svg>
+                                        Atualizar
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table news-table">
+                                    <colgroup>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Capa</th>
+                                            <th>Titulo</th>
+                                            <th>Categoria</th>
+                                            <th>Data</th>
+                                            <th>Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="instagramPostsList">
+                                        <!-- Posts do Instagram serao carregados aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Import News Tab -->
                     <div id="instagramImportTab" class="instagram-tab-content" style="display: none;">
                         <div style="max-width: 700px; margin: 0 auto; padding: 2rem;">
-                            <h2 class="section-title" style="margin-bottom: 1.5rem;"> Importar Post do Instagram</h2>
+                            <h2 class="section-title" style="margin-bottom: 1.5rem;"> Feed do Instagram</h2>
                             <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
                                 <!-- Perfil oficial do Instagram (configuração fixa) -->
                                 <div style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #fff5f8 0%, #fff 100%); border-radius: var(--radius); border: 1px solid #f5d3df;">
@@ -2818,13 +2883,6 @@
                         </div>
                     </div>
 
-                    <!-- Archive Tab -->
-                    <div id="instagramArchiveTab" class="instagram-tab-content" style="display: none;">
-                        <h2 class="section-title" style="margin-bottom: 1.5rem;">Stories Arquivados</h2>
-                        <div id="storiesArchiveList" style="padding: 1.5rem;">
-                            <!-- Stories arquivados serao carregados aqui -->
-                        </div>
-                    </div>
                 </div>
                 <!-- Storage Page -->
                 <div id="storagePage" class="page-content" style="display: none;">
@@ -3526,6 +3584,28 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="color-group">
+                                        <div class="color-group-title">Subcabecalho (barra acima do cabecalho)</div>
+                                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                                            <div class="brand-input-group" style="margin-bottom: 0;">
+                                                <label for="topStripTitleText">Nome principal no subcabecalho</label>
+                                                <input type="text" id="topStripTitleText" class="brand-input" placeholder="Mirador e Regiao Online" value="Mirador e Regiao Online">
+                                            </div>
+                                            <div class="brand-input-group" style="margin-bottom: 0;">
+                                                <label for="topStripSubtitleText">Texto secundario no subcabecalho</label>
+                                                <input type="text" id="topStripSubtitleText" class="brand-input" placeholder="Portal de Noticias" value="Portal de Noticias">
+                                            </div>
+                                            <div class="brand-input-group" style="margin-bottom: 0;">
+                                                <label for="topStripBgColor">Cor da barra do subcabecalho</label>
+                                                <input type="color" id="topStripBgColor" class="brand-input brand-color-input" value="#2a0f33">
+                                            </div>
+                                            <div class="brand-input-group" style="margin-bottom: 0;">
+                                                <label for="topStripTextColor">Cor do texto do subcabecalho</label>
+                                                <input type="color" id="topStripTextColor" class="brand-input brand-color-input" value="#ffffff">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
 
                                 <!-- LADO DIREITO: Preview em Tempo Real -->
@@ -4071,90 +4151,139 @@
                         }
                     </style>
 
-                    <div class="import-container">
-                        <div class="page-header" style="margin-bottom: 2rem;">
-                            <div style="display: flex; align-items: center; gap: 1rem;">
-                                <button class="btn btn-secondary" onclick="showPage('news', document.querySelectorAll('.nav-item')[1])">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
-                                    </svg>
-                                    Voltar
-                                </button>
-                                <div>
-                                    <h1 class="page-title">Importar Noticia</h1>
-                                    <p class="page-subtitle">Cole o link de uma noticia para importar automaticamente</p>
-                                </div>
-                            </div>
+                    <div class="page-header">
+                        <div>
+                            <h1 class="page-title">Importar Noticia</h1>
+                            <p class="page-subtitle">Area padronizada para importar noticias e ver publicacoes importadas</p>
                         </div>
+                    </div>
 
-                        <div class="import-url-box">
-                            <svg class="import-url-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border);">
+                        <button class="btn btn-tab active" id="tabImportNewsPublicacoes" onclick="switchImportNewsTab('publicacoes')" style="background: transparent; border: none; border-bottom: 2px solid var(--primary); padding: 0.75rem 1.25rem; color: var(--primary); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8"/>
                             </svg>
-                            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Cole o link da noticia</h3>
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Suporta: G1, Globo, UOL, Estadao, Folha e outros sites de noticias</p>
-                            <input type="url" id="importUrlInput" class="import-url-input" placeholder="https://g1.globo.com/..." onpaste="handleImportUrlPaste(event)">
-                            <div style="display: flex; gap: 0.75rem; justify-content: center;">
-                                <button class="btn btn-secondary" onclick="clearImportUrl()">
-                                    Limpar
-                                </button>
-                                <button class="btn btn-primary" onclick="fetchNewsFromUrl()">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
-                                    </svg>
-                                    Importar Noticia
-                                </button>
-                            </div>
-                        </div>
+                            Publicações
+                        </button>
+                        <button class="btn btn-tab" id="tabImportNewsImportar" onclick="switchImportNewsTab('importar')" style="background: transparent; border: none; border-bottom: 2px solid transparent; padding: 0.75rem 1.25rem; color: var(--text-muted); font-weight: 500;">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem; vertical-align: middle;">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                            </svg>
+                            Importar Notícias
+                        </button>
+                    </div>
 
-                        <div class="import-loading" id="importLoading">
-                            <div class="import-spinner"></div>
-                            <p style="color: var(--text-secondary);">Buscando informacoes da noticia...</p>
-                        </div>
-
-                        <div id="importPreview" class="import-preview-card" style="display: none;">
-                            <div class="import-preview-header">
-                                <div class="import-preview-title">Pre-visualizacao</div>
-                                <span id="editHint" style="font-size: 0.75rem; color: var(--primary); display: none;">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
-                                    </svg>
-                                    Clique no titulo ou descricao para editar
-                                </span>
-                            </div>
-                            <div class="import-preview-body">
-                                <img id="importPreviewImage" class="import-preview-image" src="" alt="">
-                                <h2 id="importPreviewTitle" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary); border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: all 0.2s;"></h2>
-                                <p id="importPreviewExcerpt" class="import-preview-text" style="margin-bottom: 1rem; border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: all 0.2s;"></p>
-                                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                                    <span id="importPreviewSource" class="import-source-badge">
-                                        <img id="importPreviewSourceLogo" src="" alt="">
-                                        <span id="importPreviewSourceName"></span>
-                                    </span>
-                                    <span style="font-size: 0.8125rem; color: var(--text-muted);">Detectado em: <span id="importPreviewDate"></span></span>
+                    <div id="importNewsPublicacoesTab" class="import-news-tab-content">
+                        <div class="content-section">
+                            <div class="section-header">
+                                <h2 class="section-title">Notícias Importadas por URL</h2>
+                                <div class="section-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+                                    <span id="importedNewsCount" style="font-size: 0.8125rem; color: var(--text-muted);">0 noticia(s)</span>
+                                    <button class="btn btn-secondary btn-sm" onclick="loadImportedNewsPage()">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0A8.003 8.003 0 015.582 15m13.837 0H15"/>
+                                        </svg>
+                                        Atualizar
+                                    </button>
                                 </div>
-                                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
-                                    <label class="form-label" style="margin-bottom: 0.5rem;">Categoria</label>
-                                    <select id="importNewsCategory" class="form-select" style="margin-bottom: 1rem;">
-                                        <option value="">Selecione uma categoria...</option>
-                                        <option value="mirador">Mirador</option>
-                                        <option value="regiao">Regiao</option>
-                                        <option value="brasil">Brasil</option>
-                                        <option value="policia">Policia</option>
-                                        <option value="esportes">Esportes</option>
-                                        <option value="politica">Politica</option>
-                                        <option value="geral">Geral</option>
-                                    </select>
-                                    <div style="display: flex; gap: 0.75rem;">
-                                        <button class="btn btn-secondary" onclick="cancelImport()">
-                                            Cancelar
-                                        </button>
-                                        <button class="btn btn-primary" onclick="saveImportedNews()">
-                                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                                            </svg>
-                                            Salvar Noticia
-                                        </button>
+                            </div>
+                            <div class="table-container">
+                                <table class="data-table news-table">
+                                    <colgroup>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                        <col>
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Capa</th>
+                                            <th>Titulo</th>
+                                            <th>Categoria</th>
+                                            <th>Data</th>
+                                            <th>Acoes</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="importedNewsList">
+                                        <!-- Noticias importadas por URL serao carregadas aqui -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="importNewsImportarTab" class="import-news-tab-content" style="display: none;">
+                        <div class="import-container">
+                            <div class="import-url-box">
+                                <svg class="import-url-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                                </svg>
+                                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem;">Cole o link da noticia</h3>
+                                <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">Suporta: G1, Globo, UOL, Estadao, Folha e outros sites de noticias</p>
+                                <input type="url" id="importUrlInput" class="import-url-input" placeholder="https://g1.globo.com/..." onpaste="handleImportUrlPaste(event)">
+                                <div style="display: flex; gap: 0.75rem; justify-content: center;">
+                                    <button class="btn btn-secondary" onclick="clearImportUrl()">
+                                        Limpar
+                                    </button>
+                                    <button class="btn btn-primary" onclick="fetchNewsFromUrl()">
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                                        </svg>
+                                        Importar Noticia
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="import-loading" id="importLoading">
+                                <div class="import-spinner"></div>
+                                <p style="color: var(--text-secondary);">Buscando informacoes da noticia...</p>
+                            </div>
+
+                            <div id="importPreview" class="import-preview-card" style="display: none;">
+                                <div class="import-preview-header">
+                                    <div class="import-preview-title">Pre-visualizacao</div>
+                                    <span id="editHint" style="font-size: 0.75rem; color: var(--primary); display: none;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="vertical-align: middle; margin-right: 4px;">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                        </svg>
+                                        Clique no titulo ou descricao para editar
+                                    </span>
+                                </div>
+                                <div class="import-preview-body">
+                                    <img id="importPreviewImage" class="import-preview-image" src="" alt="">
+                                    <h2 id="importPreviewTitle" style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-primary); border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: all 0.2s;"></h2>
+                                    <p id="importPreviewExcerpt" class="import-preview-text" style="margin-bottom: 1rem; border: 1px solid transparent; padding: 4px; border-radius: 4px; transition: all 0.2s;"></p>
+                                    <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                                        <span id="importPreviewSource" class="import-source-badge">
+                                            <img id="importPreviewSourceLogo" src="" alt="">
+                                            <span id="importPreviewSourceName"></span>
+                                        </span>
+                                        <span style="font-size: 0.8125rem; color: var(--text-muted);">Detectado em: <span id="importPreviewDate"></span></span>
+                                    </div>
+                                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border);">
+                                        <label class="form-label" style="margin-bottom: 0.5rem;">Categoria</label>
+                                        <select id="importNewsCategory" class="form-select" style="margin-bottom: 1rem;">
+                                            <option value="">Selecione uma categoria...</option>
+                                            <option value="mirador">Mirador</option>
+                                            <option value="regiao">Regiao</option>
+                                            <option value="brasil">Brasil</option>
+                                            <option value="policia">Policia</option>
+                                            <option value="esportes">Esportes</option>
+                                            <option value="politica">Politica</option>
+                                            <option value="geral">Geral</option>
+                                        </select>
+                                        <div style="display: flex; gap: 0.75rem;">
+                                            <button class="btn btn-secondary" onclick="cancelImport()">
+                                                Cancelar
+                                            </button>
+                                            <button class="btn btn-primary" onclick="saveImportedNews()">
+                                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-right: 0.5rem;">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                                </svg>
+                                                Salvar Noticia
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -4586,6 +4715,7 @@
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
             updateUserInfo();
+            loadDashboard();
             
             // Restaurar pagina salva ou ir para dashboard
             restoreLastPage();
@@ -4675,6 +4805,14 @@
             if (pageName === 'instagram') {
                 loadInstagramAdmin();
             }
+
+            if (pageName === 'news') {
+                switchNewsTab('publicacoes');
+            }
+
+            if (pageName === 'importNews') {
+                switchImportNewsTab('publicacoes');
+            }
             
             if (pageName === 'storage') {
                 // Pequeno delay para garantir que o DOM esta pronto
@@ -4704,8 +4842,6 @@
             // Carregar dados se necessario
             if (pageName === 'dashboard') {
                 loadDashboard();
-            } else if (pageName === 'news') {
-                loadNewsPage();
             } else if (pageName === 'settings') {
                 loadColors();
             }
@@ -4769,6 +4905,43 @@
             return status !== 'draft' && status !== 'rascunho';
         }
 
+        function isInstagramNewsItem(newsItem = {}) {
+            const source = String(newsItem.source || '').toLowerCase();
+            const category = String(newsItem.category || '').toLowerCase();
+            const categoryName = String(newsItem.categoryName || '').toLowerCase();
+            const instagramUrl = String(newsItem.instagramUrl || newsItem.sourceUrl || '').toLowerCase();
+
+            return source.includes('instagram')
+                || category === 'instagram'
+                || categoryName.includes('instagram')
+                || instagramUrl.includes('instagram.com/');
+        }
+
+        function isRegularNewsItem(newsItem = {}) {
+            return !isInstagramNewsItem(newsItem);
+        }
+
+        function isImportedUrlNewsItem(newsItem = {}) {
+            if (isInstagramNewsItem(newsItem)) return false;
+
+            const source = String(newsItem.source || '').toLowerCase();
+            const importMethod = String(newsItem.importMethod || newsItem.importType || '').toLowerCase();
+
+            return newsItem.isImported === true
+                || importMethod === 'url'
+                || source.includes('import');
+        }
+
+        function updateNewsCountBadge(value = 0) {
+            const badge = document.getElementById('newsCountBadge');
+            if (badge) badge.innerText = String(Math.max(0, Number(value) || 0));
+        }
+
+        function updateInstagramCountBadge(value = 0) {
+            const badge = document.getElementById('instagramCountBadge');
+            if (badge) badge.innerText = String(Math.max(0, Number(value) || 0));
+        }
+
         function formatCompactNumber(value) {
             const num = toNumberSafe(value);
             return new Intl.NumberFormat('pt-BR', {
@@ -4789,7 +4962,9 @@
                 cachedNewsData = news;
 
                 // Atualizar Estatisticas
-                const publishedNews = news.filter(isPublishedNews);
+                const regularNews = news.filter(isRegularNewsItem);
+                const publishedNews = regularNews.filter(isPublishedNews);
+                const publishedInstagramPosts = news.filter(item => isInstagramNewsItem(item) && isPublishedNews(item));
                 document.getElementById('totalNews').innerText = publishedNews.length;
 
                 // Calcular visualizacoes
@@ -4805,12 +4980,12 @@
                 document.getElementById('draftNews').innerText = "0";
 
                 // Rascunhos
-                const drafts = news.filter(n => n.status === 'draft').length;
+                const drafts = regularNews.filter(n => String(n.status || '').toLowerCase() === 'draft').length;
                 document.getElementById('draftNews').innerText = drafts;
 
                 // Atualizar badge no menu
-                const badge = document.getElementById('newsCountBadge');
-                if (badge) badge.innerText = publishedNews.length;
+                updateNewsCountBadge(publishedNews.length);
+                updateInstagramCountBadge(publishedInstagramPosts.length);
 
             } catch (error) {
                 console.error("Erro ao carregar dashboard:", error);
@@ -5801,7 +5976,9 @@
                     settingsSize += JSON.stringify(data || {}).length;
                 });
 
-                const publishedNewsCount = newsData.filter(isPublishedNews).length;
+                const regularNewsData = newsData.filter(isRegularNewsItem);
+                const instagramPostsData = newsData.filter(isInstagramNewsItem);
+                const publishedNewsCount = regularNewsData.filter(isPublishedNews).length;
                 const totalSize = newsSize + storiesSize + settingsSize;
 
                 // Calcular uso do plano gratuito (1GB = 1.073.741.824 bytes)
@@ -5813,7 +5990,7 @@
                 setHTML('firestoreSize',
                     `${formatBytes(totalSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${usedPercent}% de 1GB</small>`);
                 setHTML('newsCount',
-                    `${publishedNewsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${newsData.length} no total</small>`);
+                    `${publishedNewsCount.toString()}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${regularNewsData.length} noticias + ${instagramPostsData.length} Instagram</small>`);
                 setHTML('imagesSize',
                     `${formatBytes(imagesSize)}<br><small style="font-size: 0.75rem; color: var(--text-muted);">${imagesCount} imagens</small>`);
 
@@ -6029,15 +6206,27 @@
         let allNewsData = [];
         let currentNewsPage = 1;
         const newsPerPage = 10;
+        let allInstagramPostsData = [];
+        let currentInstagramPostsPage = 1;
+        const instagramPostsPerPage = 10;
+        let allImportedNewsData = [];
+        let currentImportedNewsPage = 1;
+        const importedNewsPerPage = 10;
 
         // Carregar pagina de Noticias com paginacao
         async function loadNewsPage() {
             try {
                 const snapshot = await db.collection('news').orderBy('date', 'desc').get();
-                allNewsData = [];
+                const loadedNews = [];
                 snapshot.forEach(doc => {
-                    allNewsData.push({ id: doc.id, ...doc.data() });
+                    loadedNews.push({ id: doc.id, ...doc.data() });
                 });
+
+                allNewsData = loadedNews.filter(isRegularNewsItem);
+                const publishedNewsCount = allNewsData.filter(isPublishedNews).length;
+                const publishedInstagramPostsCount = loadedNews.filter(item => isInstagramNewsItem(item) && isPublishedNews(item)).length;
+                updateNewsCountBadge(publishedNewsCount);
+                updateInstagramCountBadge(publishedInstagramPostsCount);
 
                 // Resetar para primeira pagina
                 currentNewsPage = 1;
@@ -6164,6 +6353,312 @@
             renderNewsTable();
         }
 
+        async function loadImportedNewsPage() {
+            const importedList = document.getElementById('importedNewsList');
+            const importedCount = document.getElementById('importedNewsCount');
+            if (!importedList) return;
+
+            try {
+                const snapshot = await db.collection('news').orderBy('date', 'desc').get();
+                const loadedNews = [];
+                snapshot.forEach(doc => {
+                    loadedNews.push({ id: doc.id, ...doc.data() });
+                });
+
+                allImportedNewsData = loadedNews.filter(isImportedUrlNewsItem);
+                currentImportedNewsPage = 1;
+
+                if (importedCount) {
+                    importedCount.innerText = `${allImportedNewsData.length} noticia(s)`;
+                }
+
+                renderImportedNewsTable();
+            } catch (error) {
+                console.error('Erro ao carregar noticias importadas:', error);
+                if (importedCount) importedCount.innerText = '0 noticia(s)';
+                importedList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <p>Erro ao carregar noticias importadas</p>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function formatAdminDateOnly(value) {
+            if (!value) return '--';
+
+            try {
+                if (typeof value.toDate === 'function') {
+                    return value.toDate().toLocaleDateString('pt-BR');
+                }
+
+                const parsed = new Date(value);
+                if (Number.isNaN(parsed.getTime())) return '--';
+                return parsed.toLocaleDateString('pt-BR');
+            } catch (_error) {
+                return '--';
+            }
+        }
+
+        function renderImportedNewsTable() {
+            const importedList = document.getElementById('importedNewsList');
+            if (!importedList) return;
+
+            importedList.innerHTML = '';
+
+            if (allImportedNewsData.length === 0) {
+                importedList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                <p>Nenhuma noticia importada por URL</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            const endIndex = currentImportedNewsPage * importedNewsPerPage;
+            const newsToShow = allImportedNewsData.slice(0, endIndex);
+
+            newsToShow.forEach(newsItem => {
+                const date = formatAdminDateOnly(newsItem.date || newsItem.createdAt);
+                const indicatorClass = newsItem.status === 'draft' ? 'draft' : 'published';
+                const indicatorTitle = newsItem.status === 'draft' ? 'Rascunho' : 'Publicado';
+                const viewsCount = getNewsViewsValue(newsItem);
+                const sourceUrl = String(newsItem.externalUrl || newsItem.sourceUrl || '').trim();
+                const sourceDomain = String(newsItem.sourceDomain || '').trim();
+                const safeSourceUrl = sourceUrl
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/"/g, '&quot;');
+                const escapedTitle = String(newsItem.title || 'Noticia importada').replace(/"/g, '&quot;');
+
+                const imageHtml = newsItem.image
+                    ? `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <img src="${newsItem.image}" class="news-thumb" alt="">
+                       </div>`
+                    : `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <div class="news-thumb-placeholder"></div>
+                       </div>`;
+
+                const openSourceAction = sourceUrl
+                    ? `<button class="action-btn" onclick="window.open('${safeSourceUrl}', '_blank')" title="Abrir fonte original">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h5M5 5v14h14v-5"/>
+                        </svg>
+                       </button>`
+                    : '';
+
+                importedList.innerHTML += `
+                    <tr>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
+                            <div class="news-meta">
+                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
+                            </div>
+                        </td>
+                        <td><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                ${openSourceAction}
+                                <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            if (endIndex < allImportedNewsData.length) {
+                const remaining = allImportedNewsData.length - endIndex;
+                importedList.innerHTML += `
+                    <tr id="loadMoreImportedNewsRow">
+                        <td colspan="5" style="padding: 1.5rem; text-align: center;">
+                            <button class="btn btn-secondary" onclick="loadMoreImportedNews()">
+                                <svg width="16" height="16" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                                Ver mais ${Math.min(remaining, importedNewsPerPage)} noticias
+                                <span style="margin-left: 0.5rem; color: var(--text-muted);">(${remaining} restantes)</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        function loadMoreImportedNews() {
+            currentImportedNewsPage++;
+            renderImportedNewsTable();
+        }
+
+        async function loadInstagramPostsPage() {
+            const postsList = document.getElementById('instagramPostsList');
+            const postsCount = document.getElementById('instagramPostsCount');
+            if (!postsList) return;
+
+            try {
+                const snapshot = await db.collection('news').orderBy('date', 'desc').get();
+                const loadedNews = [];
+                snapshot.forEach(doc => {
+                    loadedNews.push({ id: doc.id, ...doc.data() });
+                });
+
+                allInstagramPostsData = loadedNews.filter(isInstagramNewsItem);
+                currentInstagramPostsPage = 1;
+                updateInstagramCountBadge(allInstagramPostsData.filter(isPublishedNews).length);
+
+                if (postsCount) {
+                    postsCount.innerText = `${allInstagramPostsData.length} post(s)`;
+                }
+
+                renderInstagramPostsTable();
+            } catch (error) {
+                console.error('Erro ao carregar posts do Instagram:', error);
+                updateInstagramCountBadge(0);
+                postsList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                                <p>Erro ao carregar posts do Instagram</p>
+                            </div>
+                        </td>
+                    </tr>`;
+            }
+        }
+
+        function renderInstagramPostsTable() {
+            const postsList = document.getElementById('instagramPostsList');
+            if (!postsList) return;
+
+            postsList.innerHTML = '';
+
+            if (allInstagramPostsData.length === 0) {
+                postsList.innerHTML = `
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                <p>Nenhum post do Instagram publicado</p>
+                            </div>
+                        </td>
+                    </tr>`;
+                return;
+            }
+
+            const endIndex = currentInstagramPostsPage * instagramPostsPerPage;
+            const postsToShow = allInstagramPostsData.slice(0, endIndex);
+
+            postsToShow.forEach(post => {
+                const date = post.date ? new Date(post.date).toLocaleDateString('pt-BR') : '--';
+                const indicatorClass = post.status === 'draft' ? 'draft' : 'published';
+                const indicatorTitle = post.status === 'draft' ? 'Rascunho' : 'Publicado';
+                const sourceUrl = String(post.instagramUrl || post.sourceUrl || '').trim();
+                const safeSourceUrl = sourceUrl
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/"/g, '&quot;');
+                const escapedTitle = String(post.title || 'Post do Instagram').replace(/"/g, '&quot;');
+                const likes = toNumberSafe(post.instagramLikes || 0);
+                const comments = toNumberSafe(post.instagramComments || 0);
+
+                const imageHtml = post.image
+                    ? `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <img src="${post.image}" class="news-thumb" alt="">
+                       </div>`
+                    : `<div class="news-thumb-container" title="${indicatorTitle}">
+                         <span class="status-indicator ${indicatorClass}"></span>
+                         <div class="news-thumb-placeholder"></div>
+                       </div>`;
+
+                const openSourceAction = sourceUrl
+                    ? `<button class="action-btn" onclick="window.open('${safeSourceUrl}', '_blank')" title="Abrir no Instagram">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5h5M5 5v14h14v-5"/>
+                        </svg>
+                       </button>`
+                    : '';
+
+                const html = `
+                    <tr>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
+                            <div class="news-meta">
+                                ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
+                            </div>
+                        </td>
+                        <td><span class="category-badge">Instagram</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                ${openSourceAction}
+                                <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                postsList.innerHTML += html;
+            });
+
+            if (endIndex < allInstagramPostsData.length) {
+                const remaining = allInstagramPostsData.length - endIndex;
+                const loadMoreRow = `
+                    <tr id="loadMoreInstagramPostsRow">
+                        <td colspan="5" style="padding: 1.5rem; text-align: center;">
+                            <button class="btn btn-secondary" onclick="loadMoreInstagramPosts()">
+                                <svg width="16" height="16" style="margin-right: 0.5rem;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                                Ver mais ${Math.min(remaining, instagramPostsPerPage)} posts
+                                <span style="margin-left: 0.5rem; color: var(--text-muted);">(${remaining} restantes)</span>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                postsList.innerHTML += loadMoreRow;
+            }
+        }
+
+        function loadMoreInstagramPosts() {
+            currentInstagramPostsPage++;
+            renderInstagramPostsTable();
+        }
+
         async function deleteNews(id) {
             if (!confirm('Tem certeza que deseja excluir esta noticia?')) return;
 
@@ -6186,6 +6681,8 @@
                 }
                 loadDashboard();
                 loadNewsPage();
+                loadInstagramPostsPage();
+                loadImportedNewsPage();
             } catch (error) {
                 console.error('Erro ao excluir noticia:', error);
                 showModal('Erro!', 'Nao foi possivel excluir a noticia.', 'error');
@@ -6279,16 +6776,39 @@
                 Card: document.getElementById('colorCard').value,
                 FooterText: document.getElementById('colorFooterText').value
             };
+            const topStripSettings = {
+                topStripTitleText: (document.getElementById('topStripTitleText')?.value || '').trim(),
+                topStripSubtitleText: (document.getElementById('topStripSubtitleText')?.value || '').trim(),
+                topStripBgColor: normalizeHexColorAdmin(document.getElementById('topStripBgColor')?.value) || '#2A0F33',
+                topStripTextColor: normalizeHexColorAdmin(document.getElementById('topStripTextColor')?.value) || '#FFFFFF'
+            };
 
             console.log('[Admin] Salvando cores:', colors);
 
             try {
                 // Salvar no Firebase Firestore
                 await db.collection('settings').doc('colors').set(colors);
+                await db.collection('settings').doc('brand').set({
+                    ...topStripSettings,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
                 console.log('[Admin] Cores salvas no Firebase com sucesso!');
                 
                 // Tambem salvar no localStorage para o admin
                 localStorage.setItem('siteColors', JSON.stringify(colors));
+                let localBrand = {};
+                try {
+                    localBrand = JSON.parse(localStorage.getItem('siteBrand') || '{}');
+                } catch (_e) {
+                    localBrand = {};
+                }
+                const mergedLocalBrand = {
+                    ...localBrand,
+                    ...topStripSettings
+                };
+                localStorage.setItem('siteBrand', JSON.stringify(mergedLocalBrand));
+                localStorage.setItem('publicSiteBrand', JSON.stringify(mergedLocalBrand));
+                applyBrandToAdmin(mergedLocalBrand);
                 
                 showModal('Sucesso!', 'Cores salvas com sucesso!\n\nAs alteracoes foram aplicadas ao site publico.', 'success');
             } catch (error) {
@@ -7192,6 +7712,35 @@
             updateBrandPreview();
         }
 
+        function normalizeHexColorAdmin(value) {
+            const raw = String(value || '').trim();
+            const match = raw.match(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/);
+            if (!match) return '';
+            const normalized = match[1].length === 3
+                ? match[1].split('').map(ch => ch + ch).join('')
+                : match[1];
+            return `#${normalized.toUpperCase()}`;
+        }
+
+        function applySubheaderBrandDefaultsAdmin(settings = {}) {
+            const siteNameValue = (document.getElementById('siteName')?.value || '').trim();
+            const siteTaglineValue = (document.getElementById('siteTagline')?.value || '').trim();
+            const titleInput = document.getElementById('topStripTitleText');
+            const subtitleInput = document.getElementById('topStripSubtitleText');
+            const bgColorInput = document.getElementById('topStripBgColor');
+            const textColorInput = document.getElementById('topStripTextColor');
+
+            const topStripTitle = String(settings.topStripTitleText || '').trim() || siteNameValue || 'Mirador e Regiao Online';
+            const topStripSubtitle = String(settings.topStripSubtitleText || '').trim() || siteTaglineValue || 'Portal de Noticias';
+            const topStripBgColor = normalizeHexColorAdmin(settings.topStripBgColor) || '#2A0F33';
+            const topStripTextColor = normalizeHexColorAdmin(settings.topStripTextColor) || '#FFFFFF';
+
+            if (titleInput) titleInput.value = topStripTitle;
+            if (subtitleInput) subtitleInput.value = topStripSubtitle;
+            if (bgColorInput) bgColorInput.value = topStripBgColor;
+            if (textColorInput) textColorInput.value = topStripTextColor;
+        }
+
         // Atualizar preview da marca em tempo real
         document.getElementById('siteName')?.addEventListener('input', updateBrandPreview);
         document.getElementById('siteTagline')?.addEventListener('input', updateBrandPreview);
@@ -7248,9 +7797,15 @@
                 }
             }
 
+            const topStripBgColor = normalizeHexColorAdmin(document.getElementById('topStripBgColor')?.value) || '#2A0F33';
+            const topStripTextColor = normalizeHexColorAdmin(document.getElementById('topStripTextColor')?.value) || '#FFFFFF';
             const brandSettings = {
                 siteName: document.getElementById('siteName').value || 'Mirador Online',
                 siteTagline: document.getElementById('siteTagline').value || 'Portal de Noticias',
+                topStripTitleText: (document.getElementById('topStripTitleText')?.value || '').trim(),
+                topStripSubtitleText: (document.getElementById('topStripSubtitleText')?.value || '').trim(),
+                topStripBgColor,
+                topStripTextColor,
                 logo: finalLogo || null,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
@@ -7284,17 +7839,25 @@
         function loadBrandSettings() {
             const savedBrand = localStorage.getItem('siteBrand');
             if (savedBrand) {
-                const settings = JSON.parse(savedBrand);
-                
-                document.getElementById('siteName').value = settings.siteName || 'Mirador Online';
-                document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de Noticias';
-                
-                if (settings.logo) {
-                    currentLogo = settings.logo;
-                    updateLogoPreview(settings.logo);
-                }
+                try {
+                    const settings = JSON.parse(savedBrand);
+                    
+                    document.getElementById('siteName').value = settings.siteName || 'Mirador Online';
+                    document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de Noticias';
+                    applySubheaderBrandDefaultsAdmin(settings);
+                    
+                    if (settings.logo) {
+                        currentLogo = settings.logo;
+                        updateLogoPreview(settings.logo);
+                    }
 
-                applyBrandToAdmin(settings);
+                    applyBrandToAdmin(settings);
+                } catch (error) {
+                    console.error('[Admin] Erro ao carregar identidade visual salva:', error);
+                    applySubheaderBrandDefaultsAdmin();
+                }
+            } else {
+                applySubheaderBrandDefaultsAdmin();
             }
             updateBrandPreview();
         }
@@ -7457,9 +8020,14 @@
             const defaultBrand = {
                 siteName: 'Mirador Online',
                 siteTagline: 'Portal de Noticias',
+                topStripTitleText: 'Mirador e Regiao Online',
+                topStripSubtitleText: 'Portal de Noticias',
+                topStripBgColor: '#2A0F33',
+                topStripTextColor: '#FFFFFF',
                 logo: null
             };
 
+            applySubheaderBrandDefaultsAdmin(defaultBrand);
             applyBrandToAdmin(defaultBrand);
             updateBrandPreview();
 
@@ -7482,7 +8050,9 @@
                 Foreground: '#0f172a',
                 MutedForeground: '#64748b',
                 Header: '#ffffff',
-                HeaderText: '#0f172a'
+                HeaderText: '#0f172a',
+                Card: '#ffffff',
+                FooterText: '#64748b'
             };
 
             Object.keys(defaultColors).forEach(key => {
@@ -7491,6 +8061,10 @@
                     colorInput.value = defaultColors[key];
                 }
             });
+            const topStripBgColorInput = document.getElementById('topStripBgColor');
+            const topStripTextColorInput = document.getElementById('topStripTextColor');
+            if (topStripBgColorInput) topStripBgColorInput.value = '#2A0F33';
+            if (topStripTextColorInput) topStripTextColorInput.value = '#FFFFFF';
 
             updatePreview();
             localStorage.removeItem('siteColors');
@@ -7795,6 +8369,8 @@
                     ...importedNewsData,
                     category: category,
                     categoryName: document.querySelector(`#importNewsCategory option[value="${category}"]`).textContent,
+                    source: importedNewsData.source || 'Importacao URL',
+                    importMethod: 'url',
                     views: 0,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -7803,11 +8379,12 @@
                 
                 showModal('Sucesso!', 'Noticia importada e publicada com sucesso!', 'success');
                 
-                // Limpar e voltar para lista
+                // Limpar formulario e atualizar listas
                 setTimeout(() => {
                     clearImportUrl();
-                    showPage('news', document.querySelectorAll('.nav-item')[1]);
+                    loadImportedNewsPage();
                     loadNewsPage();
+                    loadDashboard();
                 }, 1500);
             } catch (error) {
                 console.error('Erro ao salvar noticia importada:', error);
@@ -8045,6 +8622,7 @@
                 resetNewsForm();
                 showPage('news', document.querySelectorAll('.nav-item')[1]);
                 loadNewsPage();
+                loadImportedNewsPage();
                 loadDashboard();
             } catch (error) {
                 console.error('Erro ao salvar noticia:', error);
@@ -8682,33 +9260,90 @@
             return { updated };
         }
 
+        function switchNewsTab(tab) {
+            const tabs = [
+                { key: 'publicacoes', buttonId: 'tabNewsPublicacoes', contentId: 'newsPublicacoesTab' },
+                { key: 'criar', buttonId: 'tabNewsCriar', contentId: 'newsCriarTab' }
+            ];
+
+            tabs.forEach(item => {
+                const button = document.getElementById(item.buttonId);
+                const content = document.getElementById(item.contentId);
+                const active = item.key === tab;
+
+                if (button) {
+                    button.style.borderBottomColor = active ? 'var(--primary)' : 'transparent';
+                    button.style.color = active ? 'var(--primary)' : 'var(--text-muted)';
+                    button.classList.toggle('active', active);
+                }
+
+                if (content) {
+                    content.style.display = active ? 'block' : 'none';
+                }
+            });
+
+            if (tab === 'publicacoes') {
+                loadNewsPage();
+            }
+        }
+
+        function switchImportNewsTab(tab) {
+            const tabs = [
+                { key: 'publicacoes', buttonId: 'tabImportNewsPublicacoes', contentId: 'importNewsPublicacoesTab' },
+                { key: 'importar', buttonId: 'tabImportNewsImportar', contentId: 'importNewsImportarTab' }
+            ];
+
+            tabs.forEach(item => {
+                const button = document.getElementById(item.buttonId);
+                const content = document.getElementById(item.contentId);
+                const active = item.key === tab;
+
+                if (button) {
+                    button.style.borderBottomColor = active ? 'var(--primary)' : 'transparent';
+                    button.style.color = active ? 'var(--primary)' : 'var(--text-muted)';
+                    button.classList.toggle('active', active);
+                }
+
+                if (content) {
+                    content.style.display = active ? 'block' : 'none';
+                }
+            });
+
+            if (tab === 'publicacoes') {
+                loadImportedNewsPage();
+            }
+        }
+
         function switchInstagramTab(tab) {
-            // Atualizar botÃµes
-            document.querySelectorAll('.btn-tab').forEach(btn => {
-                btn.style.borderBottomColor = 'transparent';
-                btn.style.color = 'var(--text-muted)';
-                btn.classList.remove('active');
+            const tabs = [
+                { key: 'posts', buttonId: 'tabPosts', contentId: 'instagramPostsTab' },
+                { key: 'import', buttonId: 'tabImport', contentId: 'instagramImportTab' }
+            ];
+
+            tabs.forEach(item => {
+                const button = document.getElementById(item.buttonId);
+                const content = document.getElementById(item.contentId);
+                const active = item.key === tab;
+
+                if (button) {
+                    button.style.borderBottomColor = active ? 'var(--primary)' : 'transparent';
+                    button.style.color = active ? 'var(--primary)' : 'var(--text-muted)';
+                    button.classList.toggle('active', active);
+                }
+
+                if (content) {
+                    content.style.display = active ? 'block' : 'none';
+                }
             });
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.borderBottomColor = 'var(--primary)';
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).style.color = 'var(--primary)';
-            document.getElementById('tab' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
-            
-            // Mostrar conteudo correto
-            document.querySelectorAll('.instagram-tab-content').forEach(content => {
-                content.style.display = 'none';
-            });
-            document.getElementById('instagram' + tab.charAt(0).toUpperCase() + tab.slice(1) + 'Tab').style.display = 'block';
-            
-            // Carregar dados especificos
-            if (tab === 'archive') {
-                loadStoriesArchive();
+
+            if (tab === 'posts') {
+                loadInstagramPostsPage();
             }
         }
 
         async function loadInstagramAdmin() {
             await loadInstagramProfileSettingsAdmin();
-            await loadStoriesAdmin();
-            checkExpiredStories();
+            await loadInstagramPostsPage();
         }
 
         function cleanInstagramText(text) {
@@ -9303,6 +9938,9 @@
                 await db.collection('news').add(newsData);
                 showModal('Sucesso!', 'Post do Instagram publicado com sucesso!', 'success');
                 clearInstagramNewsForm();
+                loadDashboard();
+                loadNewsPage();
+                loadInstagramPostsPage();
             } catch (error) {
                 console.error('[Admin] Erro ao salvar noticia:', error);
                 showModal('Erro', 'Nao foi possivel salvar: ' + error.message, 'error');

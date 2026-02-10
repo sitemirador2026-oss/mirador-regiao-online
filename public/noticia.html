@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <title id="siteTitle">Notícia - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=139">
+    <link rel="stylesheet" href="css/styles.css?v=141">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -721,6 +721,11 @@
                     const brand = brandDoc.data();
                     const siteName = normalizeBrandText(brand.siteName || 'Mirador e Região Online');
                     const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Notícias');
+                    const topStripTitleText = normalizeBrandText((brand.topStripTitleText && String(brand.topStripTitleText).trim()) || siteName);
+                    const topStripSubtitleText = normalizeBrandText((brand.topStripSubtitleText && String(brand.topStripSubtitleText).trim()) || siteTagline);
+                    const topStripBgColor = String(brand.topStripBgColor || '').trim();
+                    const topStripTextColor = String(brand.topStripTextColor || '').trim();
+                    const root = document.documentElement;
                     
                     // Update title
                     const siteTitleEl = document.getElementById('siteTitle');
@@ -743,12 +748,28 @@
                         logoText.textContent = siteName;
                     }
 
+                    if (topStripBgColor) {
+                        root.style.setProperty('--header-top-strip-bg', topStripBgColor);
+                    } else {
+                        const headerColorSource = getComputedStyle(root).getPropertyValue('--header-bg').trim();
+                        const stripColor = darkenColorByPercent(headerColorSource, 10);
+                        if (stripColor) {
+                            root.style.setProperty('--header-top-strip-bg', stripColor);
+                        }
+                    }
+
+                    if (topStripTextColor) {
+                        root.style.setProperty('--header-top-strip-text', topStripTextColor);
+                    } else {
+                        root.style.removeProperty('--header-top-strip-text');
+                    }
+
                     if (topStripName) {
-                        topStripName.textContent = normalizeBrandText(siteName).toLocaleUpperCase('pt-BR');
+                        topStripName.textContent = topStripTitleText.toLocaleUpperCase('pt-BR');
                     }
 
                     if (topStripTagline) {
-                        topStripTagline.textContent = normalizeBrandText(siteTagline).toLocaleUpperCase('pt-BR');
+                        topStripTagline.textContent = topStripSubtitleText.toLocaleUpperCase('pt-BR');
                     }
                     
                     // Update footer
