@@ -2253,7 +2253,59 @@ body {
     }
 
     .instagram-mobile-next-btn {
-        display: none !important;
+        display: inline-flex;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel {
+        display: flex;
+        overflow-x: auto;
+        overflow-y: hidden;
+        gap: 0.75rem;
+        scroll-snap-type: x mandatory;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.35rem;
+        grid-template-columns: none;
+        grid-template-rows: none;
+        grid-auto-rows: auto;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel::-webkit-scrollbar {
+        display: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel {
+        scrollbar-width: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
+        scroll-snap-align: start;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card:hover {
+        transform: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card.expanded {
+        grid-column: auto;
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card.expanded .instagram-card-image-wrapper {
+        min-height: 240px;
+        max-height: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel .instagram-card.expanded .instagram-card-content {
+        max-height: none;
+        overflow: visible;
     }
 }
 

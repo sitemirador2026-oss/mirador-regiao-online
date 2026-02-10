@@ -1771,8 +1771,18 @@ function renderInstagramFeedSection(newsItems = []) {
 
 function scrollInstagramCarousel(containerId, direction = 1, event = null) {
     if (event) event.preventDefault();
-    // Modo carrossel foi desativado para manter o mesmo layout do desktop no mobile.
-    return;
+    const container = document.getElementById(containerId);
+    if (!container || !isMobileViewport()) return;
+
+    const firstCard = container.querySelector('.instagram-card');
+    const computed = getComputedStyle(container);
+    const gap = parseFloat(computed.columnGap || computed.gap || '0') || 0;
+    const step = firstCard ? firstCard.getBoundingClientRect().width + gap : container.clientWidth;
+
+    container.scrollBy({
+        left: Math.max(1, direction) * step,
+        behavior: 'smooth'
+    });
 }
 
 function updateInstagramMobileCarousels() {
@@ -1786,10 +1796,18 @@ function updateInstagramMobileCarousels() {
         const button = document.getElementById(entry.buttonId);
         if (!container) return;
 
-        container.classList.remove('instagram-mobile-carousel');
-        container.scrollLeft = 0;
-        if (button) {
-            button.style.display = 'none';
+        if (isMobileViewport()) {
+            container.classList.add('instagram-mobile-carousel');
+            if (button) {
+                const cardCount = container.querySelectorAll('.instagram-card').length;
+                button.style.display = cardCount > 1 ? 'inline-flex' : 'none';
+            }
+        } else {
+            container.classList.remove('instagram-mobile-carousel');
+            container.scrollLeft = 0;
+            if (button) {
+                button.style.display = 'none';
+            }
         }
     });
 }
