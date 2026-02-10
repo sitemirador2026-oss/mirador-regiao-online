@@ -2410,6 +2410,24 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null) {
     });
 }
 
+function handleInstagramCardVideoClick(newsId, event = null, preferredIndex = null, sourceElement = null) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    const card = (sourceElement && typeof sourceElement.closest === 'function')
+        ? sourceElement.closest('.instagram-card')
+        : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+
+    if (card && !card.classList.contains('expanded')) {
+        openInstagramModal(newsId, card);
+        return;
+    }
+
+    openInstagramVideoPlayer(newsId, null, preferredIndex);
+}
+
 function closeInstagramVideoModal() {
     const modal = document.getElementById('instagramVideoModal');
     const player = document.getElementById('instagramVideoPlayer');
@@ -2539,8 +2557,8 @@ function createInstagramCard(news) {
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper ${primaryMedia.type === 'video' ? 'is-video' : ''}">
                 ${primaryMedia.type === 'video'
-                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="openInstagramVideoPlayer('${news.id}', event)"></video>
-                       <button type="button" class="instagram-video-play-overlay" onclick="openInstagramVideoPlayer('${news.id}', event)" aria-label="Reproduzir vídeo">
+                    ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
+                       <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir vídeo">
                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                        </button>`
                     : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
@@ -2755,8 +2773,8 @@ function setupInstagramGallery(card, post) {
 
         imageWrapper.classList.toggle('is-video', primary.type === 'video');
         imageWrapper.innerHTML = primary.type === 'video'
-            ? `<video src="${primary.url}" poster="${primary.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onclick="openInstagramVideoPlayer('${newsId}', event)"></video>
-               <button type="button" class="instagram-video-play-overlay" onclick="openInstagramVideoPlayer('${newsId}', event)" aria-label="Reproduzir vídeo">
+            ? `<video src="${primary.url}" poster="${primary.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
+               <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)" aria-label="Reproduzir vídeo">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                </button>`
             : `<img src="${primary.url}" alt="${post.title || 'Post do Instagram'}" loading="lazy">`;
@@ -2883,7 +2901,7 @@ function showGalleryMedia(card, allMedia, index) {
         video.preload = 'metadata';
         video.dataset.instagramCardVideo = 'true';
         video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
-        video.addEventListener('click', (event) => openInstagramVideoPlayer(newsId, event, index));
+        video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, index, video));
         galleryContainer.appendChild(video);
         primeInstagramCardVideoFrame(video);
 
@@ -2892,7 +2910,7 @@ function showGalleryMedia(card, allMedia, index) {
         playOverlay.className = 'instagram-video-play-overlay';
         playOverlay.setAttribute('aria-label', 'Reproduzir vídeo');
         playOverlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
-        playOverlay.onclick = (event) => openInstagramVideoPlayer(newsId, event, index);
+        playOverlay.onclick = (event) => handleInstagramCardVideoClick(newsId, event, index, playOverlay);
         galleryContainer.appendChild(playOverlay);
     } else {
         const img = document.createElement('img');
@@ -2952,7 +2970,7 @@ function closeInstagramCard(card) {
                 video.playsInline = true;
                 video.preload = 'metadata';
                 video.dataset.instagramCardVideo = 'true';
-                video.addEventListener('click', (event) => openInstagramVideoPlayer(newsId, event));
+                video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, null, video));
                 video.addEventListener('loadedmetadata', () => primeInstagramCardVideoFrame(video), { once: true });
                 imageWrapper.appendChild(video);
                 primeInstagramCardVideoFrame(video);
@@ -2962,7 +2980,7 @@ function closeInstagramCard(card) {
                 playOverlay.className = 'instagram-video-play-overlay';
                 playOverlay.setAttribute('aria-label', 'Reproduzir vídeo');
                 playOverlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
-                playOverlay.onclick = (event) => openInstagramVideoPlayer(newsId, event);
+                playOverlay.onclick = (event) => handleInstagramCardVideoClick(newsId, event, null, playOverlay);
                 imageWrapper.appendChild(playOverlay);
             } else {
                 const img = document.createElement('img');

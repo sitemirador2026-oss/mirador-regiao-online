@@ -1354,6 +1354,16 @@ body {
     margin-left: 2px;
 }
 
+.instagram-card:not(.expanded) .instagram-video-play-overlay {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.instagram-card.expanded .instagram-video-play-overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
 /* Indicador de galeria no card fechado */
 .instagram-gallery-indicator {
     position: absolute;
