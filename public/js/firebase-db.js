@@ -234,6 +234,7 @@ function applyBrand(brand) {
     const logoFallback = document.getElementById('siteLogoFallback');
     const logoText = document.getElementById('siteLogoText');
     const siteTaglineText = document.getElementById('siteTaglineText');
+    const topStripName = document.getElementById('siteTopStripName');
     const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias';
     const initials = String(brand.siteName || '')
         .trim()
@@ -266,6 +267,10 @@ function applyBrand(brand) {
         logoText.textContent = brand.siteName;
         logoText.style.display = 'block';
         console.log('[Aplicar Marca] Texto aplicado!');
+    }
+
+    if (brand.siteName && topStripName) {
+        topStripName.textContent = brand.siteName;
     }
 
     if (siteTaglineText) {

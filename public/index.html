@@ -7,10 +7,11 @@
     <meta name="description" content="Not&iacute;cias de Mirador, regi&atilde;o e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Regi&atilde;o Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=126">
+    <link rel="stylesheet" href="css/styles.css?v=127">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <style>
         /* Logo styles for public site */
@@ -66,7 +67,7 @@
         }
 
         .logo-text {
-            font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+            font-family: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', sans-serif;
             font-size: 1.02rem;
             font-weight: 600;
             color: var(--header-text, #ffffff);
@@ -78,7 +79,7 @@
         }
 
         .logo-subtitle {
-            font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+            font-family: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', sans-serif;
             font-size: 0.66rem;
             font-weight: 600;
             letter-spacing: 0.09em;
@@ -112,12 +113,25 @@
 
         @media (max-width: 768px) {
             .header-content.header-content-brand {
-                min-height: 64px;
+                min-height: 62px;
+                grid-template-columns: 1fr;
+                justify-items: center;
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            .site-brand-text-wrap {
+                display: none;
+            }
+
+            .site-brand-logo {
+                grid-column: 1;
+                margin: 0 auto;
             }
 
             .site-logo {
-                max-height: 40px;
-                max-width: 140px;
+                max-height: 42px;
+                max-width: 168px;
             }
 
             .logo-text {
@@ -157,6 +171,11 @@
 <body>
     <!-- Header -->
     <header class="header">
+        <div class="header-top-strip">
+            <div class="container">
+                <span id="siteTopStripName" class="header-top-strip-title">Mirador e Regi&atilde;o Online</span>
+            </div>
+        </div>
         <div class="container">
             <div class="header-content header-content-brand">
                 <a href="index.html" class="site-brand-text-wrap" aria-label="P&aacute;gina inicial">
@@ -524,6 +543,7 @@
                 var logoFallback = document.getElementById('siteLogoFallback');
                 var logoText = document.getElementById('siteLogoText');
                 var siteTaglineText = document.getElementById('siteTaglineText');
+                var topStripName = document.getElementById('siteTopStripName');
                 var initials = String(siteName || '')
                     .trim()
                     .split(/\s+/)
@@ -548,6 +568,10 @@
                 if (logoText) {
                     logoText.style.display = 'block';
                     logoText.textContent = siteName;
+                }
+
+                if (topStripName) {
+                    topStripName.textContent = siteName;
                 }
 
                 if (siteTaglineText) {
@@ -576,7 +600,7 @@
     </script>
     
     <script src="js/firebase-config.js?v=16"></script>
-    <script src="js/firebase-db.js?v=21"></script>
+    <script src="js/firebase-db.js?v=22"></script>
     <script src="js/app.js?v=76"></script>
 </body>
 
