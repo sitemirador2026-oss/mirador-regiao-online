@@ -24,8 +24,10 @@
     --news-columns: 3;
     --footer-text: #64748b;
     --footer-text-auto: #64748b;
+    --header-top-strip-bg: #1c2737;
+    --header-top-strip-bg: color-mix(in srgb, var(--header-bg, #1c2737) 90%, #000 10%);
     --font-news: 'Roboto Condensed', 'Source Sans 3', 'Segoe UI', Arial, sans-serif;
-    --mobile-top-strip-height: 28px;
+    --mobile-top-strip-height: 42px;
     --mobile-header-height: 62px;
     
     /* Espaçamentos */
@@ -67,24 +69,54 @@ body {
 
 .header-top-strip {
     width: 100%;
-    background: #1c2737;
+    background: var(--header-top-strip-bg);
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .header-top-strip .container {
     display: flex;
     align-items: center;
+    padding-top: 0.3rem;
+    padding-bottom: 0.3rem;
     min-height: var(--mobile-top-strip-height);
+}
+
+.header-top-strip-brand {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0.05rem;
+    min-width: 0;
+    width: 100%;
 }
 
 .header-top-strip-title {
     display: block;
     width: 100%;
-    font-family: var(--font-news);
-    font-size: 0.78rem;
+    font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
+    font-size: 0.9rem;
     font-weight: 700;
-    letter-spacing: 0.01em;
-    color: #e4ebf5;
+    letter-spacing: 0.03em;
+    line-height: 1;
+    color: var(--header-text, #ffffff);
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.header-top-strip-subtitle {
+    display: block;
+    width: 100%;
+    font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    line-height: 1.1;
+    color: var(--header-text, #ffffff);
+    opacity: 0.92;
+    text-transform: uppercase;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -2059,6 +2091,14 @@ body {
 
     .header-top-strip .container {
         min-height: var(--mobile-top-strip-height);
+    }
+
+    .header-top-strip-title {
+        font-size: 0.84rem;
+    }
+
+    .header-top-strip-subtitle {
+        font-size: 0.68rem;
     }
 
     .news-grid {

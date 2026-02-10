@@ -7,7 +7,7 @@
     <meta name="description" content="Not&iacute;cias de Mirador, regi&atilde;o e Brasil">
     <meta name="robots" content="index, follow">
     <title id="siteTitle">Mirador e Regi&atilde;o Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=127">
+    <link rel="stylesheet" href="css/styles.css?v=128">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -173,7 +173,10 @@
     <header class="header">
         <div class="header-top-strip">
             <div class="container">
-                <span id="siteTopStripName" class="header-top-strip-title">Mirador e Regi&atilde;o Online</span>
+                <div class="header-top-strip-brand">
+                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGI&Atilde;O ONLINE</span>
+                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOT&Iacute;CIAS</span>
+                </div>
             </div>
         </div>
         <div class="container">
@@ -544,6 +547,7 @@
                 var logoText = document.getElementById('siteLogoText');
                 var siteTaglineText = document.getElementById('siteTaglineText');
                 var topStripName = document.getElementById('siteTopStripName');
+                var topStripTagline = document.getElementById('siteTopStripTagline');
                 var initials = String(siteName || '')
                     .trim()
                     .split(/\s+/)
@@ -571,7 +575,11 @@
                 }
 
                 if (topStripName) {
-                    topStripName.textContent = siteName;
+                    topStripName.textContent = String(siteName || '').toUpperCase();
+                }
+
+                if (topStripTagline) {
+                    topStripTagline.textContent = String(siteTagline || 'Portal de Not\u00edcias').toUpperCase();
                 }
 
                 if (siteTaglineText) {
@@ -600,7 +608,7 @@
     </script>
     
     <script src="js/firebase-config.js?v=16"></script>
-    <script src="js/firebase-db.js?v=22"></script>
+    <script src="js/firebase-db.js?v=23"></script>
     <script src="js/app.js?v=76"></script>
 </body>
 

@@ -180,6 +180,12 @@ function applyColors(colors) {
     }
     
     console.log('[Aplicar Cores]', count, 'cores aplicadas');
+
+    const headerColorSource = colors.Header || getComputedStyle(root).getPropertyValue('--header-bg').trim();
+    const stripColor = darkenColorByPercent(headerColorSource, 10);
+    if (stripColor) {
+        root.style.setProperty('--header-top-strip-bg', stripColor);
+    }
     
     // Ajustar cor do texto do footer baseado na cor de fundo
     adjustFooterTextColor(colors);
@@ -200,6 +206,47 @@ function getContrastColor(hexColor) {
     
     // Retornar branco para fundos escuros, preto para fundos claros
     return (yiq >= 128) ? '#000000' : '#ffffff';
+}
+
+function parseCssColorToRgb(value) {
+    const color = String(value || '').trim();
+    if (!color) return null;
+
+    const hexMatch = color.match(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/);
+    if (hexMatch) {
+        const raw = hexMatch[1];
+        const normalized = raw.length === 3 ? raw.split('').map(ch => ch + ch).join('') : raw;
+        return {
+            r: parseInt(normalized.slice(0, 2), 16),
+            g: parseInt(normalized.slice(2, 4), 16),
+            b: parseInt(normalized.slice(4, 6), 16)
+        };
+    }
+
+    const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+    if (rgbMatch) {
+        const parts = rgbMatch[1].split(',').map(part => parseFloat(part.trim()));
+        if (parts.length >= 3 && Number.isFinite(parts[0]) && Number.isFinite(parts[1]) && Number.isFinite(parts[2])) {
+            return {
+                r: Math.max(0, Math.min(255, Math.round(parts[0]))),
+                g: Math.max(0, Math.min(255, Math.round(parts[1]))),
+                b: Math.max(0, Math.min(255, Math.round(parts[2])))
+            };
+        }
+    }
+
+    return null;
+}
+
+function darkenColorByPercent(color, percent = 10) {
+    const rgb = parseCssColorToRgb(color);
+    if (!rgb) return '';
+
+    const factor = Math.max(0, Math.min(1, 1 - (percent / 100)));
+    const r = Math.round(rgb.r * factor);
+    const g = Math.round(rgb.g * factor);
+    const b = Math.round(rgb.b * factor);
+    return `rgb(${r}, ${g}, ${b})`;
 }
 
 // Ajustar cor do texto do footer automaticamente
@@ -235,6 +282,7 @@ function applyBrand(brand) {
     const logoText = document.getElementById('siteLogoText');
     const siteTaglineText = document.getElementById('siteTaglineText');
     const topStripName = document.getElementById('siteTopStripName');
+    const topStripTagline = document.getElementById('siteTopStripTagline');
     const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Not\u00edcias';
     const initials = String(brand.siteName || '')
         .trim()
@@ -270,7 +318,11 @@ function applyBrand(brand) {
     }
 
     if (brand.siteName && topStripName) {
-        topStripName.textContent = brand.siteName;
+        topStripName.textContent = String(brand.siteName).toUpperCase();
+    }
+
+    if (topStripTagline) {
+        topStripTagline.textContent = String(siteTagline || 'Portal de Not\u00edcias').toUpperCase();
     }
 
     if (siteTaglineText) {
