@@ -3665,6 +3665,20 @@ function updateInstagramCardStats(newsId, stats) {
             };
         }
     }
+
+    // Persistir engagement no Firestore para não perder ao recarregar a página
+    if ((finalLikesValue > 0 || finalCommentsValue > 0) && typeof db !== 'undefined') {
+        try {
+            const updatePayload = {};
+            if (finalLikesValue > 0) updatePayload.instagramLikes = finalLikesValue;
+            if (finalCommentsValue > 0) updatePayload.instagramComments = finalCommentsValue;
+            if (Object.keys(updatePayload).length > 0) {
+                db.collection('news').doc(newsId).update(updatePayload).catch((err) => {
+                    console.log('[App] Não foi possível persistir engagement no Firestore:', err.message || err);
+                });
+            }
+        } catch (_e) {}
+    }
 }
 
 console.log('[App] v2.5 - Script finalizado');

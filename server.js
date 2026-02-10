@@ -135,9 +135,9 @@ function parseCompactNumber(value) {
     const suffix = (compact[2] || '').toLowerCase();
     const multiplier =
         suffix === 'k' || suffix === 'mil' ? 1000 :
-        suffix === 'm' || suffix === 'mi' ? 1000000 :
-        suffix === 'b' ? 1000000000 :
-        1;
+            suffix === 'm' || suffix === 'mi' ? 1000000 :
+                suffix === 'b' ? 1000000000 :
+                    1;
 
     return Math.max(0, Math.round(numeric * multiplier));
 }
@@ -170,9 +170,13 @@ function extractInstagramEngagementFromHtml(html = '') {
         /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
         /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
         /"like_count"\s*:\s*(\d+)/i,
+        /"likes"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"likesCount"\s*:\s*(\d+)/i,
         /\\"edge_media_preview_like\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
         /\\"edge_liked_by\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
-        /\\"like_count\\"\s*:\s*(\d+)/i
+        /\\"like_count\\"\s*:\s*(\d+)/i,
+        /\\"likes\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+        /\\"likesCount\\"\s*:\s*(\d+)/i
     ]);
 
     const comments = extractFirstIntegerByPatterns(html, [
@@ -180,10 +184,14 @@ function extractInstagramEngagementFromHtml(html = '') {
         /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
         /"comment_count"\s*:\s*(\d+)/i,
         /"commenter_count"\s*:\s*(\d+)/i,
+        /"comments"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+        /"commentsCount"\s*:\s*(\d+)/i,
         /\\"edge_media_to_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
         /\\"edge_media_preview_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
         /\\"comment_count\\"\s*:\s*(\d+)/i,
-        /\\"commenter_count\\"\s*:\s*(\d+)/i
+        /\\"commenter_count\\"\s*:\s*(\d+)/i,
+        /\\"comments\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+        /\\"commentsCount\\"\s*:\s*(\d+)/i
     ]);
 
     return { likes, comments };
@@ -520,8 +528,11 @@ async function scrapeInstagramMeta(instagramUrl = '') {
         extractMetaTagContent(html, 'twitter:player:stream', 'name')
     );
 
-    let likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
-    let commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+    const descriptionText = ogDescription || '';
+    let likesMatch = descriptionText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:likes?|curtidas?)/i)
+        || descriptionText.match(/(?:likes?|curtidas?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
+    let commentsMatch = descriptionText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:comments?|coment[a\u00E1]rios?)/i)
+        || descriptionText.match(/(?:comments?|coment[a\u00E1]rios?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
     let likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
     let commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
     let engagementFromHtml = extractInstagramEngagementFromHtml(html);
@@ -584,7 +595,7 @@ async function scrapeInstagramMeta(instagramUrl = '') {
                 const oembedThumb = decodeEscapedUrl(oembed.thumbnail_url || '');
                 if (!ogImage && oembedThumb) ogImage = oembedThumb;
             }
-        } catch (_error) {}
+        } catch (_error) { }
     }
 
     const inlineVideoCandidates = [];
@@ -615,8 +626,11 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
 
     if (likes <= 0 || comments <= 0) {
-        likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
-        commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+        const retryText = ogDescription || '';
+        likesMatch = retryText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:likes?|curtidas?)/i)
+            || retryText.match(/(?:likes?|curtidas?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
+        commentsMatch = retryText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:comments?|coment[a\u00E1]rios?)/i)
+            || retryText.match(/(?:comments?|coment[a\u00E1]rios?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
         likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
         commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
         engagementFromHtml = extractInstagramEngagementFromHtml(htmlForVideoScan);
@@ -765,7 +779,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 app.get('/api/files', async (req, res) => {
     try {
         const prefix = req.query.prefix || '';
-        
+
         const command = new ListObjectsV2Command({
             Bucket: R2_CONFIG.bucketName,
             Prefix: prefix,
@@ -773,7 +787,7 @@ app.get('/api/files', async (req, res) => {
         });
 
         const result = await s3Client.send(command);
-        
+
         const files = (result.Contents || []).map(obj => ({
             key: obj.Key,
             size: obj.Size,
@@ -797,7 +811,7 @@ app.get('/api/files', async (req, res) => {
 app.delete('/api/files/:key', async (req, res) => {
     try {
         const key = decodeURIComponent(req.params.key);
-        
+
         const command = new DeleteObjectCommand({
             Bucket: R2_CONFIG.bucketName,
             Key: key

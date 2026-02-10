@@ -113,9 +113,9 @@ function parseCompactNumber(value) {
   const suffix = (compact[2] || '').toLowerCase();
   const multiplier =
     suffix === 'k' || suffix === 'mil' ? 1000 :
-    suffix === 'm' || suffix === 'mi' ? 1000000 :
-    suffix === 'b' ? 1000000000 :
-    1;
+      suffix === 'm' || suffix === 'mi' ? 1000000 :
+        suffix === 'b' ? 1000000000 :
+          1;
 
   return Math.max(0, Math.round(numeric * multiplier));
 }
@@ -148,9 +148,13 @@ function extractInstagramEngagementFromHtml(html = '') {
     /"edge_media_preview_like"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
     /"edge_liked_by"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
     /"like_count"\s*:\s*(\d+)/i,
+    /"likes"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"likesCount"\s*:\s*(\d+)/i,
     /\\"edge_media_preview_like\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
     /\\"edge_liked_by\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
-    /\\"like_count\\"\s*:\s*(\d+)/i
+    /\\"like_count\\"\s*:\s*(\d+)/i,
+    /\\"likes\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"likesCount\\"\s*:\s*(\d+)/i
   ]);
 
   const comments = extractFirstIntegerByPatterns(html, [
@@ -158,10 +162,14 @@ function extractInstagramEngagementFromHtml(html = '') {
     /"edge_media_preview_comment"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
     /"comment_count"\s*:\s*(\d+)/i,
     /"commenter_count"\s*:\s*(\d+)/i,
+    /"comments"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /"commentsCount"\s*:\s*(\d+)/i,
     /\\"edge_media_to_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
     /\\"edge_media_preview_comment\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
     /\\"comment_count\\"\s*:\s*(\d+)/i,
-    /\\"commenter_count\\"\s*:\s*(\d+)/i
+    /\\"commenter_count\\"\s*:\s*(\d+)/i,
+    /\\"comments\\"\s*:\s*\{\s*\\"count\\"\s*:\s*(\d+)/i,
+    /\\"commentsCount\\"\s*:\s*(\d+)/i
   ]);
 
   return { likes, comments };
@@ -509,8 +517,11 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     extractMetaTagContent(html, 'twitter:player:stream', 'name')
   );
 
-  let likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
-  let commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+  const descriptionText = ogDescription || '';
+  let likesMatch = descriptionText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:likes?|curtidas?)/i)
+    || descriptionText.match(/(?:likes?|curtidas?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
+  let commentsMatch = descriptionText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:comments?|coment[a\u00E1]rios?)/i)
+    || descriptionText.match(/(?:comments?|coment[a\u00E1]rios?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
   let likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
   let commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
   let engagementFromHtml = extractInstagramEngagementFromHtml(html);
@@ -573,7 +584,7 @@ async function scrapeInstagramMeta(instagramUrl = '') {
         const oembedThumb = decodeEscapedUrl(oembed.thumbnail_url || '');
         if (!ogImage && oembedThumb) ogImage = oembedThumb;
       }
-    } catch (_error) {}
+    } catch (_error) { }
   }
 
   const inlineVideoCandidates = [];
@@ -604,8 +615,11 @@ async function scrapeInstagramMeta(instagramUrl = '') {
   const isVideoPost = Boolean(resolvedVideo || urlLooksVideo || htmlMarksVideo);
 
   if (likes <= 0 || comments <= 0) {
-    likesMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:likes?|curtidas?)/i);
-    commentsMatch = (ogDescription || '').match(/([\d.,kmb]+)\s+(?:comments?|coment[a\u00E1]rios?)/i);
+    const retryText = ogDescription || '';
+    likesMatch = retryText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:likes?|curtidas?)/i)
+      || retryText.match(/(?:likes?|curtidas?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
+    commentsMatch = retryText.match(/([\d.,]+\s*(?:mil|[kmb])?)\s+(?:comments?|coment[a\u00E1]rios?)/i)
+      || retryText.match(/(?:comments?|coment[a\u00E1]rios?)[:\s]+([\d.,]+\s*(?:mil|[kmb])?)/i);
     likesFromDescription = likesMatch ? parseCompactNumber(likesMatch[1]) : 0;
     commentsFromDescription = commentsMatch ? parseCompactNumber(commentsMatch[1]) : 0;
     engagementFromHtml = extractInstagramEngagementFromHtml(htmlForVideoScan);
@@ -673,7 +687,7 @@ export default {
     if (request.method === 'OPTIONS') {
       return new Response(null, { status: 204, headers: corsHeaders });
     }
-    
+
     const url = new URL(request.url);
     const path = url.pathname;
 
@@ -706,7 +720,7 @@ export default {
         );
       }
     }
-    
+
     // Verificar se o binding R2 está configurado
     if (!env.R2_BUCKET) {
       return new Response(
@@ -714,7 +728,7 @@ export default {
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     // Status básico
     if (path === '/api/status') {
       return new Response(
@@ -722,13 +736,13 @@ export default {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-    
+
     // Worker Status completo
     if (path === '/api/worker/status') {
       try {
         // Testar listando objetos
         const objects = await env.R2_BUCKET.list({ limit: 1 });
-        
+
         return new Response(
           JSON.stringify({
             status: 'online',
@@ -759,17 +773,17 @@ export default {
         );
       }
     }
-    
+
     // Estatísticas de uso
     if (path === '/api/r2/usage') {
       try {
         const objects = await env.R2_BUCKET.list();
         let totalSize = 0;
-        
+
         for (const object of objects.objects || []) {
           totalSize += object.size;
         }
-        
+
         return new Response(
           JSON.stringify({
             used: totalSize,
@@ -786,20 +800,20 @@ export default {
         );
       }
     }
-    
+
     // Listar arquivos
     if (path === '/api/files') {
       try {
         const prefix = url.searchParams.get('prefix') || '';
         const objects = await env.R2_BUCKET.list({ prefix });
-        
+
         const files = (objects.objects || []).map(obj => ({
           key: obj.key,
           size: obj.size,
           lastModified: obj.uploaded,
           url: `https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev/${obj.key}`
         }));
-        
+
         return new Response(
           JSON.stringify({ files }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -811,47 +825,47 @@ export default {
         );
       }
     }
-    
+
     // Upload de arquivo
     if (path === '/api/upload' && request.method === 'POST') {
       try {
         const formData = await request.formData();
         const file = formData.get('file');
         const folder = formData.get('folder') || 'noticias';
-        
+
         if (!file) {
           return new Response(
             JSON.stringify({ error: 'Nenhum arquivo enviado' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        
+
         // Validar tipo - aceitar todas as imagens e vídeos comuns
         const fileType = (file.type || '').toLowerCase();
-        
+
         // Verificar se é imagem ou vídeo válido
         const isImage = fileType.startsWith('image/');
         const isVideo = fileType.startsWith('video/');
-        
+
         if (!isImage && !isVideo) {
           return new Response(
             JSON.stringify({ error: `Tipo não suportado: ${file.type}. Apenas imagens e vídeos são permitidos.` }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
-        
+
         // Gerar nome único
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
         const key = `${folder}/${timestamp}-${safeName}`;
-        
+
         // Fazer upload para R2
         await env.R2_BUCKET.put(key, file.stream(), {
           httpMetadata: {
             contentType: file.type
           }
         });
-        
+
         return new Response(
           JSON.stringify({
             success: true,
@@ -860,7 +874,7 @@ export default {
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
-        
+
       } catch (error) {
         return new Response(
           JSON.stringify({ error: error.message }),
@@ -868,13 +882,13 @@ export default {
         );
       }
     }
-    
+
     // Deletar arquivo
     if (path.startsWith('/api/files/') && request.method === 'DELETE') {
       try {
         const key = decodeURIComponent(path.replace('/api/files/', ''));
         await env.R2_BUCKET.delete(key);
-        
+
         return new Response(
           JSON.stringify({ success: true }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -886,7 +900,7 @@ export default {
         );
       }
     }
-    
+
     // Rota não encontrada
     return new Response(
       JSON.stringify({ error: 'Not found' }),
