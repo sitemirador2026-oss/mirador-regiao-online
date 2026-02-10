@@ -6,7 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <title id="siteTitle">Notícia - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=21">
+    <link rel="stylesheet" href="css/styles.css?v=129">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
     
     <style>
         /* Logo styles for public site */
@@ -17,12 +20,36 @@
         }
         
         .logo-text {
-            font-family: Georgia, 'Times New Roman', serif;
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: var(--primary);
+            font-family: 'Roboto Condensed', 'Segoe UI', Arial, sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--header-text, #ffffff);
             text-decoration: none;
-            letter-spacing: -0.02em;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        html, body {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 700;
+        }
+
+        .header .container {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .header-content {
+            position: relative;
         }
 
         /* Article Page Styles */
@@ -30,6 +57,8 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 2rem 1rem;
+            width: 100%;
+            min-width: 0;
         }
 
         .article-header {
@@ -158,16 +187,46 @@
             font-size: 1.125rem;
             line-height: 1.8;
             color: var(--foreground);
+            word-break: break-word;
+            overflow-wrap: anywhere;
         }
 
         .article-content p {
             margin-bottom: 1.5rem;
         }
 
+        .article-content * {
+            max-width: 100% !important;
+            box-sizing: border-box;
+        }
+
         .article-content img {
-            max-width: 100%;
+            width: auto !important;
+            display: block;
+            max-width: 100% !important;
+            height: auto !important;
             border-radius: 12px;
             margin: 1.5rem 0;
+            object-fit: contain;
+        }
+
+        .article-content video,
+        .article-content iframe {
+            display: block;
+            width: 100% !important;
+            max-width: 100% !important;
+            height: auto !important;
+            border-radius: 12px;
+            margin: 1.5rem 0;
+            background: #000;
+        }
+
+        .article-content table,
+        .article-content pre {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
         }
 
         .article-content h2, .article-content h3 {
@@ -212,8 +271,55 @@
         }
 
         @media (max-width: 768px) {
+            .site-logo {
+                max-height: 40px;
+                max-width: 168px;
+            }
+
+            .header-content {
+                min-height: var(--mobile-header-height);
+                justify-content: center;
+                padding-right: 3.1rem;
+                padding-left: 0.55rem;
+            }
+
+            .header-content .logo {
+                margin: 0 auto;
+                max-width: calc(100% - 3.6rem);
+            }
+
+            .header-actions {
+                position: absolute;
+                right: 0.4rem;
+                top: 50%;
+                transform: translateY(-50%);
+                margin-left: 0;
+            }
+
+            .header-actions .btn-search {
+                display: none;
+            }
+
             .article-title {
                 font-size: 1.75rem;
+            }
+
+            .article-container {
+                padding: 1.1rem 0.65rem 1.5rem;
+            }
+
+            .article-meta {
+                flex-wrap: wrap;
+                gap: 0.5rem 1rem;
+            }
+
+            .article-content {
+                font-size: 1rem;
+                line-height: 1.65;
+            }
+
+            .article-embed-frame {
+                min-height: 55vh;
             }
         }
     </style>
@@ -226,6 +332,14 @@
 <body>
     <!-- Header -->
     <header class="header">
+        <div class="header-top-strip">
+            <div class="container">
+                <div class="header-top-strip-brand">
+                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃO ONLINE</span>
+                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÍCIAS</span>
+                </div>
+            </div>
+        </div>
         <div class="container">
             <div class="header-content">
                 <a href="index.html" class="logo" id="siteLogoLink">
@@ -416,6 +530,148 @@
         // FIREBASE FUNCTIONS
         // ============================================
 
+        function parseCssColorToRgb(value) {
+            const color = String(value || '').trim();
+            if (!color) return null;
+
+            const hexMatch = color.match(/^#([a-fA-F0-9]{3}|[a-fA-F0-9]{6})$/);
+            if (hexMatch) {
+                const raw = hexMatch[1];
+                const normalized = raw.length === 3 ? raw.split('').map(ch => ch + ch).join('') : raw;
+                return {
+                    r: parseInt(normalized.slice(0, 2), 16),
+                    g: parseInt(normalized.slice(2, 4), 16),
+                    b: parseInt(normalized.slice(4, 6), 16)
+                };
+            }
+
+            const rgbMatch = color.match(/^rgba?\(([^)]+)\)$/i);
+            if (rgbMatch) {
+                const parts = rgbMatch[1].split(',').map(part => parseFloat(part.trim()));
+                if (parts.length >= 3 && Number.isFinite(parts[0]) && Number.isFinite(parts[1]) && Number.isFinite(parts[2])) {
+                    return {
+                        r: Math.max(0, Math.min(255, Math.round(parts[0]))),
+                        g: Math.max(0, Math.min(255, Math.round(parts[1]))),
+                        b: Math.max(0, Math.min(255, Math.round(parts[2])))
+                    };
+                }
+            }
+
+            return null;
+        }
+
+        function darkenColorByPercent(color, percent = 10) {
+            const rgb = parseCssColorToRgb(color);
+            if (!rgb) return '';
+
+            const factor = Math.max(0, Math.min(1, 1 - (percent / 100)));
+            return `rgb(${Math.round(rgb.r * factor)}, ${Math.round(rgb.g * factor)}, ${Math.round(rgb.b * factor)})`;
+        }
+
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function sanitizeExternalUrl(url) {
+            const raw = String(url || '').trim();
+            if (!raw) return '';
+            try {
+                const parsed = new URL(raw);
+                if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                    return parsed.toString();
+                }
+            } catch (e) {}
+            return '';
+        }
+
+        function sanitizeMediaUrl(url) {
+            const raw = String(url || '').trim();
+            if (!raw) return '';
+            if (/^(https?:|data:image\/|\/)/i.test(raw)) return raw;
+            return '';
+        }
+
+        function sanitizeArticleHtml(rawHtml) {
+            if (!rawHtml) return '';
+
+            const template = document.createElement('template');
+            template.innerHTML = String(rawHtml);
+
+            template.content
+                .querySelectorAll('script,style,link,meta,base,head,html,body,iframe,object,embed,form,input,button,textarea,select')
+                .forEach(el => el.remove());
+
+            const allowedTags = new Set([
+                'P', 'BR', 'STRONG', 'EM', 'B', 'I', 'U',
+                'A', 'UL', 'OL', 'LI', 'BLOCKQUOTE',
+                'H2', 'H3', 'H4', 'H5', 'H6',
+                'IMG', 'VIDEO', 'SOURCE',
+                'FIGURE', 'FIGCAPTION', 'DIV', 'SPAN'
+            ]);
+
+            const allowedAttrs = new Set(['href', 'src', 'alt', 'title', 'target', 'rel', 'loading', 'poster', 'controls', 'type', 'playsinline']);
+
+            Array.from(template.content.querySelectorAll('*')).forEach(el => {
+                const tag = el.tagName.toUpperCase();
+
+                if (!allowedTags.has(tag)) {
+                    const fragment = document.createDocumentFragment();
+                    while (el.firstChild) fragment.appendChild(el.firstChild);
+                    el.replaceWith(fragment);
+                    return;
+                }
+
+                Array.from(el.attributes).forEach(attr => {
+                    const name = attr.name.toLowerCase();
+                    if (name.startsWith('on') || name === 'style' || name === 'id' || name === 'class' || name === 'width' || name === 'height' || name === 'srcset' || name === 'sizes') {
+                        el.removeAttribute(attr.name);
+                        return;
+                    }
+                    if (!allowedAttrs.has(name)) {
+                        el.removeAttribute(attr.name);
+                    }
+                });
+
+                if (tag === 'A') {
+                    const href = el.getAttribute('href') || '';
+                    if (!/^(https?:|mailto:|tel:|\/|#)/i.test(href)) {
+                        el.removeAttribute('href');
+                    } else {
+                        el.setAttribute('target', '_blank');
+                        el.setAttribute('rel', 'noopener nofollow');
+                    }
+                }
+
+                if (tag === 'IMG') {
+                    const src = el.getAttribute('src') || '';
+                    if (!/^(https?:|data:image\/)/i.test(src)) {
+                        el.remove();
+                        return;
+                    }
+                    el.setAttribute('loading', 'lazy');
+                }
+
+                if (tag === 'VIDEO') {
+                    el.setAttribute('controls', '');
+                    el.setAttribute('playsinline', '');
+                }
+
+                if (tag === 'SOURCE') {
+                    const src = el.getAttribute('src') || '';
+                    if (!/^https?:/i.test(src)) {
+                        el.remove();
+                    }
+                }
+            });
+
+            return template.innerHTML;
+        }
+
         // Carregar configurações do Firebase
         async function loadAndApplySettings() {
             try {
@@ -432,7 +688,13 @@
                     if (colors.Muted) root.style.setProperty('--muted', colors.Muted);
                     if (colors.MutedForeground) root.style.setProperty('--muted-foreground', colors.MutedForeground);
                     if (colors.Border) root.style.setProperty('--border', colors.Border);
-                    if (colors.Header) root.style.setProperty('--header-bg', colors.Header);
+                    if (colors.Header) {
+                        root.style.setProperty('--header-bg', colors.Header);
+                        const stripColor = darkenColorByPercent(colors.Header, 10);
+                        if (stripColor) {
+                            root.style.setProperty('--header-top-strip-bg', stripColor);
+                        }
+                    }
                     if (colors.HeaderText) root.style.setProperty('--header-text', colors.HeaderText);
                 }
                 
@@ -441,6 +703,7 @@
                 if (brandDoc.exists) {
                     const brand = brandDoc.data();
                     const siteName = brand.siteName || 'Mirador e Região Online';
+                    const siteTagline = (brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Notícias';
                     
                     // Update title
                     const siteTitleEl = document.getElementById('siteTitle');
@@ -449,6 +712,8 @@
                     // Update logo in header
                     const logoImg = document.getElementById('siteLogoImg');
                     const logoText = document.getElementById('siteLogoText');
+                    const topStripName = document.getElementById('siteTopStripName');
+                    const topStripTagline = document.getElementById('siteTopStripTagline');
                     
                     if (brand.logo && logoImg) {
                         logoImg.src = brand.logo;
@@ -459,6 +724,14 @@
                         if (logoImg) logoImg.style.display = 'none';
                         logoText.style.display = 'block';
                         logoText.textContent = siteName;
+                    }
+
+                    if (topStripName) {
+                        topStripName.textContent = String(siteName).toUpperCase();
+                    }
+
+                    if (topStripTagline) {
+                        topStripTagline.textContent = String(siteTagline).toUpperCase();
                     }
                     
                     // Update footer
@@ -560,8 +833,8 @@
                 }
             }
 
-            const externalUrl = (article.externalUrl || '').trim();
-            let sourceDomain = article.sourceDomain || '';
+            const externalUrl = sanitizeExternalUrl(article.externalUrl || '');
+            let sourceDomain = String(article.sourceDomain || '').trim();
             if (!sourceDomain && externalUrl) {
                 try {
                     sourceDomain = new URL(externalUrl).hostname.replace(/^www\./i, '');
@@ -569,15 +842,20 @@
                     sourceDomain = '';
                 }
             }
+            const safeSourceDomain = escapeHtml(sourceDomain);
+            const safeCategory = escapeHtml(article.categoryName || article.category || 'Geral');
+            const safeTitle = escapeHtml(article.title || '');
+            const safeAuthor = escapeHtml(article.author || 'Redação');
+            const safeDateTime = escapeHtml(formattedDateTime);
             const sourceLogo = sourceDomain
                 ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
                 : '';
             const sourceHtml = externalUrl
                 ? `
                     <div class="article-source">
-                        ${sourceLogo ? `<img src="${sourceLogo}" alt="${sourceDomain}" class="article-source-logo">` : ''}
+                        ${sourceLogo ? `<img src="${sourceLogo}" alt="${safeSourceDomain}" class="article-source-logo">` : ''}
                         <a href="${externalUrl}" target="_blank" rel="noopener">Abrir no site original</a>
-                        ${sourceDomain ? `<span>${sourceDomain}</span>` : ''}
+                        ${safeSourceDomain ? `<span>${safeSourceDomain}</span>` : ''}
                     </div>
                 `
                 : '';
@@ -585,25 +863,28 @@
             // Status da publicação
             const statusText = article.status === 'draft' ? 'Rascunho' : 'Publicado';
             const statusClass = article.status === 'draft' ? 'draft' : 'published';
+            const safeContentHtml = sanitizeArticleHtml(article.content || '');
+            const safeExcerptHtml = sanitizeArticleHtml(article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : '');
+            const articleImage = sanitizeMediaUrl(article.image || '');
 
             // Montar HTML da notícia
             let html = `
                 <div class="article-header">
-                    <span class="article-category">${article.categoryName || article.category || 'Geral'}</span>
-                    <h1 class="article-title">${article.title}</h1>
+                    <span class="article-category">${safeCategory}</span>
+                    <h1 class="article-title">${safeTitle}</h1>
                     <div class="article-meta">
-                        <span>${formattedDateTime}</span>
-                        <span>Por ${article.author || 'Redação'}</span>
+                        <span>${safeDateTime}</span>
+                        <span>Por ${safeAuthor}</span>
                     </div>
                 ${sourceHtml}
                 </div>
             `;
             
             // Adicionar imagem se existir
-            if (article.image) {
+            if (articleImage) {
                 html += `
                     <div class="article-image-container">
-                        <img src="${article.image}" alt="${article.title}" class="article-image">
+                        <img src="${articleImage}" alt="${safeTitle}" class="article-image">
                         <div class="article-status ${statusClass}">
                             <span class="status-dot"></span>
                             ${statusText}
@@ -621,7 +902,7 @@
             }
             
             if (externalUrl) {
-                const externalPreview = article.content || (article.excerpt ? `<p>${article.excerpt}</p>` : '');
+                const externalPreview = safeContentHtml || safeExcerptHtml;
                 if (externalPreview) {
                     html += `
                         <div class="article-content">
@@ -641,7 +922,7 @@
                 // Adicionar conteúdo interno
                 html += `
                     <div class="article-content">
-                        ${article.content || article.excerpt || ''}
+                        ${safeContentHtml || safeExcerptHtml}
                     </div>
                 `;
             }

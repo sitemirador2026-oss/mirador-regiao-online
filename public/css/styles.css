@@ -616,16 +616,18 @@ body {
     inset: 0;
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+    background: #0f172a;
 }
 
 .top-banner-slide {
-    background-size: cover;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
+    background-color: #0f172a;
 }
 
 .top-banner-card.transition-fade .top-banner-slide,
@@ -641,7 +643,7 @@ body {
 }
 
 .top-banner-card.transition-zoom .top-banner-slide {
-    transform: scale(1.06);
+    transform: scale(1);
 }
 
 .top-banner-card.transition-zoom .top-banner-slide.active {
@@ -2150,7 +2152,7 @@ body {
 
     .top-banner-card {
         border-radius: 0;
-        aspect-ratio: 1080 / 240;
+        aspect-ratio: 1080 / 200;
     }
 
     .news-grid .news-row-horizontal {
