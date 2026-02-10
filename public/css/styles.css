@@ -932,6 +932,60 @@ body {
     gap: 0.75rem;
 }
 
+.instagram-carousel-shell {
+    position: relative;
+}
+
+.instagram-carousel-shell::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 2.5rem;
+    background: linear-gradient(270deg, rgba(255, 255, 255, 0.94) 15%, rgba(255, 255, 255, 0));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+    z-index: 3;
+}
+
+.instagram-swipe-hint {
+    position: absolute;
+    top: 50%;
+    right: 0.4rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    border: 1px solid rgba(15, 23, 42, 0.14);
+    background: rgba(255, 255, 255, 0.9);
+    color: #475569;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.16);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-50%) scale(0.95);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    z-index: 4;
+}
+
+.instagram-swipe-hint svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+}
+
+@keyframes instagramSwipeHintNudge {
+    0%, 100% {
+        transform: translateY(-50%) translateX(0) scale(1);
+    }
+    50% {
+        transform: translateY(-50%) translateX(-2px) scale(1);
+    }
+}
+
 .instagram-mobile-next-btn {
     display: none;
     width: 34px;
@@ -2254,6 +2308,23 @@ body {
 
     .instagram-mobile-next-btn {
         display: inline-flex;
+    }
+
+    .instagram-carousel-shell.is-hint-visible::after {
+        opacity: 1;
+    }
+
+    .instagram-carousel-shell.is-hint-visible .instagram-swipe-hint {
+        display: inline-flex;
+        opacity: 0.9;
+        transform: translateY(-50%) scale(1);
+        animation: instagramSwipeHintNudge 2.1s ease-in-out infinite;
+    }
+
+    .instagram-carousel-shell.is-scroll-end::after,
+    .instagram-carousel-shell.is-scroll-end .instagram-swipe-hint {
+        opacity: 0;
+        animation: none;
     }
 
     .instagram-news-grid.instagram-mobile-carousel {

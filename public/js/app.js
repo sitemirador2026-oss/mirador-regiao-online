@@ -1785,7 +1785,34 @@ function scrollInstagramCarousel(containerId, direction = 1, event = null) {
     });
 }
 
+function bindInstagramSwipeHint(container) {
+    if (!container || container.dataset.swipeHintBound === '1') return;
+    container.dataset.swipeHintBound = '1';
+    container.addEventListener('scroll', () => {
+        updateInstagramSwipeHintState(container);
+    }, { passive: true });
+}
+
+function updateInstagramSwipeHintState(container) {
+    if (!container) return;
+    const shell = container.closest('.instagram-carousel-shell');
+    if (!shell) return;
+
+    const isMobileCarousel = isMobileViewport() && container.classList.contains('instagram-mobile-carousel');
+    const hasOverflow = (container.scrollWidth - container.clientWidth) > 8;
+    const atEnd = (container.scrollLeft + container.clientWidth) >= (container.scrollWidth - 8);
+
+    shell.classList.toggle('is-hint-visible', Boolean(isMobileCarousel && hasOverflow && !atEnd));
+    shell.classList.toggle('is-scroll-end', Boolean(isMobileCarousel && hasOverflow && atEnd));
+
+    if (!isMobileCarousel || !hasOverflow) {
+        shell.classList.remove('is-hint-visible');
+        shell.classList.remove('is-scroll-end');
+    }
+}
+
 function updateInstagramMobileCarousels() {
+    const isMobile = isMobileViewport();
     const sections = [
         { containerId: 'instagramNewsGrid', buttonId: 'instagramTopNextBtn' },
         { containerId: 'categoryInstagramFeed', buttonId: 'instagramFeedNextBtn' }
@@ -1796,7 +1823,9 @@ function updateInstagramMobileCarousels() {
         const button = document.getElementById(entry.buttonId);
         if (!container) return;
 
-        if (isMobileViewport()) {
+        bindInstagramSwipeHint(container);
+
+        if (isMobile) {
             container.classList.add('instagram-mobile-carousel');
             if (button) {
                 const cardCount = container.querySelectorAll('.instagram-card').length;
@@ -1809,6 +1838,9 @@ function updateInstagramMobileCarousels() {
                 button.style.display = 'none';
             }
         }
+
+        requestAnimationFrame(() => updateInstagramSwipeHintState(container));
+        setTimeout(() => updateInstagramSwipeHintState(container), 120);
     });
 }
 
