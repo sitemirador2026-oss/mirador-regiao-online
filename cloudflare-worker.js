@@ -152,6 +152,20 @@ function extractFirstValueByPatterns(text = '', patterns = []) {
   return '';
 }
 
+function extractInstagramCaptionFromHtml(html = '') {
+  if (!html) return '';
+  return decodeEscapedText(
+    extractFirstValueByPatterns(html, [
+      /"edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
+      /\\"edge_media_to_caption\\"\s*:\s*\{\s*\\"edges\\"\s*:\s*\[\s*\{\s*\\"node\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i,
+      /"caption"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
+      /\\"caption\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i,
+      /"accessibility_caption"\s*:\s*"([^"]{20,1200})"/i,
+      /\\"accessibility_caption\\"\s*:\s*\\"([^"]{20,1200})\\"/i
+    ])
+  );
+}
+
 function extractInstagramEngagementFromHtml(html = '') {
   if (!html) return { likes: 0, comments: 0 };
 
@@ -240,12 +254,7 @@ function extractInstagramMetaFromEmbedHtml(html = '') {
     ])
   );
 
-  const description = decodeEscapedText(
-    extractFirstValueByPatterns(html, [
-      /"edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
-      /\\"edge_media_to_caption\\"\s*:\s*\{\s*\\"edges\\"\s*:\s*\[\s*\{\s*\\"node\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i
-    ])
-  );
+  const description = extractInstagramCaptionFromHtml(html);
 
   const image = decodeEscapedUrl(
     extractFirstValueByPatterns(html, [
@@ -520,6 +529,9 @@ async function scrapeInstagramMeta(instagramUrl = '') {
 
   let ogTitle = extractMetaTagContent(html, 'og:title', 'property');
   let ogDescription = extractMetaTagContent(html, 'og:description', 'property') || extractMetaTagContent(html, 'description', 'name');
+  if (!ogDescription) {
+    ogDescription = extractInstagramCaptionFromHtml(html);
+  }
   let ogImage = decodeEscapedUrl(extractMetaTagContent(html, 'og:image', 'property'));
   let ogVideo = decodeEscapedUrl(
     extractMetaTagContent(html, 'og:video', 'property') ||
@@ -597,6 +609,9 @@ async function scrapeInstagramMeta(instagramUrl = '') {
       }
     } catch (_error) { }
   }
+  if (!ogDescription && ogTitle) {
+    ogDescription = ogTitle;
+  }
 
   const inlineVideoCandidates = [];
   const inlinePatterns = [
@@ -638,12 +653,7 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     if (comments <= 0) comments = commentsFromDescription > 0 ? commentsFromDescription : engagementFromHtml.comments;
   }
 
-  const collaborators = collectInstagramCollaborators(
-    username,
-    displayName,
-    extractInstagramCollaboratorsFromHtml(html),
-    extractInstagramCollaboratorsFromHtml(embedHtml)
-  );
+  const collaborators = collectInstagramCollaborators(username, displayName);
   const primaryHandle = collaborators[0] || username;
   const hasAdditionalCollaborator = Boolean(
     collaborators.length > 1 ||
@@ -656,14 +666,6 @@ async function scrapeInstagramMeta(instagramUrl = '') {
       /\\"profile_pic_url\\"\s*:\s*\\"([^"]+)\\"/i
     ])
   );
-  if (primaryHandle && !profileImage) {
-    try {
-      profileImage = await fetchInstagramProfileImage(primaryHandle);
-    } catch (_error) {
-      profileImage = '';
-    }
-  }
-
   if (!profileImage && ogImage && !/\/p\/|\/reel\//i.test(cleanUrl)) {
     profileImage = ogImage;
   }

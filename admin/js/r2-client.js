@@ -53,6 +53,17 @@ class R2Client {
                     continue;
                 }
 
+                const expectsJson = String(path || '').startsWith('/api/');
+                if (expectsJson) {
+                    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+                    if (!contentType.includes('application/json')) {
+                        const invalidResponseError = new Error('Resposta invalida do endpoint de API');
+                        invalidResponseError.url = url;
+                        lastError = invalidResponseError;
+                        continue;
+                    }
+                }
+
                 this.baseUrl = String(new URL(url).origin).replace(/\/+$/, '');
                 return response;
             } catch (error) {

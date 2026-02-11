@@ -10966,16 +10966,18 @@
 
             const encodedUrl = encodeURIComponent(url);
             const isFileProtocol = Boolean(typeof window !== 'undefined' && window.location && window.location.protocol === 'file:');
+            const isLocalhost = Boolean(typeof window !== 'undefined' && window.location && ['localhost', '127.0.0.1'].includes(window.location.hostname));
             const workerBaseUrl = (typeof getWorkerBaseUrl === 'function')
                 ? getWorkerBaseUrl().replace(/\/$/, '')
                 : 'https://mirador-r2.sitemirador2026.workers.dev';
-            const renderServiceBaseUrl = String(typeof RENDER_SERVICE_URL === 'string' ? RENDER_SERVICE_URL : 'https://mirador-admin.onrender.com').replace(/\/$/, '');
             const workerEndpoint = `${workerBaseUrl}/api/instagram/meta?url=${encodedUrl}`;
-            const renderEndpoint = `${renderServiceBaseUrl}/api/instagram/meta?url=${encodedUrl}`;
             const localEndpoint = `/api/instagram/meta?url=${encodedUrl}`;
-            const metaEndpoints = isFileProtocol
-                ? [renderEndpoint, workerEndpoint]
-                : [localEndpoint, renderEndpoint, workerEndpoint];
+            const localhostEndpoint = `http://localhost:3000/api/instagram/meta?url=${encodedUrl}`;
+            const metaEndpoints = [
+                ...(isFileProtocol ? [localhostEndpoint] : [localEndpoint, workerEndpoint]),
+                ...(isLocalhost && !isFileProtocol ? [localhostEndpoint] : []),
+                ...(isFileProtocol ? [workerEndpoint] : [])
+            ];
 
             for (const endpoint of metaEndpoints) {
                 try {
@@ -10984,7 +10986,13 @@
                     const response = await fetch(endpoint, { signal: controller.signal });
                     clearTimeout(timeoutId);
                     if (!response.ok) continue;
-                    const payload = await response.json();
+                    const rawText = await response.text();
+                    let payload = null;
+                    try {
+                        payload = JSON.parse(rawText);
+                    } catch (_parseError) {
+                        payload = null;
+                    }
                     if (payload && payload.success) {
                         internalMeta = payload;
                         break;
@@ -10993,10 +11001,12 @@
             }
 
             const shouldTryThirdPartyFallback = Boolean(
-                !internalMeta &&
                 !isFileProtocol &&
-                typeof window !== 'undefined' &&
-                window.__ENABLE_IG_THIRD_PARTY_META__ === true
+                (
+                    !internalMeta ||
+                    (!internalMeta.description && !internalMeta.title) ||
+                    ((internalMeta.likes ?? 0) <= 0 && (internalMeta.comments ?? 0) <= 0)
+                )
             );
 
             if (shouldTryThirdPartyFallback) {
@@ -11044,9 +11054,9 @@
 
             const merged = {
                 image: internalMeta?.image || microlinkData?.image?.url || microlinkData?.image || (jsonlinkData?.images && jsonlinkData.images[0]) || '',
-                video: internalMeta?.video || microlinkData?.video?.url || microlinkData?.video || (jsonlinkData?.videos && jsonlinkData.videos[0]) || '',
+                video: internalMeta?.video || microlinkData?.video?.url || microlinkData?.video || '',
                 title: internalMeta?.title || microlinkData?.title || jsonlinkData?.meta?.title || noembedData?.title || '',
-                description: internalMeta?.description || microlinkData?.description || jsonlinkData?.meta?.description || noembedData?.title || '',
+                description: internalMeta?.description || microlinkData?.description || jsonlinkData?.meta?.description || noembedData?.title || internalMeta?.title || microlinkData?.title || '',
                 likes: internalMeta?.likes ?? microlinkData?.likes ?? microlinkData?.like_count ?? microlinkData?.engagement?.likes,
                 comments: internalMeta?.comments ?? microlinkData?.comments ?? microlinkData?.comment_count ?? microlinkData?.engagement?.comments,
                 authorName: internalMeta?.displayName || microlinkData?.author?.name || noembedData?.author_name || '',
@@ -11065,14 +11075,16 @@
                 urlLooksVideo
             );
             const resolvedMediaType = inferredVideoPost ? 'video' : 'image';
+            const resolvedVideoUrl = inferredVideoPost ? '' : (merged.video || '');
 
-            const normalized = normalizeInstagramMetaAdmin(merged, url);
+            const normalized = normalizeInstagramMetaAdmin({ ...merged, video: resolvedVideoUrl }, url);
             return {
                 ...merged,
+                video: resolvedVideoUrl,
                 ...normalized,
                 mediaType: resolvedMediaType,
                 isVideoPost: inferredVideoPost,
-                requiresVideoUpload: inferredVideoPost && !merged.video
+                requiresVideoUpload: inferredVideoPost
             };
         }
 
@@ -11221,7 +11233,7 @@
                     imageUrl = extracted.image || '';
                     videoUrl = extracted.video || '';
                     title = extracted.title || '';
-                    description = extracted.description || '';
+                    description = extracted.description || extracted.title || '';
                     const isVideoPost = Boolean(
                         extracted.mediaType === 'video' ||
                         extracted.isVideoPost ||
@@ -11486,10 +11498,10 @@
 
         const MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES = 15 * 1024 * 1024;
         const MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES = 120 * 1024 * 1024;
-        const MAX_BROWSER_VIDEO_COMPRESSION_SOURCE_BYTES = 48 * 1024 * 1024;
-        const MAX_BROWSER_VIDEO_COMPRESSION_DURATION_SECONDS = 90;
+        const MAX_BROWSER_VIDEO_COMPRESSION_SOURCE_BYTES = 120 * 1024 * 1024;
+        const MAX_BROWSER_VIDEO_COMPRESSION_DURATION_SECONDS = 120;
         const MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS = 120000;
-        const MIN_BROWSER_VIDEO_BITRATE_BPS = 220000;
+        const MIN_BROWSER_VIDEO_BITRATE_BPS = 160000;
 
         function formatBytesAdmin(bytes = 0) {
             if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -11726,7 +11738,7 @@
             }
 
             if (duration > MAX_BROWSER_VIDEO_COMPRESSION_DURATION_SECONDS) {
-                const durationLimitError = new Error(`Video com ${Math.ceil(duration)}s e muito longo para compressao rapida no navegador`);
+                const durationLimitError = new Error(`Video com ${Math.ceil(duration)}s excede o limite de 2 minutos para compressao automatica`);
                 durationLimitError.code = 'VIDEO_COMPRESSION_TOO_LONG';
                 throw durationLimitError;
             }
@@ -11897,28 +11909,18 @@
                     }
 
                     let uploadVideoFile = file;
-                    let usedOriginalVideoFallback = false;
                     if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
                         uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo video para 15MB...</p></div>';
                         try {
                             uploadVideoFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
                         } catch (compressError) {
-                            console.warn('[Admin] Compressao automatica indisponivel para este video:', compressError?.message || compressError);
-                            uploadVideoFile = file;
-                            usedOriginalVideoFallback = true;
+                            console.warn('[Admin] Falha na compressao automatica do video:', compressError?.message || compressError);
+                            throw new Error(`Nao foi possivel comprimir o video para 15MB. ${compressError?.message || 'Tente um arquivo menor ou mais curto.'}`);
                         }
                     }
 
-                    if (uploadVideoFile.size > MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES) {
-                        throw new Error(`Video excede o limite maximo de ${formatBytesAdmin(MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES)} para upload.`);
-                    }
-
-                    if (usedOriginalVideoFallback) {
-                        showModal(
-                            'Aviso',
-                            `Nao foi possivel reduzir o video para 15MB rapidamente. O arquivo original (${formatBytesAdmin(uploadVideoFile.size)}) sera enviado.`,
-                            'info'
-                        );
+                    if (uploadVideoFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                        throw new Error(`Video ainda excede 15MB apos compressao (${formatBytesAdmin(uploadVideoFile.size)}).`);
                     }
 
                     uploadArea.innerHTML = `<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando video (${formatBytesAdmin(uploadVideoFile.size)})...</p></div>`;
@@ -12002,23 +12004,19 @@
 
                         let uploadFile = file;
                         if (isVideo) {
-                            let usedOriginalVideoFallback = false;
                             if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
                                 uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo ${file.name} para 15MB...</p></div>`;
                                 try {
                                     uploadFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
                                 } catch (compressError) {
-                                    console.warn(`[Admin] Compressao da galeria indisponivel para "${file.name}":`, compressError?.message || compressError);
-                                    uploadFile = file;
-                                    usedOriginalVideoFallback = true;
+                                    console.warn(`[Admin] Falha na compressao da galeria para "${file.name}":`, compressError?.message || compressError);
+                                    showModal('Erro', `Nao foi possivel comprimir "${file.name}" para 15MB.`, 'error');
+                                    continue;
                                 }
                             }
-                            if (uploadFile.size > MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES) {
-                                showModal('Erro', `Video "${file.name}" excede o limite de 120MB.`, 'error');
+                            if (uploadFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+                                showModal('Erro', `Video "${file.name}" ainda excede 15MB apos compressao.`, 'error');
                                 continue;
-                            }
-                            if (usedOriginalVideoFallback) {
-                                showModal('Aviso', `"${file.name}" sera enviado sem compressao (${formatBytesAdmin(uploadFile.size)}).`, 'info');
                             }
                         } else {
                             const compressedDataUrl = await compressImage(file, 1280, 1280, 0.75);
