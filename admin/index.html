@@ -11562,6 +11562,11 @@
         const MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS = 120000;
         const MAX_BROWSER_VIDEO_COMPRESSION_ABSOLUTE_TIME_MS = 8 * 60 * 1000;
         const MIN_BROWSER_VIDEO_BITRATE_BPS = 120000;
+        const VIDEO_COMPRESSION_ATTEMPT_PROFILES = [
+            { bitrateFactor: 1.0, scaleFactor: 1.0 },
+            { bitrateFactor: 0.82, scaleFactor: 0.92 },
+            { bitrateFactor: 0.68, scaleFactor: 0.84 }
+        ];
 
         function formatBytesAdmin(bytes = 0) {
             if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -11582,6 +11587,41 @@
                 return bytes;
             }
             return Math.max(1 * 1024 * 1024, Math.floor(bytes * INSTAGRAM_VIDEO_COMPRESSION_KEEP_RATIO));
+        }
+
+        function clampProgressPercent(value) {
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) return 0;
+            return Math.max(0, Math.min(100, numeric));
+        }
+
+        function renderUploadProgressState(container, {
+            title = 'Processando...',
+            detail = '',
+            percent = 0,
+            compact = false
+        } = {}) {
+            if (!container) return;
+
+            const safePercent = clampProgressPercent(percent);
+            const padding = compact ? '1rem' : '2rem';
+            const titleSize = compact ? '0.8125rem' : '0.875rem';
+            const detailSize = compact ? '0.75rem' : '0.8125rem';
+
+            container.innerHTML = `
+                <div style="padding: ${padding}; text-align: center;">
+                    <div style="width: 44px; height: 44px; margin: 0 auto 0.75rem; border-radius: 50%; border: 3px solid #e5e7eb; display: flex; align-items: center; justify-content: center; color: #E4405F; font-size: 0.75rem; font-weight: 700;">
+                        ${Math.round(safePercent)}%
+                    </div>
+                    <p style="font-size: ${titleSize}; color: var(--text-muted); margin: 0 0 0.65rem;">
+                        ${title}
+                    </p>
+                    <div style="width: 100%; max-width: 320px; height: 8px; margin: 0 auto; background: #e5e7eb; border-radius: 999px; overflow: hidden;">
+                        <div style="width: ${safePercent}%; height: 100%; background: linear-gradient(90deg, #E4405F 0%, #f97316 100%); transition: width 0.25s ease;"></div>
+                    </div>
+                    ${detail ? `<p style="font-size: ${detailSize}; color: var(--text-muted); margin: 0.6rem 0 0;">${detail}</p>` : ''}
+                </div>
+            `;
         }
 
         function setInstagramMainMediaPreview({ mediaType = 'image', imageUrl = '', videoUrl = '', showManualVideoNotice = false } = {}) {
@@ -11781,7 +11821,194 @@
             });
         }
 
-        async function compressVideoToTargetSize(file, maxBytes) {
+        async function compressVideoSingleAttempt(file, {
+            mimeType,
+            targetBytes,
+            attempt,
+            totalAttempts,
+            duration,
+            bitrateFactor = 1,
+            scaleFactor = 1,
+            onProgress = null
+        } = {}) {
+            return new Promise((resolve, reject) => {
+                const sourceUrl = URL.createObjectURL(file);
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.muted = true;
+                video.playsInline = true;
+                video.src = sourceUrl;
+
+                let recorder = null;
+                let stopTimer = null;
+                let rafId = null;
+                let progressTimer = null;
+                const chunks = [];
+                let finished = false;
+
+                const targetBits = Math.floor(targetBytes * 8 * 0.8);
+                const audioBitsPerSecond = 48000;
+                const estimatedVideoBits = Math.floor(targetBits / Math.max(duration, 1)) - audioBitsPerSecond;
+                const videoBitsPerSecond = Math.max(MIN_BROWSER_VIDEO_BITRATE_BPS, Math.floor(estimatedVideoBits * bitrateFactor));
+
+                const fail = (error) => {
+                    if (finished) return;
+                    finished = true;
+                    cleanup();
+                    reject(error);
+                };
+
+                const succeed = (resultFile) => {
+                    if (finished) return;
+                    finished = true;
+                    cleanup();
+                    resolve(resultFile);
+                };
+
+                const cleanup = () => {
+                    if (stopTimer) {
+                        clearTimeout(stopTimer);
+                        stopTimer = null;
+                    }
+                    if (progressTimer) {
+                        clearInterval(progressTimer);
+                        progressTimer = null;
+                    }
+                    if (rafId) {
+                        cancelAnimationFrame(rafId);
+                        rafId = null;
+                    }
+                    if (recorder && recorder.state !== 'inactive') {
+                        try { recorder.stop(); } catch (_e) { }
+                    }
+                    if (recorder && recorder.stream) {
+                        try {
+                            recorder.stream.getTracks().forEach(track => track.stop());
+                        } catch (_e) { }
+                    }
+                    video.pause();
+                    video.src = '';
+                    URL.revokeObjectURL(sourceUrl);
+                };
+
+                const reportProgress = () => {
+                    if (typeof onProgress !== 'function') return;
+                    const rawAttemptProgress = duration > 0 ? Math.max(0, Math.min(1, (video.currentTime || 0) / duration)) : 0;
+                    const overallProgress = ((attempt - 1) + rawAttemptProgress) / Math.max(totalAttempts, 1);
+                    onProgress({
+                        phase: 'compressing',
+                        attempt,
+                        totalAttempts,
+                        attemptProgress: rawAttemptProgress,
+                        percent: Math.round(overallProgress * 100),
+                        bitrateFactor,
+                        scaleFactor
+                    });
+                };
+
+                video.onloadedmetadata = async () => {
+                    try {
+                        const sourceStream = video.captureStream ? video.captureStream() : (video.mozCaptureStream ? video.mozCaptureStream() : null);
+                        if (!sourceStream) {
+                            const streamError = new Error('captureStream nao suportado para compressao');
+                            streamError.code = 'VIDEO_COMPRESSION_CAPTURESTREAM_UNSUPPORTED';
+                            fail(streamError);
+                            return;
+                        }
+
+                        let width = video.videoWidth || 720;
+                        let height = video.videoHeight || 1280;
+                        const safeScale = Math.max(0.6, Math.min(1, Number(scaleFactor) || 1));
+                        width = Math.max(2, Math.floor(width * safeScale));
+                        height = Math.max(2, Math.floor(height * safeScale));
+                        if (width % 2 !== 0) width -= 1;
+                        if (height % 2 !== 0) height -= 1;
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
+                        if (!ctx) {
+                            const canvasError = new Error('Nao foi possivel iniciar canvas para compressao');
+                            canvasError.code = 'VIDEO_COMPRESSION_CANVAS_ERROR';
+                            fail(canvasError);
+                            return;
+                        }
+
+                        const canvasStream = canvas.captureStream ? canvas.captureStream(30) : null;
+                        const outputTracks = canvasStream
+                            ? [...canvasStream.getVideoTracks(), ...sourceStream.getAudioTracks()]
+                            : [...sourceStream.getTracks()];
+                        const outputStream = new MediaStream(outputTracks);
+
+                        recorder = new MediaRecorder(outputStream, { mimeType, videoBitsPerSecond, audioBitsPerSecond });
+                        recorder.ondataavailable = (event) => {
+                            if (event.data && event.data.size > 0) chunks.push(event.data);
+                        };
+                        recorder.onerror = () => {
+                            const recorderError = new Error('Falha ao comprimir video no navegador');
+                            recorderError.code = 'VIDEO_COMPRESSION_RECORDER_ERROR';
+                            fail(recorderError);
+                        };
+                        recorder.onstop = () => {
+                            if (finished) return;
+                            const compressedBlob = new Blob(chunks, { type: mimeType });
+                            const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
+                            const compressedFile = new File(
+                                [compressedBlob],
+                                `${file.name.replace(/\.[^.]+$/, '')}-compressed-a${attempt}.${ext}`,
+                                { type: compressedBlob.type || mimeType, lastModified: Date.now() }
+                            );
+                            succeed(compressedFile);
+                        };
+
+                        const drawFrame = () => {
+                            if (finished) return;
+                            try {
+                                ctx.drawImage(video, 0, 0, width, height);
+                            } catch (_drawError) { }
+                            if (!video.paused && !video.ended) {
+                                rafId = requestAnimationFrame(drawFrame);
+                            }
+                        };
+
+                        await video.play();
+                        drawFrame();
+                        reportProgress();
+                        progressTimer = setInterval(reportProgress, 250);
+
+                        recorder.start(1000);
+                        stopTimer = setTimeout(() => {
+                            if (recorder && recorder.state !== 'inactive') {
+                                try { recorder.stop(); } catch (_e) { }
+                            }
+                            const timeoutError = new Error('A compressao de video excedeu o tempo maximo');
+                            timeoutError.code = 'VIDEO_COMPRESSION_TIMEOUT';
+                            fail(timeoutError);
+                        }, Math.min(
+                            MAX_BROWSER_VIDEO_COMPRESSION_ABSOLUTE_TIME_MS,
+                            Math.max(MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS, Math.ceil(duration * 1150) + 12000)
+                        ));
+
+                        video.onended = () => {
+                            if (recorder && recorder.state !== 'inactive') {
+                                try { recorder.stop(); } catch (_e) { }
+                            }
+                        };
+                    } catch (error) {
+                        fail(error);
+                    }
+                };
+
+                video.onerror = () => {
+                    const openVideoError = new Error('Nao foi possivel abrir o video para compressao');
+                    openVideoError.code = 'VIDEO_COMPRESSION_OPEN_ERROR';
+                    fail(openVideoError);
+                };
+            });
+        }
+
+        async function compressVideoToTargetSize(file, maxBytes, options = {}) {
             if (!(file instanceof File)) return file;
             const targetBytes = Number(maxBytes) || file.size;
             if (file.size <= targetBytes) return file;
@@ -11806,116 +12033,69 @@
                 throw durationError;
             }
 
-            const targetBits = Math.floor(targetBytes * 8 * 0.8);
-            const audioBitsPerSecond = 48000;
-            const estimatedVideoBits = Math.floor(targetBits / duration) - audioBitsPerSecond;
-            const videoBitsPerSecond = Math.max(MIN_BROWSER_VIDEO_BITRATE_BPS, estimatedVideoBits);
+            const onProgress = typeof options.onProgress === 'function' ? options.onProgress : null;
+            const totalAttempts = VIDEO_COMPRESSION_ATTEMPT_PROFILES.length;
+            let smallestFile = null;
+            let lastError = null;
 
-            return new Promise((resolve, reject) => {
-                const sourceUrl = URL.createObjectURL(file);
-                const video = document.createElement('video');
-                video.preload = 'metadata';
-                video.muted = true;
-                video.playsInline = true;
-                video.src = sourceUrl;
+            for (let attemptIndex = 0; attemptIndex < totalAttempts; attemptIndex++) {
+                const attemptNumber = attemptIndex + 1;
+                const profile = VIDEO_COMPRESSION_ATTEMPT_PROFILES[attemptIndex];
+                if (onProgress) {
+                    onProgress({
+                        phase: 'attempt_start',
+                        attempt: attemptNumber,
+                        totalAttempts,
+                        percent: Math.round((attemptIndex / totalAttempts) * 100),
+                        targetBytes,
+                        sourceBytes: file.size
+                    });
+                }
 
-                let recorder = null;
-                let stopTimer = null;
-                const chunks = [];
-                let finished = false;
+                try {
+                    const compressedFile = await compressVideoSingleAttempt(file, {
+                        mimeType,
+                        targetBytes,
+                        attempt: attemptNumber,
+                        totalAttempts,
+                        duration,
+                        bitrateFactor: profile.bitrateFactor,
+                        scaleFactor: profile.scaleFactor,
+                        onProgress
+                    });
 
-                const fail = (error) => {
-                    if (finished) return;
-                    finished = true;
-                    cleanup();
-                    reject(error);
-                };
-
-                const succeed = (resultFile) => {
-                    if (finished) return;
-                    finished = true;
-                    cleanup();
-                    resolve(resultFile);
-                };
-
-                const cleanup = () => {
-                    if (stopTimer) {
-                        clearTimeout(stopTimer);
-                        stopTimer = null;
+                    if (!smallestFile || compressedFile.size < smallestFile.size) {
+                        smallestFile = compressedFile;
                     }
-                    if (recorder && recorder.state !== 'inactive') {
-                        try { recorder.stop(); } catch (_e) { }
-                    }
-                    video.pause();
-                    video.src = '';
-                    URL.revokeObjectURL(sourceUrl);
-                };
 
-                video.onloadedmetadata = async () => {
-                    try {
-                        const stream = video.captureStream ? video.captureStream() : (video.mozCaptureStream ? video.mozCaptureStream() : null);
-                        if (!stream) {
-                            const streamError = new Error('captureStream nao suportado para compressao');
-                            streamError.code = 'VIDEO_COMPRESSION_CAPTURESTREAM_UNSUPPORTED';
-                            fail(streamError);
-                            return;
+                    if (compressedFile.size <= targetBytes) {
+                        if (onProgress) {
+                            onProgress({
+                                phase: 'done',
+                                attempt: attemptNumber,
+                                totalAttempts,
+                                percent: 100,
+                                outputSize: compressedFile.size
+                            });
                         }
-
-                        recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond, audioBitsPerSecond });
-                        recorder.ondataavailable = (event) => {
-                            if (event.data && event.data.size > 0) chunks.push(event.data);
-                        };
-                        recorder.onerror = () => {
-                            const recorderError = new Error('Falha ao comprimir video no navegador');
-                            recorderError.code = 'VIDEO_COMPRESSION_RECORDER_ERROR';
-                            fail(recorderError);
-                        };
-                        recorder.onstop = () => {
-                            const compressedBlob = new Blob(chunks, { type: mimeType });
-                            const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
-                            const compressedFile = new File(
-                                [compressedBlob],
-                                `${file.name.replace(/\.[^.]+$/, '')}-compressed.${ext}`,
-                                { type: compressedBlob.type || mimeType, lastModified: Date.now() }
-                            );
-                            if (compressedFile.size > targetBytes) {
-                                const sizeError = new Error('Compressao concluida, mas o video ainda ficou acima do limite');
-                                sizeError.code = 'VIDEO_COMPRESSION_OUTPUT_TOO_LARGE';
-                                fail(sizeError);
-                                return;
-                            }
-                            succeed(compressedFile);
-                        };
-
-                        await video.play();
-                        recorder.start(1000);
-                        stopTimer = setTimeout(() => {
-                            if (recorder && recorder.state !== 'inactive') {
-                                try { recorder.stop(); } catch (_e) { }
-                            }
-                            const timeoutError = new Error('A compressao de video excedeu o tempo maximo');
-                            timeoutError.code = 'VIDEO_COMPRESSION_TIMEOUT';
-                            fail(timeoutError);
-                        }, Math.min(
-                            MAX_BROWSER_VIDEO_COMPRESSION_ABSOLUTE_TIME_MS,
-                            Math.max(MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS, Math.ceil(duration * 1150) + 12000)
-                        ));
-                        video.onended = () => {
-                            if (recorder && recorder.state !== 'inactive') {
-                                try { recorder.stop(); } catch (_e) { }
-                            }
-                        };
-                    } catch (error) {
-                        fail(error);
+                        return compressedFile;
                     }
-                };
 
-                video.onerror = () => {
-                    const openVideoError = new Error('Nao foi possivel abrir o video para compressao');
-                    openVideoError.code = 'VIDEO_COMPRESSION_OPEN_ERROR';
-                    fail(openVideoError);
-                };
-            });
+                    const attemptError = new Error(`Tentativa ${attemptNumber}: arquivo ficou em ${formatBytesAdmin(compressedFile.size)} (meta ${formatBytesAdmin(targetBytes)}).`);
+                    attemptError.code = 'VIDEO_COMPRESSION_OUTPUT_TOO_LARGE';
+                    lastError = attemptError;
+                } catch (error) {
+                    lastError = error;
+                }
+            }
+
+            const finalError = new Error(
+                smallestFile
+                    ? `Nao foi possivel atingir a meta de compressao. Melhor resultado: ${formatBytesAdmin(smallestFile.size)} para meta ${formatBytesAdmin(targetBytes)}.`
+                    : (lastError?.message || 'Nao foi possivel comprimir o video.')
+            );
+            finalError.code = lastError?.code || 'VIDEO_COMPRESSION_FAILED';
+            throw finalError;
         }
 
         async function handleInstagramImageUpload(event) {
@@ -11944,7 +12124,11 @@
 
             const uploadArea = document.getElementById('instagramImageUploadArea');
             const originalContent = uploadArea.innerHTML;
-            uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Processando midia...</p></div>';
+            renderUploadProgressState(uploadArea, {
+                title: 'Processando midia...',
+                detail: 'Preparando upload',
+                percent: 6
+            });
 
             try {
                 if (!r2Client) initR2Client();
@@ -11954,8 +12138,18 @@
                         throw new Error('Imagem muito grande. Maximo 12MB.');
                     }
 
+                    renderUploadProgressState(uploadArea, {
+                        title: 'Comprimindo imagem...',
+                        detail: `${formatBytesAdmin(file.size)}`,
+                        percent: 35
+                    });
                     const compressedDataUrl = await compressImage(file, 1280, 1280, 0.78);
                     const uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-instagram.jpg`);
+                    renderUploadProgressState(uploadArea, {
+                        title: 'Enviando imagem...',
+                        detail: `${formatBytesAdmin(uploadFile.size)}`,
+                        percent: 88
+                    });
                     const result = await r2Client.uploadFile(uploadFile, 'instagram');
                     const imageUrl = result?.url || '';
                     if (!imageUrl) throw new Error('Upload da imagem falhou');
@@ -11973,9 +12167,24 @@
                     let uploadVideoFile = file;
                     const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
                     if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
-                        uploadArea.innerHTML = `<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}% (${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)})...</p></div>`;
+                        renderUploadProgressState(uploadArea, {
+                            title: `Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}%`,
+                            detail: `${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
+                            percent: 0
+                        });
                         try {
-                            uploadVideoFile = await compressVideoToTargetSize(file, compressionTargetBytes);
+                            uploadVideoFile = await compressVideoToTargetSize(file, compressionTargetBytes, {
+                                onProgress: (progress) => {
+                                    const attemptLabel = progress?.attempt && progress?.totalAttempts
+                                        ? `Tentativa ${progress.attempt}/${progress.totalAttempts}`
+                                        : 'Comprimindo';
+                                    renderUploadProgressState(uploadArea, {
+                                        title: `Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}%`,
+                                        detail: `${attemptLabel} - ${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
+                                        percent: progress?.percent || 0
+                                    });
+                                }
+                            });
                         } catch (compressError) {
                             console.warn('[Admin] Falha na compressao automatica do video:', compressError?.message || compressError);
                             throw new Error(`Nao foi possivel comprimir o video. ${compressError?.message || 'Tente novamente com outro arquivo.'}`);
@@ -11986,7 +12195,11 @@
                         throw new Error(`Video ainda nao atingiu a compressao esperada (${formatBytesAdmin(uploadVideoFile.size)} > ${formatBytesAdmin(compressionTargetBytes)}).`);
                     }
 
-                    uploadArea.innerHTML = `<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando video (${formatBytesAdmin(uploadVideoFile.size)})...</p></div>`;
+                    renderUploadProgressState(uploadArea, {
+                        title: 'Enviando video...',
+                        detail: formatBytesAdmin(uploadVideoFile.size),
+                        percent: 96
+                    });
                     const result = await r2Client.uploadFile(uploadVideoFile, 'instagram');
                     const videoUrl = result?.url || '';
                     if (!videoUrl) throw new Error('Upload do video falhou');
@@ -12063,15 +12276,37 @@
                     }
 
                     try {
-                        uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Processando ${file.name}...</p></div>`;
+                        renderUploadProgressState(uploadArea, {
+                            title: `Processando ${file.name}...`,
+                            detail: formatBytesAdmin(file.size),
+                            percent: 8,
+                            compact: true
+                        });
 
                         let uploadFile = file;
                         if (isVideo) {
                             const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
                             if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
-                                uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo ${file.name} em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}% (${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)})...</p></div>`;
+                                renderUploadProgressState(uploadArea, {
+                                    title: `Comprimindo ${file.name}`,
+                                    detail: `${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
+                                    percent: 0,
+                                    compact: true
+                                });
                                 try {
-                                    uploadFile = await compressVideoToTargetSize(file, compressionTargetBytes);
+                                    uploadFile = await compressVideoToTargetSize(file, compressionTargetBytes, {
+                                        onProgress: (progress) => {
+                                            const attemptLabel = progress?.attempt && progress?.totalAttempts
+                                                ? `Tentativa ${progress.attempt}/${progress.totalAttempts}`
+                                                : 'Comprimindo';
+                                            renderUploadProgressState(uploadArea, {
+                                                title: `Comprimindo ${file.name}`,
+                                                detail: `${attemptLabel} - ${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
+                                                percent: progress?.percent || 0,
+                                                compact: true
+                                            });
+                                        }
+                                    });
                                 } catch (compressError) {
                                     console.warn(`[Admin] Falha na compressao da galeria para "${file.name}":`, compressError?.message || compressError);
                                     showModal('Erro', `Nao foi possivel comprimir "${file.name}".`, 'error');
@@ -12087,7 +12322,12 @@
                             uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-instagram-gallery.jpg`);
                         }
 
-                        uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando ${file.name} para o R2...</p></div>`;
+                        renderUploadProgressState(uploadArea, {
+                            title: `Enviando ${file.name}...`,
+                            detail: formatBytesAdmin(uploadFile.size),
+                            percent: 96,
+                            compact: true
+                        });
 
                         const result = await r2Client.uploadFile(uploadFile, 'instagram');
                         const mediaUrl = (result?.url || '').trim();
