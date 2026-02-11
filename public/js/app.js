@@ -2995,7 +2995,19 @@ function getInstagramAllMedia(post = {}) {
     };
 
     const rawImageUrl = sanitizeMediaUrl(post.image);
-    const imageUrl = rawImageUrl && !isLikelyVideoUrl(rawImageUrl) ? rawImageUrl : '';
+    const explicitPosterUrl = sanitizeMediaUrl(
+        post.poster ||
+        post.thumbnail ||
+        post.thumbnailUrl ||
+        post.thumb ||
+        post.coverImage ||
+        post.instagramThumbnail ||
+        post.instagramCoverImage ||
+        post.imageUrl
+    );
+    const imageUrl = rawImageUrl && !isLikelyVideoUrl(rawImageUrl)
+        ? rawImageUrl
+        : (explicitPosterUrl && !isLikelyVideoUrl(explicitPosterUrl) ? explicitPosterUrl : '');
     const mediaTypeHint = (post.instagramMediaType || post.mediaType || '').toString().toLowerCase();
     const mainVideoUrl = resolveInstagramVideoUrl(post);
     const galleryMedia = Array.isArray(post.gallery)
@@ -3103,7 +3115,7 @@ function getInstagramAllMedia(post = {}) {
         primary.type === 'video' &&
         !primary.poster
     ) {
-        primary.poster = consumePosterFromGallery(primary.url, effectiveMediaTypeHint === 'video') || '';
+        primary.poster = consumePosterFromGallery(primary.url, effectiveMediaTypeHint === 'video') || imageUrl || '';
     }
 
     addMedia(primary);
@@ -3132,7 +3144,12 @@ function primeInstagramCardVideoFrame(videoEl) {
             return;
         }
 
-        const target = Math.min(0.25, Math.max(0.02, duration / 8));
+        const maxSeek = Math.max(0.05, duration - 0.05);
+        const target = Math.min(
+            maxSeek,
+            Math.max(0.8, duration * 0.22),
+            3
+        );
         const onSeeked = () => {
             videoEl.removeEventListener('seeked', onSeeked);
             markPrimed();
@@ -3183,10 +3200,74 @@ function getInstagramVideoMediaForPlayer(post = {}, preferredIndex = null) {
     return null;
 }
 
-function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null) {
+function playInstagramVideoInline(newsId, preferredIndex = null, sourceElement = null) {
+    const post = instagramPostsData[newsId];
+    if (!post) return false;
+
+    const card = (sourceElement && typeof sourceElement.closest === 'function')
+        ? sourceElement.closest('.instagram-card')
+        : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
+    if (!card || !card.classList.contains('expanded')) return false;
+
+    const media = getInstagramVideoMediaForPlayer(post, preferredIndex);
+    if (!media || !media.url) return false;
+
+    const allMedia = getInstagramAllMedia(post);
+    const hasValidPreferredIndex = Number.isInteger(preferredIndex) && preferredIndex >= 0 && preferredIndex < allMedia.length;
+    if (hasValidPreferredIndex) {
+        card.dataset.galleryIndex = String(preferredIndex);
+        showGalleryMedia(card, allMedia, preferredIndex);
+    }
+
+    let targetVideo = card.querySelector('.instagram-card-image-wrapper video[data-instagram-card-video="true"]')
+        || card.querySelector('.instagram-card-image-wrapper video');
+
+    if (!targetVideo) {
+        return false;
+    }
+
+    if (targetVideo.src !== media.url) {
+        targetVideo.src = media.url;
+    }
+
+    const fallbackPoster = sanitizeMediaUrl(post.image);
+    const posterUrl = sanitizeMediaUrl(media.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : '');
+    if (posterUrl) {
+        targetVideo.poster = posterUrl;
+    } else {
+        targetVideo.removeAttribute('poster');
+    }
+
+    targetVideo.dataset.instagramCardVideo = 'true';
+    targetVideo.dataset.inlinePlaying = '1';
+    targetVideo.preload = 'auto';
+    targetVideo.controls = true;
+    targetVideo.muted = false;
+    targetVideo.playsInline = true;
+    targetVideo.onclick = (evt) => {
+        evt.stopPropagation();
+    };
+    const overlay = card.querySelector('.instagram-video-play-overlay');
+    if (overlay) overlay.style.display = 'none';
+    card.dataset.inlineVideoPlaying = '1';
+
+    const playPromise = targetVideo.play();
+    if (playPromise && typeof playPromise.catch === 'function') {
+        playPromise.catch(() => { });
+    }
+
+    return true;
+}
+
+function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, sourceElement = null) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    if (!isMobileViewport()) {
+        playInstagramVideoInline(newsId, preferredIndex, sourceElement);
+        return;
     }
 
     const post = instagramPostsData[newsId];
@@ -3234,7 +3315,12 @@ function handleInstagramCardVideoClick(newsId, event = null, preferredIndex = nu
         return;
     }
 
-    openInstagramVideoPlayer(newsId, null, preferredIndex);
+    if (!isMobileViewport()) {
+        playInstagramVideoInline(newsId, preferredIndex, sourceElement);
+        return;
+    }
+
+    openInstagramVideoPlayer(newsId, null, preferredIndex, sourceElement);
 }
 
 function closeInstagramVideoModal() {
@@ -3353,6 +3439,11 @@ function createInstagramCard(news) {
     // Verificar se tem galeria e tipo da midia principal
     const allMedia = getInstagramAllMedia(news);
     const primaryMedia = allMedia[0] || { type: 'image', url: '', poster: '' };
+    const fallbackPoster = sanitizeMediaUrl(news.image);
+    const primaryPoster = primaryMedia.type === 'video'
+        ? (sanitizeMediaUrl(primaryMedia.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : ''))
+        : '';
+    const primaryPosterAttr = primaryPoster ? ` poster="${primaryPoster}"` : '';
     const hasGallery = allMedia.length > 1;
     const totalMedia = allMedia.length;
 
@@ -3372,6 +3463,7 @@ function createInstagramCard(news) {
         totalMedia,
         instagramMediaType: primaryMedia.type,
         instagramVideoUrl: primaryMedia.type === 'video' ? primaryMedia.url : '',
+        instagramPosterUrl: primaryPoster,
         instagramUsername: profileHandle,
         instagramDisplayName: profileName,
         instagramProfileImage: profileImage || '',
@@ -3385,7 +3477,7 @@ function createInstagramCard(news) {
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper ${primaryMedia.type === 'video' ? 'is-video' : ''}">
                 ${primaryMedia.type === 'video'
-            ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
+            ? `<video src="${primaryMedia.url}"${primaryPosterAttr} muted playsinline preload="auto" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
                        <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir video">
                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                        </button>`
@@ -3599,10 +3691,15 @@ function setupInstagramGallery(card, post) {
 
         const primary = getInstagramPrimaryMedia(post);
         const newsId = card.dataset.instagramId || '';
+        const fallbackPoster = sanitizeMediaUrl(post.image);
+        const primaryPoster = primary.type === 'video'
+            ? (sanitizeMediaUrl(primary.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : ''))
+            : '';
+        const primaryPosterAttr = primaryPoster ? ` poster="${primaryPoster}"` : '';
 
         imageWrapper.classList.toggle('is-video', primary.type === 'video');
         imageWrapper.innerHTML = primary.type === 'video'
-            ? `<video src="${primary.url}" poster="${primary.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
+            ? `<video src="${primary.url}"${primaryPosterAttr} muted playsinline preload="auto" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
                <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)" aria-label="Reproduzir video">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                </button>`
@@ -3724,10 +3821,12 @@ function showGalleryMedia(card, allMedia, index) {
     if (media.type === 'video') {
         const video = document.createElement('video');
         video.src = media.url;
-        if (media.poster) video.poster = media.poster;
+        const fallbackPoster = sanitizeMediaUrl((instagramPostsData[newsId] || {}).image);
+        const galleryPoster = sanitizeMediaUrl(media.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : '');
+        if (galleryPoster) video.poster = galleryPoster;
         video.muted = true;
         video.playsInline = true;
-        video.preload = 'metadata';
+        video.preload = 'auto';
         video.dataset.instagramCardVideo = 'true';
         video.style.cssText = 'width: 100%; height: 100%; object-fit: contain; background: #f0f0f0;';
         video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, index, video));
@@ -3757,6 +3856,14 @@ function showGalleryMedia(card, allMedia, index) {
 
 function closeInstagramCard(card) {
     if (!card) return;
+
+    const inlineVideo = card.querySelector('video[data-inline-playing="1"]');
+    if (inlineVideo) {
+        try {
+            inlineVideo.pause();
+        } catch (_error) { }
+    }
+    card.dataset.inlineVideoPlaying = '';
 
     card.classList.remove('expanded');
     expandedCardId = null;
@@ -3794,10 +3901,16 @@ function closeInstagramCard(card) {
             if (primary.type === 'video') {
                 const video = document.createElement('video');
                 video.src = primary.url;
-                video.poster = primary.poster || '';
+                const fallbackPoster = sanitizeMediaUrl(post.image);
+                const restorePoster = sanitizeMediaUrl(primary.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : '');
+                if (restorePoster) {
+                    video.poster = restorePoster;
+                } else {
+                    video.removeAttribute('poster');
+                }
                 video.muted = true;
                 video.playsInline = true;
-                video.preload = 'metadata';
+                video.preload = 'auto';
                 video.dataset.instagramCardVideo = 'true';
                 video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, null, video));
                 video.addEventListener('loadedmetadata', () => primeInstagramCardVideoFrame(video), { once: true });

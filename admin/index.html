@@ -11806,7 +11806,13 @@
                     };
 
                     if (video.duration && Number.isFinite(video.duration) && video.duration > 0.3) {
-                        video.currentTime = Math.min(0.3, Math.max(0.01, video.duration / 4));
+                        const safeEnd = Math.max(0.08, video.duration - 0.08);
+                        const seekTarget = Math.min(
+                            safeEnd,
+                            Math.max(0.8, video.duration * 0.2),
+                            2.5
+                        );
+                        video.currentTime = seekTarget;
                     } else {
                         captureFrame();
                     }
