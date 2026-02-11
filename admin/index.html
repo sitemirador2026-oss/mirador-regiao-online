@@ -2296,6 +2296,8 @@
             }
         }
     </style>
+    <!-- CSS das Configurações - Novo Design -->
+    <link rel="stylesheet" href="settings-new.css?v=1">
 </head>
 
 <body>
@@ -3533,8 +3535,8 @@
 
                 </div>
 
-                <!-- Settings Page -->
-                <div id="settingsPage" class="page-content settings-page" style="display: none;">
+                <!-- Settings Page - NOVO DESIGN v2 -->
+                <div id="settingsPage" class="page-content settings-page settings-modern" style="display: none;">
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Configuracoes</h1>
@@ -13170,6 +13172,31 @@
         }
     </style>
 
+    <!-- Script para carregar novo design das configurações -->
+    <script>
+    // Carregar novo design das configurações
+    document.addEventListener('DOMContentLoaded', function() {
+        const settingsPage = document.getElementById('settingsPage');
+        if (settingsPage) {
+            fetch('settings-page-new.html?v=2')
+                .then(response => response.text())
+                .then(html => {
+                    // Criar um container temporário
+                    const temp = document.createElement('div');
+                    temp.innerHTML = html;
+                    
+                    // Extrair o conteúdo principal
+                    const newContent = temp.querySelector('#settingsPage');
+                    if (newContent) {
+                        // Preservar o ID e classe
+                        settingsPage.innerHTML = newContent.innerHTML;
+                        settingsPage.classList.add('settings-modern');
+                    }
+                })
+                .catch(err => console.log('Erro ao carregar novo design:', err));
+        }
+    });
+    </script>
 </body>
 
 </html>

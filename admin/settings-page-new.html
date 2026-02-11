@@ -1,0 +1,364 @@
+<!-- Settings Page - NOVO DESIGN MODERNO -->
+<div id="settingsPage" class="page-content settings-page settings-modern" style="display: none;">
+    
+    <!-- Header Moderno -->
+    <div class="settings-header">
+        <h1>Configurações</h1>
+        <p>Personalize a identidade visual, cores, layout e conteúdo do seu portal</p>
+    </div>
+
+    <!-- Tabs de Navegação -->
+    <div class="settings-tabs">
+        <button class="settings-tab active" onclick="switchSettingsTab('identity', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Identidade Visual
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('footer', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+            Rodapé e Links
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('colors', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+            Cores
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('layout', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            Layout
+        </button>
+        <button class="settings-tab" onclick="switchSettingsTab('banners', this)">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+            Banners
+        </button>
+    </div>
+
+    <!-- Layout Principal -->
+    <div class="settings-layout">
+        <!-- Conteúdo -->
+        <div class="settings-content">
+            
+            <!-- TAB: IDENTIDADE VISUAL -->
+            <div id="settingsTab-identity" class="settings-tab-content">
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Logomarca
+                    </h2>
+                    <p class="settings-card-subtitle">Faça upload da logo do seu portal. Recomendamos formato PNG ou SVG com fundo transparente.</p>
+                    
+                    <div class="logo-upload-modern">
+                        <div class="logo-upload-area-modern" id="logoUploadAreaModern" onclick="document.getElementById('logoInput').click()">
+                            <input type="file" id="logoInput" accept="image/*" style="display: none;" onchange="handleLogoUpload(event)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <div class="upload-text">Clique para enviar</div>
+                            <div class="upload-hint">PNG, JPG, SVG (max. 2MB)</div>
+                        </div>
+                        <div class="logo-preview-modern" id="logoPreviewModern" style="display: none;">
+                            <div>
+                                <div class="logo-preview-item dark">
+                                    <img id="logoPreviewDarkModern" src="" alt="Preview fundo escuro">
+                                </div>
+                                <div class="logo-preview-label">Fundo escuro</div>
+                            </div>
+                            <div>
+                                <div class="logo-preview-item light">
+                                    <img id="logoPreviewLightModern" src="" alt="Preview fundo claro">
+                                </div>
+                                <div class="logo-preview-label">Fundo claro</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        Informações da Marca
+                    </h2>
+                    <p class="settings-card-subtitle">Nome e tagline exibidos no site e no painel administrativo.</p>
+                    
+                    <div class="settings-form-grid">
+                        <div class="settings-input-group">
+                            <label for="siteName">Nome do Portal</label>
+                            <input type="text" id="siteName" class="settings-input" placeholder="Mirador Online" value="Mirador Online">
+                        </div>
+                        <div class="settings-input-group">
+                            <label for="siteTagline">Tagline / Subtítulo</label>
+                            <input type="text" id="siteTagline" class="settings-input" placeholder="Portal de Notícias" value="Portal de Notícias">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-settings btn-settings-secondary" onclick="resetBrand()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0A8.003 8.003 0 015.582 15m13.837 0H15"/></svg>
+                            Restaurar Padrão
+                        </button>
+                        <button class="btn-settings btn-settings-primary" onclick="saveBrand()">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            Salvar Identidade
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: RODAPÉ -->
+            <div id="settingsTab-footer" class="settings-tab-content" style="display: none;">
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        Páginas Institucionais
+                    </h2>
+                    <p class="settings-card-subtitle">Textos exibidos nas páginas Sobre Nós, Privacidade e Termos de Uso.</p>
+                    
+                    <div class="settings-form-grid">
+                        <div class="settings-input-group full-width">
+                            <label for="footerAboutText">Sobre Nós</label>
+                            <textarea id="footerAboutText" class="settings-input" rows="4" placeholder="Conte a história do seu portal..."></textarea>
+                        </div>
+                        <div class="settings-input-group full-width">
+                            <label for="footerPrivacyText">Política de Privacidade</label>
+                            <textarea id="footerPrivacyText" class="settings-input" rows="4" placeholder="Explique como os dados são tratados..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                        Contato
+                    </h2>
+                    <div class="settings-form-grid">
+                        <div class="settings-input-group">
+                            <label for="footerContactText">Nome da Redação</label>
+                            <input type="text" id="footerContactText" class="settings-input" placeholder="Redação Mirador Online">
+                        </div>
+                        <div class="settings-input-group">
+                            <label for="footerContactPhone">Telefone / WhatsApp</label>
+                            <input type="text" id="footerContactPhone" class="settings-input" placeholder="(99) 99999-9999">
+                        </div>
+                        <div class="settings-input-group full-width">
+                            <label for="footerContactEmail">E-mail</label>
+                            <input type="email" id="footerContactEmail" class="settings-input" placeholder="contato@exemplo.com">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                        Redes Sociais
+                    </h2>
+                    <div class="social-grid">
+                        <div class="social-item">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37zm1.5-4.87h.01M7.5 3h9a4.5 4.5 0 014.5 4.5v9a4.5 4.5 0 01-4.5 4.5h-9A4.5 4.5 0 013 16.5v-9A4.5 4.5 0 017.5 3z"/></svg>
+                            <input type="url" id="footerSocialInstagram" placeholder="https://instagram.com/...">
+                        </div>
+                        <div class="social-item">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+                            <input type="url" id="footerSocialFacebook" placeholder="https://facebook.com/...">
+                        </div>
+                        <div class="social-item">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
+                            <input type="url" id="footerSocialTwitter" placeholder="https://twitter.com/...">
+                        </div>
+                        <div class="social-item">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M22.54 6.42a2.78 2.78 0 00-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 00-1.94 2A29 29 0 001 11.75a29 29 0 00.46 5.33A2.78 2.78 0 003.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 001.94-2 29 29 0 00.46-5.33 29 29 0 00-.46-5.33z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 15.02l5.75-3.27-5.75-3.27v6.54z"/></svg>
+                            <input type="url" id="footerSocialYoutube" placeholder="https://youtube.com/...">
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-settings btn-settings-secondary" onclick="resetFooterLinks()">Restaurar Padrão</button>
+                        <button class="btn-settings btn-settings-primary" onclick="saveFooterLinks()">Salvar Rodapé</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: CORES -->
+            <div id="settingsTab-colors" class="settings-tab-content" style="display: none;">
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+                        Paleta de Cores
+                    </h2>
+                    <p class="settings-card-subtitle">Personalize as cores do seu portal. O preview ao vivo mostra as alterações em tempo real.</p>
+                    
+                    <div class="settings-group">
+                        <div class="settings-group-title">Cores Principais</div>
+                        <div class="color-grid">
+                            <div class="color-item" onclick="document.getElementById('colorPrimary').click()">
+                                <input type="color" id="colorPrimary" value="#2563eb" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Primária</div>
+                                    <div class="color-item-value" id="colorPrimaryValue">#2563EB</div>
+                                </div>
+                            </div>
+                            <div class="color-item" onclick="document.getElementById('colorSecondary').click()">
+                                <input type="color" id="colorSecondary" value="#64748b" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Secundária</div>
+                                    <div class="color-item-value" id="colorSecondaryValue">#64748B</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <div class="settings-group-title">Cores de Fundo</div>
+                        <div class="color-grid">
+                            <div class="color-item" onclick="document.getElementById('colorBackground').click()">
+                                <input type="color" id="colorBackground" value="#ffffff" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Página</div>
+                                    <div class="color-item-value" id="colorBackgroundValue">#FFFFFF</div>
+                                </div>
+                            </div>
+                            <div class="color-item" onclick="document.getElementById('colorMuted').click()">
+                                <input type="color" id="colorMuted" value="#f1f5f9" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Cards</div>
+                                    <div class="color-item-value" id="colorMutedValue">#F1F5F9</div>
+                                </div>
+                            </div>
+                            <div class="color-item" onclick="document.getElementById('colorHeader').click()">
+                                <input type="color" id="colorHeader" value="#ffffff" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Cabeçalho</div>
+                                    <div class="color-item-value" id="colorHeaderValue">#FFFFFF</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-group">
+                        <div class="settings-group-title">Cores de Texto</div>
+                        <div class="color-grid">
+                            <div class="color-item" onclick="document.getElementById('colorForeground').click()">
+                                <input type="color" id="colorForeground" value="#0f172a" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Principal</div>
+                                    <div class="color-item-value" id="colorForegroundValue">#0F172A</div>
+                                </div>
+                            </div>
+                            <div class="color-item" onclick="document.getElementById('colorMutedForeground').click()">
+                                <input type="color" id="colorMutedForeground" value="#64748b" onchange="updateColorPreview(this)">
+                                <div class="color-item-info">
+                                    <div class="color-item-label">Secundário</div>
+                                    <div class="color-item-value" id="colorMutedForegroundValue">#64748B</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-settings btn-settings-secondary" onclick="resetColors()">Restaurar Padrão</button>
+                        <button class="btn-settings btn-settings-primary" onclick="saveColors()">Salvar Cores</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: LAYOUT -->
+            <div id="settingsTab-layout" class="settings-tab-content" style="display: none;">
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                        Grade de Cards
+                    </h2>
+                    <p class="settings-card-subtitle">Controle quantos cards aparecem por linha nas notícias e na seção Instagram.</p>
+                    
+                    <div class="layout-slider">
+                        <label>Cards por linha</label>
+                        <input type="range" id="cardsPerRow" min="2" max="6" value="3" oninput="updateLayoutValue(this, 'cardsValue'); updateLayoutPreview()">
+                        <div class="layout-value" id="cardsValue">3</div>
+                    </div>
+                    
+                    <div class="layout-slider">
+                        <label>Posts do Instagram</label>
+                        <input type="range" id="instagramPostsVisible" min="3" max="12" value="5" oninput="updateLayoutValue(this, 'instagramValue')">
+                        <div class="layout-value" id="instagramValue">5</div>
+                    </div>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-settings btn-settings-primary" onclick="saveLayout()">Salvar Layout</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: BANNERS -->
+            <div id="settingsTab-banners" class="settings-tab-content" style="display: none;">
+                <div class="settings-card">
+                    <h2 class="settings-card-title">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/></svg>
+                        Banners do Topo
+                    </h2>
+                    <p class="settings-card-subtitle">Gerencie os banners exibidos entre o cabeçalho e a seção Instagram.</p>
+                    
+                    <div class="settings-input-group" style="margin-bottom: 1.5rem;">
+                        <label>Quantidade de banners visíveis</label>
+                        <input type="number" id="topBannersDisplayCount" class="settings-input" value="2" min="1" max="10" style="width: 120px;">
+                    </div>
+                    
+                    <div id="topBannersSlotsContainer"></div>
+                    
+                    <button type="button" class="btn-settings btn-settings-secondary" onclick="addTopBannerSlot()" style="margin-top: 1rem;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                        Adicionar Banner
+                    </button>
+                    
+                    <div class="settings-actions">
+                        <button class="btn-settings btn-settings-secondary" onclick="resetTopBannersSettings()">Limpar Todos</button>
+                        <button class="btn-settings btn-settings-primary" onclick="saveTopBannersSettings()">Salvar Banners</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preview ao Vivo -->
+        <div class="settings-preview-panel">
+            <div class="preview-card">
+                <div class="preview-card-header">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <h3>Preview ao Vivo</h3>
+                </div>
+                <div class="preview-card-body">
+                    <div class="site-preview" id="livePreview">
+                        <div class="site-preview-header" id="previewHeader">
+                            <div class="site-preview-logo" id="previewLogo">Mirador Online</div>
+                            <div class="site-preview-nav" id="previewNav">
+                                <span>Início</span>
+                                <span>Notícias</span>
+                                <span>Sobre</span>
+                            </div>
+                        </div>
+                        <div class="site-preview-body" id="previewBody">
+                            <div class="site-preview-card" id="previewCard">
+                                <div style="font-weight: 600; margin-bottom: 0.5rem;" id="previewCardTitle">Título da Notícia</div>
+                                <div style="font-size: 0.8125rem; opacity: 0.8;" id="previewCardText">Exemplo de como o texto ficará no site.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function switchSettingsTab(tabName, btn) {
+    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.settings-tab-content').forEach(c => c.style.display = 'none');
+    document.getElementById('settingsTab-' + tabName).style.display = 'block';
+}
+
+function updateLayoutValue(input, displayId) {
+    document.getElementById(displayId).textContent = input.value;
+}
+
+function updateColorPreview(input) {
+    const valueEl = document.getElementById(input.id + 'Value');
+    if (valueEl) valueEl.textContent = input.value.toUpperCase();
+    if (typeof updateLivePreview === 'function') {
+        updateLivePreview();
+    }
+}
+</script>
