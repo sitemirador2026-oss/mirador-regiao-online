@@ -3108,7 +3108,7 @@
                                         <p style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);">
                                             Clique ou arraste a imagem aqui</p>
                                         <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                            JPG, PNG, WebP, MP4, MOV, WebM (video max. 15MB apos compressao)</p>
+                                            JPG, PNG, WebP, MP4, MOV, WebM (videos acima de 10MB sao comprimidos em 70%)</p>
                                     </div>
 
                                     <!-- Preview da Imagem -->
@@ -3166,7 +3166,7 @@
                                         </svg>
                                         <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
                                             Clique ou arraste fotos/videos aqui<br>
-                                            <small>Max: 5 itens, 200KB cada. Imagens serao comprimidas.</small>
+                                            <small>Max: 5 itens. Imagens serao comprimidas e videos acima de 10MB serao reduzidos em 70%.</small>
                                         </p>
                                     </div>
 
@@ -10720,22 +10720,65 @@
             await loadInstagramPostsPage();
         }
 
+        function decodeHtmlEntitiesAdmin(text = '') {
+            const raw = String(text || '');
+            if (!raw) return '';
+
+            let decoded = raw;
+
+            if (typeof document !== 'undefined') {
+                try {
+                    const textarea = document.createElement('textarea');
+                    textarea.innerHTML = decoded;
+                    decoded = textarea.value;
+                } catch (_error) { }
+            }
+
+            decoded = decoded
+                .replace(/&#x([0-9a-fA-F]{1,6});?/g, (_match, hex) => {
+                    try {
+                        return String.fromCodePoint(parseInt(hex, 16));
+                    } catch (_error) {
+                        return _match;
+                    }
+                })
+                .replace(/&#([0-9]{1,7});?/g, (_match, dec) => {
+                    try {
+                        return String.fromCodePoint(parseInt(dec, 10));
+                    } catch (_error) {
+                        return _match;
+                    }
+                })
+                .replace(/\\u([0-9a-fA-F]{4})/g, (_match, hex) => {
+                    try {
+                        return String.fromCharCode(parseInt(hex, 16));
+                    } catch (_error) {
+                        return _match;
+                    }
+                })
+                .replace(/\\n/g, '\n');
+
+            return decoded;
+        }
+
         function cleanInstagramText(text) {
             if (!text) return '';
 
+            // Decodifica entidades HTML e sequencias Unicode para manter emojis/acentos.
+            const decodedText = decodeHtmlEntitiesAdmin(text);
+
             // Remove padrÃµes comuns de metadados do Instagram
-            let cleaned = text
-                // Remove "X likes, Y comments - username on Date:"
-                .replace(/^\s*["']?\s*[\d.,kmb]+\s*likes?,?\s*[\d.,kmb]*\s*comments?\s*-\s*[a-z0-9._]{2,30}\s+on\s+[^:]+:?\s*/i, '')
-                // Remove "username on Date:"
-                .replace(/^\s*["']?\s*[a-z0-9._]{2,30}\s+on\s+[^:]+:?\s*/i, '')
+            let cleaned = decodedText
+                // Remove "X likes, Y comments - username on/no Date:"
+                .replace(/^\s*["']?\s*[\d.,kmb]+\s*(?:likes?|curtidas?)\s*,?\s*[\d.,kmb]+\s*(?:comments?|coment[aá]rios?)\s*-\s*[a-z0-9._]{2,30}\s+(?:on|no)\s+[^:]+:?\s*/i, '')
+                // Remove "username on/no Date:"
+                .replace(/^\s*["']?\s*[a-z0-9._]{2,30}\s+(?:on|no)\s+[^:]+:?\s*/i, '')
                 // Remove aspas no inicio e fim
                 .replace(/^\s*["']+|["']+\s*$/g, '')
-                // Remove hashtags no final (opcional - mantem por enquanto)
-                // .replace(/#\w+/g, '')
-                // Remove multiplos espacos
-                .replace(/\s+/g, ' ')
-                // Trim
+                // Normaliza quebras e espacos sem destruir parÃ¡grafos
+                .replace(/\r\n/g, '\n')
+                .replace(/\n{3,}/g, '\n\n')
+                .replace(/[ \t]+/g, ' ')
                 .trim();
 
             return cleaned;
@@ -10745,7 +10788,7 @@
             if (!text) return 'Noticia do Instagram';
 
             // Limpar o texto primeiro
-            let cleaned = cleanInstagramText(text);
+            let cleaned = cleanInstagramText(text).replace(/\s+/g, ' ');
 
             // Pegar as primeiras palavras ate o limite de caracteres
             if (cleaned.length <= maxLength) {
@@ -11511,12 +11554,14 @@
             }
         }
 
-        const MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES = 15 * 1024 * 1024;
         const MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES = 120 * 1024 * 1024;
+        const INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES = 10 * 1024 * 1024;
+        const INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT = 70;
+        const INSTAGRAM_VIDEO_COMPRESSION_KEEP_RATIO = Math.max(0.1, (100 - INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT) / 100);
         const MAX_BROWSER_VIDEO_COMPRESSION_SOURCE_BYTES = 120 * 1024 * 1024;
-        const MAX_BROWSER_VIDEO_COMPRESSION_DURATION_SECONDS = 120;
         const MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS = 120000;
-        const MIN_BROWSER_VIDEO_BITRATE_BPS = 160000;
+        const MAX_BROWSER_VIDEO_COMPRESSION_ABSOLUTE_TIME_MS = 8 * 60 * 1000;
+        const MIN_BROWSER_VIDEO_BITRATE_BPS = 120000;
 
         function formatBytesAdmin(bytes = 0) {
             if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
@@ -11529,6 +11574,14 @@
             }
             const decimals = size >= 100 ? 0 : (size >= 10 ? 1 : 2);
             return `${size.toFixed(decimals)} ${units[unitIndex]}`;
+        }
+
+        function getInstagramVideoCompressionTargetBytes(fileSize = 0) {
+            const bytes = Number(fileSize) || 0;
+            if (bytes <= INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
+                return bytes;
+            }
+            return Math.max(1 * 1024 * 1024, Math.floor(bytes * INSTAGRAM_VIDEO_COMPRESSION_KEEP_RATIO));
         }
 
         function setInstagramMainMediaPreview({ mediaType = 'image', imageUrl = '', videoUrl = '', showManualVideoNotice = false } = {}) {
@@ -11728,9 +11781,10 @@
             });
         }
 
-        async function compressVideoToTargetSize(file, maxBytes = MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
+        async function compressVideoToTargetSize(file, maxBytes) {
             if (!(file instanceof File)) return file;
-            if (file.size <= maxBytes) return file;
+            const targetBytes = Number(maxBytes) || file.size;
+            if (file.size <= targetBytes) return file;
             if (file.size > MAX_BROWSER_VIDEO_COMPRESSION_SOURCE_BYTES) {
                 const sourceSizeError = new Error(`Video original muito grande para compressao rapida no navegador (${formatBytesAdmin(file.size)})`);
                 sourceSizeError.code = 'VIDEO_COMPRESSION_SOURCE_TOO_LARGE';
@@ -11752,20 +11806,10 @@
                 throw durationError;
             }
 
-            if (duration > MAX_BROWSER_VIDEO_COMPRESSION_DURATION_SECONDS) {
-                const durationLimitError = new Error(`Video com ${Math.ceil(duration)}s excede o limite de 2 minutos para compressao automatica`);
-                durationLimitError.code = 'VIDEO_COMPRESSION_TOO_LONG';
-                throw durationLimitError;
-            }
-
-            const targetBits = Math.floor(maxBytes * 8 * 0.92);
-            const audioBitsPerSecond = 64000;
-            const videoBitsPerSecond = Math.max(180000, Math.floor(targetBits / duration) - audioBitsPerSecond);
-            if (videoBitsPerSecond < MIN_BROWSER_VIDEO_BITRATE_BPS) {
-                const bitrateError = new Error('Taxa de compressao muito agressiva para este video');
-                bitrateError.code = 'VIDEO_COMPRESSION_TOO_AGGRESSIVE';
-                throw bitrateError;
-            }
+            const targetBits = Math.floor(targetBytes * 8 * 0.8);
+            const audioBitsPerSecond = 48000;
+            const estimatedVideoBits = Math.floor(targetBits / duration) - audioBitsPerSecond;
+            const videoBitsPerSecond = Math.max(MIN_BROWSER_VIDEO_BITRATE_BPS, estimatedVideoBits);
 
             return new Promise((resolve, reject) => {
                 const sourceUrl = URL.createObjectURL(file);
@@ -11834,7 +11878,7 @@
                                 `${file.name.replace(/\.[^.]+$/, '')}-compressed.${ext}`,
                                 { type: compressedBlob.type || mimeType, lastModified: Date.now() }
                             );
-                            if (compressedFile.size > maxBytes) {
+                            if (compressedFile.size > targetBytes) {
                                 const sizeError = new Error('Compressao concluida, mas o video ainda ficou acima do limite');
                                 sizeError.code = 'VIDEO_COMPRESSION_OUTPUT_TOO_LARGE';
                                 fail(sizeError);
@@ -11852,7 +11896,10 @@
                             const timeoutError = new Error('A compressao de video excedeu o tempo maximo');
                             timeoutError.code = 'VIDEO_COMPRESSION_TIMEOUT';
                             fail(timeoutError);
-                        }, Math.min(MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS, Math.ceil(duration * 1200) + 12000));
+                        }, Math.min(
+                            MAX_BROWSER_VIDEO_COMPRESSION_ABSOLUTE_TIME_MS,
+                            Math.max(MAX_BROWSER_VIDEO_COMPRESSION_TIME_MS, Math.ceil(duration * 1150) + 12000)
+                        ));
                         video.onended = () => {
                             if (recorder && recorder.state !== 'inactive') {
                                 try { recorder.stop(); } catch (_e) { }
@@ -11924,18 +11971,19 @@
                     }
 
                     let uploadVideoFile = file;
-                    if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
-                        uploadArea.innerHTML = '<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo video para 15MB...</p></div>';
+                    const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
+                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
+                        uploadArea.innerHTML = `<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}% (${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)})...</p></div>`;
                         try {
-                            uploadVideoFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
+                            uploadVideoFile = await compressVideoToTargetSize(file, compressionTargetBytes);
                         } catch (compressError) {
                             console.warn('[Admin] Falha na compressao automatica do video:', compressError?.message || compressError);
-                            throw new Error(`Nao foi possivel comprimir o video para 15MB. ${compressError?.message || 'Tente um arquivo menor ou mais curto.'}`);
+                            throw new Error(`Nao foi possivel comprimir o video. ${compressError?.message || 'Tente novamente com outro arquivo.'}`);
                         }
                     }
 
-                    if (uploadVideoFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
-                        throw new Error(`Video ainda excede 15MB apos compressao (${formatBytesAdmin(uploadVideoFile.size)}).`);
+                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && uploadVideoFile.size > compressionTargetBytes) {
+                        throw new Error(`Video ainda nao atingiu a compressao esperada (${formatBytesAdmin(uploadVideoFile.size)} > ${formatBytesAdmin(compressionTargetBytes)}).`);
                     }
 
                     uploadArea.innerHTML = `<div style="padding: 2rem; text-align: center;"><div style="width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: #E4405F; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div><p style="font-size: 0.875rem; color: var(--text-muted);">Enviando video (${formatBytesAdmin(uploadVideoFile.size)})...</p></div>`;
@@ -12019,18 +12067,19 @@
 
                         let uploadFile = file;
                         if (isVideo) {
-                            if (file.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
-                                uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo ${file.name} para 15MB...</p></div>`;
+                            const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
+                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
+                                uploadArea.innerHTML = `<div style="padding: 1rem; text-align: center;"><p style="font-size: 0.875rem; color: var(--text-muted);">Comprimindo ${file.name} em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}% (${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)})...</p></div>`;
                                 try {
-                                    uploadFile = await compressVideoToTargetSize(file, MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES);
+                                    uploadFile = await compressVideoToTargetSize(file, compressionTargetBytes);
                                 } catch (compressError) {
                                     console.warn(`[Admin] Falha na compressao da galeria para "${file.name}":`, compressError?.message || compressError);
-                                    showModal('Erro', `Nao foi possivel comprimir "${file.name}" para 15MB.`, 'error');
+                                    showModal('Erro', `Nao foi possivel comprimir "${file.name}".`, 'error');
                                     continue;
                                 }
                             }
-                            if (uploadFile.size > MAX_INSTAGRAM_VIDEO_UPLOAD_BYTES) {
-                                showModal('Erro', `Video "${file.name}" ainda excede 15MB apos compressao.`, 'error');
+                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && uploadFile.size > compressionTargetBytes) {
+                                showModal('Erro', `Video "${file.name}" nao atingiu a compressao esperada.`, 'error');
                                 continue;
                             }
                         } else {

@@ -42,14 +42,44 @@ const instagramOembedCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
 
 function decodeHtmlEntities(text = '') {
-  return String(text)
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&#x27;/g, "'")
-    .replace(/&#x2F;/g, '/')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+  const input = String(text || '');
+  if (!input) return '';
+
+  return input.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]+);?/g, (match, entity) => {
+    const normalized = String(entity || '').toLowerCase();
+    if (!normalized) return match;
+
+    if (normalized.startsWith('#x')) {
+      const code = parseInt(normalized.slice(2), 16);
+      if (Number.isFinite(code)) {
+        try {
+          return String.fromCodePoint(code);
+        } catch (_error) { }
+      }
+      return match;
+    }
+
+    if (normalized.startsWith('#')) {
+      const code = parseInt(normalized.slice(1), 10);
+      if (Number.isFinite(code)) {
+        try {
+          return String.fromCodePoint(code);
+        } catch (_error) { }
+      }
+      return match;
+    }
+
+    switch (normalized) {
+      case 'amp': return '&';
+      case 'quot': return '"';
+      case 'apos': return "'";
+      case 'lt': return '<';
+      case 'gt': return '>';
+      case 'nbsp': return ' ';
+      case 'sol': return '/';
+      default: return match;
+    }
+  });
 }
 
 function decodeEscapedUrl(url = '') {
@@ -156,10 +186,10 @@ function extractInstagramCaptionFromHtml(html = '') {
   if (!html) return '';
   return decodeEscapedText(
     extractFirstValueByPatterns(html, [
-      /"edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
-      /\\"edge_media_to_caption\\"\s*:\s*\{\s*\\"edges\\"\s*:\s*\[\s*\{\s*\\"node\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i,
-      /"caption"\s*:\s*\{\s*"text"\s*:\s*"([^"]*)"/i,
-      /\\"caption\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"([^"]*)\\"/i,
+      /"edge_media_to_caption"\s*:\s*\{\s*"edges"\s*:\s*\[\s*\{\s*"node"\s*:\s*\{\s*"text"\s*:\s*"((?:\\.|[^"])*)"/i,
+      /\\"edge_media_to_caption\\"\s*:\s*\{\s*\\"edges\\"\s*:\s*\[\s*\{\s*\\"node\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"((?:\\\\.|[^"])*)\\"/i,
+      /"caption"\s*:\s*\{\s*"text"\s*:\s*"((?:\\.|[^"])*)"/i,
+      /\\"caption\\"\s*:\s*\{\s*\\"text\\"\s*:\s*\\"((?:\\\\.|[^"])*)\\"/i,
       /"accessibility_caption"\s*:\s*"([^"]{20,1200})"/i,
       /\\"accessibility_caption\\"\s*:\s*\\"([^"]{20,1200})\\"/i
     ])
