@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Conteúdo institucional do portal Mirador e Região Online">
     <title id="siteTitle">Institucional - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=148">
+    <link rel="stylesheet" href="css/styles.css?v=157">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -95,7 +95,7 @@
         }
 
         .footer-links a.footer-link-active {
-            color: var(--primary);
+            color: var(--footer-text, var(--footer-text-auto));
             font-weight: 700;
             text-decoration: underline;
             text-underline-offset: 0.2em;
@@ -125,20 +125,20 @@
 
 <body>
     <header class="header">
-        <div class="header-top-strip">
-            <div class="container">
-                <div class="header-top-strip-brand">
-                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÍCIAS</span>
-                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃO ONLINE</span>
-                </div>
-            </div>
-        </div>
         <div class="container">
             <div class="header-content header-content-brand">
                 <a href="index.html" class="site-brand-logo" id="siteLogoLink" aria-label="Voltar para página inicial">
                     <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
                     <span id="siteLogoFallback" class="site-logo-fallback">MRO</span>
                 </a>
+            </div>
+        </div>
+        <div class="header-top-strip">
+            <div class="container">
+                <div class="header-top-strip-brand">
+                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÍCIAS</span>
+                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃO ONLINE</span>
+                </div>
             </div>
         </div>
     </header>
@@ -158,29 +158,16 @@
     <footer class="footer">
         <div class="container">
             <div class="footer-grid">
-                <div class="footer-col">
-                    <h3 class="footer-title" id="footerSiteName">Mirador e Região Online</h3>
-                    <p class="footer-text">Notícias de Mirador, região e Brasil. Informação com credibilidade e agilidade.</p>
+                <div class="footer-col footer-col-brand">
+                    <h3 class="footer-title" id="footerSiteName">Mirador e Regi&atilde;o Online</h3>
+                    <p class="footer-text">Not&iacute;cias de Mirador, regi&atilde;o e Brasil. Informa&ccedil;&atilde;o com credibilidade e agilidade.</p>
                 </div>
 
-                <div class="footer-col">
-                    <h4 class="footer-heading">Categorias</h4>
-                    <ul class="footer-links">
-                        <li><a href="index.html?category=mirador">Mirador</a></li>
-                        <li><a href="index.html?category=regiao">Região</a></li>
-                        <li><a href="index.html?category=brasil">Brasil</a></li>
-                        <li><a href="index.html?category=policia">Polícia</a></li>
-                        <li><a href="index.html?category=esportes">Esportes</a></li>
-                        <li><a href="index.html?category=politica">Política</a></li>
-                        <li><a href="index.html?category=instagram" style="color: #E4405F;">Instagram</a></li>
-                    </ul>
-                </div>
-
-                <div class="footer-col">
+                <div class="footer-col footer-col-links">
                     <h4 class="footer-heading">Links</h4>
-                    <ul class="footer-links">
-                        <li><a href="institucional.html?sec=about" id="footerLinkAboutEl">Sobre nós</a></li>
-                        <li><a href="institucional.html?sec=privacy" id="footerLinkPrivacyEl">Política de Privacidade</a></li>
+                    <ul class="footer-links footer-links-inline" id="footerLinks">
+                        <li><a href="institucional.html?sec=about" id="footerLinkAboutEl">Sobre n&oacute;s</a></li>
+                        <li><a href="institucional.html?sec=privacy" id="footerLinkPrivacyEl">Pol&iacute;tica de Privacidade</a></li>
                         <li><a href="institucional.html?sec=terms" id="footerLinkTermsEl">Termos de Uso</a></li>
                     </ul>
                     <div class="footer-contact-block">
@@ -190,9 +177,9 @@
                     </div>
                 </div>
 
-                <div class="footer-col">
+                <div class="footer-col footer-col-social">
                     <h4 class="footer-heading">Siga-nos</h4>
-                    <div class="social-links">
+                    <div class="social-links" id="footerSocialLinks">
                         <a href="https://instagram.com/miradoreregiao" target="_blank" aria-label="Instagram" id="footerSocialInstagramEl" style="display: none;">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
@@ -218,7 +205,7 @@
             </div>
 
             <div class="footer-bottom">
-                <p id="footerCopyright">&copy; 2026 Mirador e Região Online. Todos os direitos reservados.</p>
+                <p id="footerCopyright">&copy; 2026 Mirador e Regi&atilde;o Online. Todos os direitos reservados.</p>
             </div>
         </div>
     </footer>
@@ -404,6 +391,7 @@
                 MutedForeground: '--muted-foreground',
                 Header: '--header-bg',
                 HeaderText: '--header-text',
+                HeaderMenuIcon: '--header-menu-icon-color',
                 Card: '--card-bg',
                 FooterText: '--footer-text'
             };

@@ -3903,6 +3903,14 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                            <div class="color-item">
+                                                <input type="color" id="colorHeaderMenuIcon" value="#ffffff">
+                                                <div class="color-item-info">
+                                                    <div class="color-item-label">Icone Menu (3 barras)</div>
+                                                    <div class="color-item-value" id="colorHeaderMenuIconValue">#FFFFFF
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -4430,6 +4438,67 @@
 
                             <div class="banner-settings-grid" id="topBannersSlotsContainer"></div>
                         </div>
+                    </div>
+                </div>
+
+                <style>
+                    .sidebar-banner-preview-box {
+                        position: relative;
+                        width: 100%;
+                        max-width: 200px;
+                        aspect-ratio: 200 / 1080;
+                        overflow: hidden;
+                        border-radius: var(--radius);
+                        border: 1px solid var(--border);
+                        background: var(--bg-secondary);
+                    }
+
+                    .sidebar-banner-preview-box img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: cover;
+                    }
+
+                    .sidebar-banner-preview-empty {
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 100%;
+                        height: 100%;
+                        font-size: 0.75rem;
+                        color: var(--text-muted);
+                    }
+                </style>
+
+                <div class="content-section" style="max-width: 1100px; margin-top: 1.5rem;">
+                    <div class="section-header">
+                        <h2 class="section-title"> Banner Lateral (Desktop)</h2>
+                        <div class="section-actions">
+                            <button class="btn btn-secondary btn-sm" onclick="resetSidebarBannersSettings()">Limpar
+                                Banner Lateral</button>
+                            <button class="btn btn-primary btn-sm" onclick="saveSidebarBannersSettings()">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Salvar Banner Lateral
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="padding: 1.5rem;">
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                            Esta area controla o banner lateral exibido apenas no desktop, ao lado direito do
+                            conteudo principal (proporcao 200 x 1080). Nao aparece em telas menores que 1200px.
+                        </p>
+
+                        <div class="top-banner-controls">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="addSidebarBannerSlot()">
+                                + Adicionar banner lateral
+                            </button>
+                        </div>
+
+                        <div class="banner-settings-grid" id="sidebarBannersSlotsContainer"></div>
                     </div>
                 </div>
 
@@ -7257,6 +7326,7 @@
                 MutedForeground: '#64748b',
                 Header: '#ffffff',
                 HeaderText: '#0f172a',
+                HeaderMenuIcon: '#ffffff',
                 Card: '#ffffff',
                 FooterText: '#64748b'
             };
@@ -7314,6 +7384,7 @@
             const mutedForeground = document.getElementById('colorMutedForeground').value;
             const header = document.getElementById('colorHeader').value;
             const headerText = document.getElementById('colorHeaderText').value;
+            const headerMenuIcon = document.getElementById('colorHeaderMenuIcon').value;
             const card = document.getElementById('colorCard').value;
             const footerText = document.getElementById('colorFooterText').value;
 
@@ -7329,6 +7400,7 @@
             document.getElementById('colorMutedForegroundValue').textContent = mutedForeground.toUpperCase();
             document.getElementById('colorHeaderValue').textContent = header.toUpperCase();
             document.getElementById('colorHeaderTextValue').textContent = headerText.toUpperCase();
+            document.getElementById('colorHeaderMenuIconValue').textContent = headerMenuIcon.toUpperCase();
 
             // Preview ao vivo
             const previewHeader = document.getElementById('previewHeader');
@@ -7369,6 +7441,7 @@
                 MutedForeground: document.getElementById('colorMutedForeground').value,
                 Header: document.getElementById('colorHeader').value,
                 HeaderText: document.getElementById('colorHeaderText').value,
+                HeaderMenuIcon: document.getElementById('colorHeaderMenuIcon').value,
                 Card: document.getElementById('colorCard').value,
                 FooterText: document.getElementById('colorFooterText').value
             };
@@ -7500,6 +7573,7 @@
                 }
             }
             applyTopBannersFromLayoutData(layoutData);
+            applySidebarBannersFromLayoutData(layoutData);
         }
 
         // ========================================
@@ -8145,6 +8219,488 @@
         }
 
         // ========================================
+        // SIDEBAR BANNERS (BANNER LATERAL DESKTOP)
+        // ========================================
+
+        const SIDEBAR_BANNER_TRANSITIONS_ADMIN = ['fade', 'slide', 'zoom'];
+        const SIDEBAR_BANNERS_MAX_DISPLAY_ADMIN = 10;
+        const SIDEBAR_BANNERS_DEFAULT_DISPLAY_ADMIN = 1;
+        const SIDEBAR_BANNER_DEFAULT_SLOT_ADMIN = {
+            mode: 'photos',
+            transition: 'fade',
+            intervalSeconds: 5,
+            media: []
+        };
+        let sidebarBannersSettingsAdmin = normalizeSidebarBannersSettingsAdmin({});
+
+        function normalizeSidebarBannerMediaAdmin(entry) {
+            if (typeof entry === 'string') {
+                const url = entry.trim();
+                return url ? { url, key: '', name: '', type: '' } : null;
+            }
+            if (!entry || typeof entry !== 'object') return null;
+            const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+            if (!url) return null;
+            return {
+                url,
+                key: typeof entry.key === 'string' ? entry.key : '',
+                name: typeof entry.name === 'string' ? entry.name : '',
+                type: typeof entry.type === 'string' ? entry.type : ''
+            };
+        }
+
+        function normalizeSidebarBannerSlotAdmin(slot = {}) {
+            const rawMode = String(slot.mode || SIDEBAR_BANNER_DEFAULT_SLOT_ADMIN.mode).toLowerCase();
+            const mode = rawMode === 'gif' ? 'gif' : 'photos';
+            const rawTransition = String(slot.transition || SIDEBAR_BANNER_DEFAULT_SLOT_ADMIN.transition).toLowerCase();
+            const transition = SIDEBAR_BANNER_TRANSITIONS_ADMIN.includes(rawTransition) ? rawTransition : SIDEBAR_BANNER_DEFAULT_SLOT_ADMIN.transition;
+            const rawInterval = Number(slot.intervalSeconds);
+            const intervalSeconds = Math.max(1, Math.min(30, Number.isFinite(rawInterval) ? rawInterval : SIDEBAR_BANNER_DEFAULT_SLOT_ADMIN.intervalSeconds));
+
+            const sourceMedia = Array.isArray(slot.media) ? slot.media : Array.isArray(slot.images) ? slot.images : Array.isArray(slot.urls) ? slot.urls : [];
+            const media = sourceMedia.map(normalizeSidebarBannerMediaAdmin).filter(Boolean);
+
+            if (media.length === 0) {
+                const fallback = normalizeSidebarBannerMediaAdmin(slot.url || slot.gifUrl || '');
+                if (fallback) media.push(fallback);
+            }
+
+            return {
+                mode,
+                transition,
+                intervalSeconds,
+                media: mode === 'gif' ? media.slice(0, 1) : media
+            };
+        }
+
+        function normalizeSidebarBannersSettingsAdmin(settings = {}) {
+            const source = settings && typeof settings === 'object' ? settings : {};
+            const sourceItems = Array.isArray(source.items) ? source.items : Array.isArray(source.slots) ? source.slots : [];
+            const items = sourceItems.map(normalizeSidebarBannerSlotAdmin).filter(item => item && typeof item === 'object').slice(0, SIDEBAR_BANNERS_MAX_DISPLAY_ADMIN);
+
+            const nextItems = items.length > 0 ? [...items] : [];
+            if (nextItems.length === 0) {
+                nextItems.push(normalizeSidebarBannerSlotAdmin({}));
+            }
+
+            return { items: nextItems };
+        }
+
+        function getSidebarBannerPrefixAdmin(slotIndex) {
+            return `sidebarBannerSlot${slotIndex}`;
+        }
+
+        function normalizeSidebarBannerSlotIndexAdmin(slotIndex) {
+            const parsed = Number(slotIndex);
+            if (!Number.isFinite(parsed)) return -1;
+            return Math.max(0, Math.floor(parsed));
+        }
+
+        function getSidebarBannerSlotAdmin(slotIndex) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return normalizeSidebarBannerSlotAdmin({});
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? sidebarBannersSettingsAdmin.items : [];
+            return slots[normalizedIndex] || normalizeSidebarBannerSlotAdmin({});
+        }
+
+        function setSidebarBannerUploadStatusAdmin(slotIndex, message) {
+            const prefix = getSidebarBannerPrefixAdmin(slotIndex);
+            const statusEl = document.getElementById(`${prefix}UploadStatus`);
+            if (statusEl) statusEl.textContent = message || '';
+        }
+
+        function updateSidebarBannerUploadModeAdmin(slotIndex) {
+            const prefix = getSidebarBannerPrefixAdmin(slotIndex);
+            const slot = getSidebarBannerSlotAdmin(slotIndex);
+            const input = document.getElementById(`${prefix}Upload`);
+            const hint = document.getElementById(`${prefix}UploadHint`);
+            if (!input || !hint) return;
+
+            if (slot.mode === 'gif') {
+                input.multiple = false;
+                hint.textContent = 'Em GIF: envie apenas 1 arquivo .gif';
+            } else {
+                input.multiple = true;
+                hint.textContent = 'Em Fotos: pode enviar varias imagens';
+            }
+        }
+
+        function renderSidebarBannerPreviewAdmin(slotIndex) {
+            const prefix = getSidebarBannerPrefixAdmin(slotIndex);
+            const previewEl = document.getElementById(`${prefix}Preview`);
+            if (!previewEl) return;
+
+            const slot = getSidebarBannerSlotAdmin(slotIndex);
+            const media = Array.isArray(slot.media) ? slot.media : [];
+
+            if (media.length === 0) {
+                previewEl.innerHTML = '<div class="sidebar-banner-preview-empty">Sem midia</div>';
+                return;
+            }
+
+            const first = media[0];
+            const countBadge = slot.mode === 'photos' && media.length > 1
+                ? `<div style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(15, 23, 42, 0.75); color: #fff; font-size: 0.6875rem; padding: 0.2rem 0.45rem; border-radius: 999px;">${media.length} fotos</div>`
+                : '';
+
+            previewEl.innerHTML = `
+                <img src="${escapeHtml(first.url)}" alt="Preview banner lateral" loading="lazy">
+                ${countBadge}
+            `;
+        }
+
+        function renderSidebarBannerMediaListAdmin(slotIndex) {
+            const prefix = getSidebarBannerPrefixAdmin(slotIndex);
+            const listEl = document.getElementById(`${prefix}MediaList`);
+            if (!listEl) return;
+
+            const slot = getSidebarBannerSlotAdmin(slotIndex);
+            const media = Array.isArray(slot.media) ? slot.media : [];
+
+            if (media.length === 0) {
+                listEl.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-muted);">Nenhum arquivo enviado.</div>';
+                return;
+            }
+
+            listEl.innerHTML = media.map((item, index) => {
+                const name = item.name || item.key || `arquivo-${index + 1}`;
+                const showOrderButtons = slot.mode === 'photos' && media.length > 1;
+                return `
+                    <div class="banner-media-item">
+                        <div class="banner-media-thumb">
+                            <img src="${escapeHtml(item.url)}" alt="${escapeHtml(name)}" loading="lazy">
+                        </div>
+                        <div class="banner-media-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+                        <div class="banner-media-actions">
+                            ${showOrderButtons ? `<button type="button" class="banner-mini-btn" title="Mover para cima" onclick="moveSidebarBannerMedia(${slotIndex}, ${index}, -1)">↑</button>` : ''}
+                            ${showOrderButtons ? `<button type="button" class="banner-mini-btn" title="Mover para baixo" onclick="moveSidebarBannerMedia(${slotIndex}, ${index}, 1)">↓</button>` : ''}
+                            <button type="button" class="banner-mini-btn danger" title="Remover" onclick="removeSidebarBannerMedia(${slotIndex}, ${index})">×</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function buildSidebarBannerSlotCardMarkup(slot, slotIndex, totalSlots) {
+            const prefix = getSidebarBannerPrefixAdmin(slotIndex);
+            const removeButton = totalSlots > 1
+                ? `<button type="button" class="banner-remove-slot-btn" onclick="removeSidebarBannerSlot(${slotIndex})">Remover</button>`
+                : '';
+
+            return `
+                <article class="banner-slot-card">
+                    <div class="banner-slot-head">
+                        <div>
+                            <div class="banner-slot-title">Banner Lateral ${slotIndex + 1}</div>
+                            <span class="banner-slot-dim">200 × 1080</span>
+                        </div>
+                        <div class="banner-slot-head-actions">
+                            ${removeButton}
+                        </div>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Mode">Formato</label>
+                        <select id="${prefix}Mode" onchange="handleSidebarBannerModeChange(${slotIndex})">
+                            <option value="photos"${slot.mode === 'photos' ? ' selected' : ''}>Fotos (1 ou mais)</option>
+                            <option value="gif"${slot.mode === 'gif' ? ' selected' : ''}>GIF (apenas 1 arquivo)</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Transition">Transicao</label>
+                        <select id="${prefix}Transition" onchange="handleSidebarBannerFieldChange(${slotIndex})">
+                            <option value="fade"${slot.transition === 'fade' ? ' selected' : ''}>Fade</option>
+                            <option value="slide"${slot.transition === 'slide' ? ' selected' : ''}>Slide</option>
+                            <option value="zoom"${slot.transition === 'zoom' ? ' selected' : ''}>Zoom</option>
+                        </select>
+                    </div>
+
+                    <div class="banner-field">
+                        <label for="${prefix}Interval">Tempo entre transicoes (segundos)</label>
+                        <input type="number" id="${prefix}Interval" min="1" max="30" value="${slot.intervalSeconds}" onchange="handleSidebarBannerFieldChange(${slotIndex})">
+                    </div>
+
+                    <div class="banner-field">
+                        <label>Upload de midias</label>
+                        <div class="banner-upload-dropzone" onclick="document.getElementById('${prefix}Upload').click()">
+                            <input type="file" id="${prefix}Upload" accept="image/*" multiple style="display: none;" onchange="handleSidebarBannerUpload(${slotIndex}, event)">
+                            <p>Clique para enviar arquivos</p>
+                            <small id="${prefix}UploadHint">Em Fotos: pode enviar varias imagens</small>
+                        </div>
+                        <div id="${prefix}UploadStatus" class="banner-upload-status"></div>
+                    </div>
+
+                    <div class="sidebar-banner-preview-box" id="${prefix}Preview"></div>
+                    <div class="banner-media-list" id="${prefix}MediaList"></div>
+                </article>
+            `;
+        }
+
+        function renderSidebarBannersAdmin() {
+            const container = document.getElementById('sidebarBannersSlotsContainer');
+            if (!container) return;
+
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? sidebarBannersSettingsAdmin.items : [];
+            if (slots.length === 0) {
+                container.innerHTML = '<div class="banner-slots-empty">Nenhum banner lateral configurado.</div>';
+                return;
+            }
+
+            container.innerHTML = slots
+                .map((slot, index) => buildSidebarBannerSlotCardMarkup(slot, index, slots.length))
+                .join('');
+
+            slots.forEach((_slot, index) => {
+                updateSidebarBannerUploadModeAdmin(index);
+                renderSidebarBannerPreviewAdmin(index);
+                renderSidebarBannerMediaListAdmin(index);
+                setSidebarBannerUploadStatusAdmin(index, '');
+            });
+        }
+
+        function updateSidebarBannerSlotAdmin(slotIndex, slotData) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? [...sidebarBannersSettingsAdmin.items] : [];
+            if (!slots[normalizedIndex]) return;
+            slots[normalizedIndex] = normalizeSidebarBannerSlotAdmin(slotData);
+            sidebarBannersSettingsAdmin.items = slots;
+        }
+
+        function addSidebarBannerSlot() {
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? [...sidebarBannersSettingsAdmin.items] : [];
+            if (slots.length >= SIDEBAR_BANNERS_MAX_DISPLAY_ADMIN) {
+                showModal('Limite atingido', `Voce pode configurar no maximo ${SIDEBAR_BANNERS_MAX_DISPLAY_ADMIN} banners laterais.`, 'info');
+                return;
+            }
+            slots.push(normalizeSidebarBannerSlotAdmin({}));
+            sidebarBannersSettingsAdmin.items = slots;
+            renderSidebarBannersAdmin();
+        }
+
+        function removeSidebarBannerSlot(slotIndex) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            if (!confirm(`Deseja remover o banner lateral ${normalizedIndex + 1}?`)) return;
+
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? [...sidebarBannersSettingsAdmin.items] : [];
+            if (!slots[normalizedIndex]) return;
+            slots.splice(normalizedIndex, 1);
+
+            if (slots.length === 0) {
+                slots.push(normalizeSidebarBannerSlotAdmin({}));
+            }
+
+            sidebarBannersSettingsAdmin.items = slots;
+            renderSidebarBannersAdmin();
+        }
+
+        function handleSidebarBannerFieldChange(slotIndex) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getSidebarBannerPrefixAdmin(normalizedIndex);
+            const slot = getSidebarBannerSlotAdmin(normalizedIndex);
+
+            const transitionInput = document.getElementById(`${prefix}Transition`);
+            const intervalInput = document.getElementById(`${prefix}Interval`);
+
+            const transition = transitionInput ? String(transitionInput.value || 'fade').toLowerCase() : slot.transition;
+            const intervalValue = intervalInput ? Number(intervalInput.value) : slot.intervalSeconds;
+
+            slot.transition = SIDEBAR_BANNER_TRANSITIONS_ADMIN.includes(transition) ? transition : 'fade';
+            slot.intervalSeconds = Math.max(1, Math.min(30, Number.isFinite(intervalValue) ? intervalValue : 5));
+            if (intervalInput) intervalInput.value = slot.intervalSeconds;
+
+            updateSidebarBannerSlotAdmin(normalizedIndex, slot);
+            renderSidebarBannerPreviewAdmin(normalizedIndex);
+        }
+
+        function handleSidebarBannerModeChange(slotIndex) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getSidebarBannerPrefixAdmin(normalizedIndex);
+            const modeInput = document.getElementById(`${prefix}Mode`);
+            const nextMode = modeInput && modeInput.value === 'gif' ? 'gif' : 'photos';
+            const slot = getSidebarBannerSlotAdmin(normalizedIndex);
+            slot.mode = nextMode;
+
+            if (slot.mode === 'gif' && slot.media.length > 1) {
+                slot.media = slot.media.slice(0, 1);
+                showModal('Aviso', 'No formato GIF apenas um arquivo pode ficar no banner.', 'info');
+            }
+
+            updateSidebarBannerSlotAdmin(normalizedIndex, slot);
+            renderSidebarBannersAdmin();
+        }
+
+        async function handleSidebarBannerUpload(slotIndex, event) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+
+            const prefix = getSidebarBannerPrefixAdmin(normalizedIndex);
+            const input = document.getElementById(`${prefix}Upload`);
+            const slot = getSidebarBannerSlotAdmin(normalizedIndex);
+            const files = Array.from(event?.target?.files || []);
+            if (!files.length) return;
+
+            if (!r2Client) initR2Client();
+
+            const uploadFiles = slot.mode === 'gif' ? [files[0]] : files.slice(0, 20);
+            const uploaded = [];
+
+            try {
+                for (let i = 0; i < uploadFiles.length; i += 1) {
+                    const file = uploadFiles[i];
+                    if (!file.type || !file.type.startsWith('image/')) continue;
+                    const isGifFile = file.type === 'image/gif' || /\.gif$/i.test(file.name || '');
+
+                    if (slot.mode === 'gif') {
+                        if (!isGifFile) {
+                            showModal('Erro', 'No formato GIF envie apenas arquivo .gif.', 'error');
+                            continue;
+                        }
+                    } else if (isGifFile) {
+                        showModal('Aviso', 'No formato Fotos envie imagens comuns (JPG, PNG, WebP, AVIF).', 'info');
+                        continue;
+                    }
+
+                    setSidebarBannerUploadStatusAdmin(normalizedIndex, `Enviando ${i + 1}/${uploadFiles.length}...`);
+                    const result = await r2Client.uploadFile(file, 'banners');
+                    uploaded.push({
+                        url: result?.url || '',
+                        key: result?.key || '',
+                        name: file.name || result?.key || 'arquivo',
+                        type: file.type || result?.type || ''
+                    });
+                }
+
+                if (uploaded.length === 0) {
+                    setSidebarBannerUploadStatusAdmin(normalizedIndex, '');
+                    if (input) input.value = '';
+                    return;
+                }
+
+                if (slot.mode === 'gif') {
+                    slot.media = [uploaded[0]];
+                } else {
+                    slot.media = [...slot.media, ...uploaded];
+                }
+
+                updateSidebarBannerSlotAdmin(normalizedIndex, slot);
+                renderSidebarBannersAdmin();
+                setSidebarBannerUploadStatusAdmin(normalizedIndex, `${uploaded.length} arquivo(s) enviado(s).`);
+            } catch (error) {
+                console.error('[Admin] Erro no upload de banner lateral:', error);
+                showModal('Erro', 'Nao foi possivel enviar a midia do banner lateral.', 'error');
+                setSidebarBannerUploadStatusAdmin(normalizedIndex, '');
+            } finally {
+                if (input) input.value = '';
+            }
+        }
+
+        function moveSidebarBannerMedia(slotIndex, index, direction) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slot = getSidebarBannerSlotAdmin(normalizedIndex);
+            const media = [...slot.media];
+            const targetIndex = index + direction;
+            if (targetIndex < 0 || targetIndex >= media.length) return;
+            const [item] = media.splice(index, 1);
+            media.splice(targetIndex, 0, item);
+            slot.media = media;
+            updateSidebarBannerSlotAdmin(normalizedIndex, slot);
+            renderSidebarBannersAdmin();
+        }
+
+        function removeSidebarBannerMedia(slotIndex, index) {
+            const normalizedIndex = normalizeSidebarBannerSlotIndexAdmin(slotIndex);
+            if (normalizedIndex < 0) return;
+            const slot = getSidebarBannerSlotAdmin(normalizedIndex);
+            slot.media = slot.media.filter((_, itemIndex) => itemIndex !== index);
+            updateSidebarBannerSlotAdmin(normalizedIndex, slot);
+            renderSidebarBannersAdmin();
+        }
+
+        function syncSidebarBannerFieldsFromDomAdmin() {
+            const slots = Array.isArray(sidebarBannersSettingsAdmin.items) ? [...sidebarBannersSettingsAdmin.items] : [];
+            const normalizedSlots = slots.map((slot, index) => {
+                const prefix = getSidebarBannerPrefixAdmin(index);
+                const modeInput = document.getElementById(`${prefix}Mode`);
+                const transitionInput = document.getElementById(`${prefix}Transition`);
+                const intervalInput = document.getElementById(`${prefix}Interval`);
+
+                const rawSlot = {
+                    ...slot,
+                    mode: modeInput && modeInput.value === 'gif' ? 'gif' : (slot.mode || 'photos'),
+                    transition: transitionInput ? transitionInput.value : slot.transition,
+                    intervalSeconds: intervalInput ? Number(intervalInput.value) : slot.intervalSeconds,
+                    media: Array.isArray(slot.media) ? slot.media : []
+                };
+                return normalizeSidebarBannerSlotAdmin(rawSlot);
+            });
+            sidebarBannersSettingsAdmin.items = normalizedSlots;
+        }
+
+        function buildSidebarBannersPayloadAdmin() {
+            syncSidebarBannerFieldsFromDomAdmin();
+            const normalizedItems = (sidebarBannersSettingsAdmin.items || [])
+                .map(normalizeSidebarBannerSlotAdmin)
+                .slice(0, SIDEBAR_BANNERS_MAX_DISPLAY_ADMIN);
+
+            return {
+                items: normalizedItems,
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        function applySidebarBannersFromLayoutData(layoutData = {}) {
+            const source = layoutData && typeof layoutData === 'object' ? layoutData.sidebarBanners || {} : {};
+            sidebarBannersSettingsAdmin = normalizeSidebarBannersSettingsAdmin(source);
+            renderSidebarBannersAdmin();
+        }
+
+        async function saveSidebarBannersSettings() {
+            const payload = buildSidebarBannersPayloadAdmin();
+
+            try {
+                await db.collection('settings').doc('layout').set({
+                    sidebarBanners: payload,
+                    updatedAt: payload.updatedAt
+                }, { merge: true });
+
+                let savedLayout = {};
+                try {
+                    savedLayout = JSON.parse(localStorage.getItem('siteLayout') || '{}');
+                } catch (_e) {
+                    savedLayout = {};
+                }
+                const nextLayout = {
+                    ...savedLayout,
+                    sidebarBanners: payload,
+                    updatedAt: payload.updatedAt
+                };
+                localStorage.setItem('siteLayout', JSON.stringify(nextLayout));
+                localStorage.setItem('publicSiteLayout', JSON.stringify(nextLayout));
+
+                sidebarBannersSettingsAdmin = normalizeSidebarBannersSettingsAdmin(payload);
+                renderSidebarBannersAdmin();
+                showModal('Sucesso!', 'Banner lateral salvo com sucesso!', 'success');
+            } catch (error) {
+                console.error('[Admin] Erro ao salvar banner lateral:', error);
+                showModal('Erro!', 'Nao foi possivel salvar o banner lateral.', 'error');
+            }
+        }
+
+        function resetSidebarBannersSettings() {
+            if (!confirm('Deseja limpar todos os banners laterais?')) return;
+            sidebarBannersSettingsAdmin = normalizeSidebarBannersSettingsAdmin({});
+            renderSidebarBannersAdmin();
+        }
+
+        // ========================================
         // LOGO E IDENTIDADE VISUAL
         // ========================================
 
@@ -8174,7 +8730,7 @@
             // Configurar inputs de cor
             const colorInputs = [
                 'Primary', 'Secondary', 'Accent', 'Background',
-                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'Card', 'FooterText'
+                'Muted', 'Foreground', 'MutedForeground', 'Header', 'HeaderText', 'HeaderMenuIcon', 'Card', 'FooterText'
             ];
             colorInputs.forEach(name => {
                 const colorInput = document.getElementById(`color${name}`);
@@ -8660,6 +9216,7 @@
                 MutedForeground: '#64748b',
                 Header: '#ffffff',
                 HeaderText: '#0f172a',
+                HeaderMenuIcon: '#ffffff',
                 Card: '#ffffff',
                 FooterText: '#64748b'
             };

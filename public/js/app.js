@@ -1,4 +1,4 @@
-// App principal do site público
+// App principal do site pÃºblico
 
 console.log('[App] v2.5 - Script carregado');
 
@@ -18,7 +18,7 @@ const sampleNews = [
     {
         id: '2',
         title: "Região registra crescimento econômico no último trimestre",
-        excerpt: "Dados mostram aumento de 15% na atividade econômica regional.",
+        excerpt: "Dados mostram aumento de 15% na atividade economica regional.",
         category: "regiao",
         categoryName: "Região",
         image: "https://via.placeholder.com/800x400/059669/ffffff?text=Região",
@@ -29,7 +29,7 @@ const sampleNews = [
     {
         id: '3',
         title: "Seleção Brasileira se prepara para próximos jogos",
-        excerpt: "Técnico convoca novos jogadores para amistosos internacionais.",
+        excerpt: "Tecnico convoca novos jogadores para amistosos internacionais.",
         category: "brasil",
         categoryName: "Brasil",
         image: "https://via.placeholder.com/800x400/dc2626/ffffff?text=Brasil",
@@ -78,7 +78,7 @@ function formatDateTime(dateString) {
         hour: '2-digit',
         minute: '2-digit'
     });
-    return `${dateStr}  ${timeStr}`;
+    return `${dateStr} \u2022 ${timeStr}`;
 }
 
 function escapeHtml(value) {
@@ -390,7 +390,7 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
     };
 }
 
-// Buscar dados de engagement do Instagram diretamente do navegador do usuário
+// Buscar dados de engagement do Instagram diretamente do navegador do usuÃ¡rio
 async function fetchInstagramEmbedDataFromBrowser(instagramUrl) {
     try {
         const parsed = new URL(instagramUrl);
@@ -442,9 +442,9 @@ async function fetchInstagramEmbedDataFromBrowser(instagramUrl) {
             return { likes, comments };
         }
 
-        // Tenta extrair do texto visível do embed (ex: "1.700 curtidas")
+        // Tenta extrair do texto visÃ­vel do embed (ex: "1.700 curtidas")
         const textLikes = html.match(/([\d.,]+)\s*(?:likes?|curtidas?)/i);
-        const textComments = html.match(/([\d.,]+)\s*(?:comments?|coment[aá]rios?)/i);
+        const textComments = html.match(/([\d.,]+)\s*(?:comments?|comentarios?)/i);
         const parsedTextLikes = textLikes ? parseInstagramCount(textLikes[1]) : 0;
         const parsedTextComments = textComments ? parseInstagramCount(textComments[1]) : 0;
 
@@ -542,7 +542,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
         hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
 
-    // Fallback final: buscar embed diretamente do navegador do usuário
+    // Fallback final: buscar embed diretamente do navegador do usuÃ¡rio
     if (resolvedLikes <= 0 && resolvedComments <= 0) {
         try {
             const embedData = await fetchInstagramEmbedDataFromBrowser(instagramUrl);
@@ -912,6 +912,302 @@ function renderTopBanners() {
 
 window.addEventListener('beforeunload', clearAllTopBannerTimers);
 
+// =========================================
+// SIDEBAR BANNERS (BANNER LATERAL DESKTOP)
+// =========================================
+
+const SIDEBAR_BANNER_TRANSITIONS = ['fade', 'slide', 'zoom'];
+
+const DEFAULT_SIDEBAR_BANNER_SLOT = {
+    mode: 'photos',
+    transition: 'fade',
+    intervalSeconds: 5,
+    media: []
+};
+
+const sidebarBannerTimers = {};
+const sidebarBannerStates = {};
+const SIDEBAR_BANNER_ACTIVE_CLASS = 'has-sidebar-banner';
+let sidebarBannerVisibilitySyncRaf = 0;
+
+function normalizeSidebarBannerMediaEntry(entry) {
+    if (typeof entry === 'string') {
+        const url = entry.trim();
+        return url ? { url, key: '', name: '' } : null;
+    }
+    if (!entry || typeof entry !== 'object') return null;
+    const url = typeof entry.url === 'string' ? entry.url.trim() : '';
+    return url ? { url, key: entry.key || '', name: entry.name || '' } : null;
+}
+
+function normalizeSidebarBannerSlot(slot = {}) {
+    const rawMode = String(slot.mode || DEFAULT_SIDEBAR_BANNER_SLOT.mode).toLowerCase();
+    const mode = rawMode === 'gif' ? 'gif' : 'photos';
+
+    const rawTransition = String(slot.transition || DEFAULT_SIDEBAR_BANNER_SLOT.transition).toLowerCase();
+    const transition = SIDEBAR_BANNER_TRANSITIONS.includes(rawTransition) ? rawTransition : DEFAULT_SIDEBAR_BANNER_SLOT.transition;
+
+    const interval = Number(slot.intervalSeconds);
+    const intervalSeconds = Math.max(1, Math.min(30, Number.isFinite(interval) ? interval : DEFAULT_SIDEBAR_BANNER_SLOT.intervalSeconds));
+
+    const sourceMedia = Array.isArray(slot.media) ? slot.media : Array.isArray(slot.images) ? slot.images : Array.isArray(slot.urls) ? slot.urls : [];
+    const media = sourceMedia.map(normalizeSidebarBannerMediaEntry).filter(Boolean);
+
+    if (media.length === 0) {
+        const fallback = normalizeSidebarBannerMediaEntry(slot.url || slot.gifUrl || '');
+        if (fallback) media.push(fallback);
+    }
+
+    return {
+        mode,
+        transition,
+        intervalSeconds,
+        media: mode === 'gif' ? media.slice(0, 1) : media
+    };
+}
+
+function normalizeSidebarBannersConfig(source = {}) {
+    const src = source && typeof source === 'object' ? source : {};
+    const sourceItems = Array.isArray(src.items) ? src.items : Array.isArray(src.slots) ? src.slots : [];
+    const items = sourceItems.map(normalizeSidebarBannerSlot);
+    return { items };
+}
+
+function getSidebarBannersLayoutConfig() {
+    try {
+        const runtimeLayout = window.publicSiteLayoutConfig || {};
+        const savedLayout = JSON.parse(localStorage.getItem('publicSiteLayout') || '{}');
+        const source = runtimeLayout.sidebarBanners || savedLayout.sidebarBanners || {};
+        return normalizeSidebarBannersConfig(source);
+    } catch (_error) {
+        return normalizeSidebarBannersConfig({});
+    }
+}
+
+function hasConfiguredSidebarBanners() {
+    return false;
+}
+
+function clearSidebarBannerTimer(slotId) {
+    if (sidebarBannerTimers[slotId]) {
+        clearInterval(sidebarBannerTimers[slotId]);
+        delete sidebarBannerTimers[slotId];
+    }
+}
+
+function clearAllSidebarBannerTimers() {
+    Object.keys(sidebarBannerTimers).forEach(clearSidebarBannerTimer);
+}
+
+function applySidebarBannerSlideState(slotId) {
+    const state = sidebarBannerStates[slotId];
+    if (!state || !state.card) return;
+    const slides = state.card.querySelectorAll('.sidebar-banner-slide');
+    if (!slides.length) return;
+
+    slides.forEach((slide, index) => {
+        const isActive = index === state.currentIndex;
+        const offset = getWrappedSlideOffset(index, state.currentIndex, slides.length);
+        slide.classList.toggle('active', isActive);
+        slide.style.setProperty('--offset', String(offset));
+        slide.style.zIndex = isActive ? '2' : '1';
+    });
+}
+
+function startSidebarBannerRotation(slotId, intervalSeconds) {
+    clearSidebarBannerTimer(slotId);
+    const state = sidebarBannerStates[slotId];
+    if (!state || state.total <= 1) return;
+
+    const intervalMs = Math.max(1000, Math.round(intervalSeconds * 1000));
+    sidebarBannerTimers[slotId] = setInterval(() => {
+        const currentState = sidebarBannerStates[slotId];
+        if (!currentState || currentState.total <= 1) return;
+        currentState.currentIndex = (currentState.currentIndex + 1) % currentState.total;
+        applySidebarBannerSlideState(slotId);
+    }, intervalMs);
+}
+
+function renderSidebarBannerSlot(slotId, slotConfig, card) {
+    const config = normalizeSidebarBannerSlot(slotConfig);
+    const validMedia = config.media.filter(m => m && m.url);
+    if (validMedia.length === 0) {
+        card.classList.add('is-empty');
+        return false;
+    }
+    card.classList.remove('is-empty');
+
+    if (config.mode === 'gif') {
+        const img = document.createElement('img');
+        img.className = 'sidebar-banner-image';
+        img.src = validMedia[0].url;
+        img.alt = 'Banner lateral';
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        img.addEventListener('load', () => {
+            scheduleSidebarBannerVisibilitySync();
+        }, { once: true });
+        card.appendChild(img);
+        return true;
+    }
+
+    card.classList.add(`transition-${config.transition}`);
+
+    const track = document.createElement('div');
+    track.className = 'sidebar-banner-track';
+    card.appendChild(track);
+
+    validMedia.forEach((item, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'sidebar-banner-slide';
+        slide.style.backgroundImage = `url('${item.url}')`;
+        if (index === 0) {
+            slide.classList.add('active');
+            slide.style.zIndex = '2';
+            slide.style.setProperty('--offset', '0');
+        } else {
+            slide.style.zIndex = '1';
+            slide.style.setProperty('--offset', '1');
+        }
+        track.appendChild(slide);
+    });
+
+    sidebarBannerStates[slotId] = {
+        card,
+        currentIndex: 0,
+        total: validMedia.length,
+        transition: config.transition
+    };
+
+    if (validMedia.length > 1) {
+        startSidebarBannerRotation(slotId, config.intervalSeconds);
+    }
+
+    // Ajustar aspect-ratio baseado na primeira imagem (para slideshow não ficar com altura 0)
+    applySidebarBannerCardAspectRatio(card, validMedia);
+
+    return true;
+}
+
+function applySidebarBannerCardAspectRatio(card, media = []) {
+    if (!card) return;
+    card.style.removeProperty('aspect-ratio');
+
+    const first = Array.isArray(media) ? media.find(item => item && item.url) : null;
+    if (!first || !first.url) return;
+
+    // Tentar obter dimensÃµes se disponÃ­veis no objeto de mÃ­dia (se o admin salvar)
+    // Se não, carregar a imagem para descobrir
+    const probe = new Image();
+    probe.onload = () => {
+        if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
+            card.style.aspectRatio = `${probe.naturalWidth} / ${probe.naturalHeight}`;
+            scheduleSidebarBannerVisibilitySync();
+        }
+    };
+    probe.src = first.url;
+}
+
+function setSidebarBannerVisibilityState(isVisible) {
+    if (!document.body) return;
+    document.body.classList.remove(SIDEBAR_BANNER_ACTIVE_CLASS);
+}
+
+function getSidebarColumnsConfig() {
+    const layout = window.publicSiteLayoutConfig || {};
+    const baseFromLayout = Number(layout.cardsPerRow);
+    const expandedFromLayout = Number(layout.expandedCardsPerRow);
+    const base = Number.isFinite(baseFromLayout) && baseFromLayout > 0 ? baseFromLayout : 5;
+    const expanded = Number.isFinite(expandedFromLayout) && expandedFromLayout >= base ? expandedFromLayout : (base + 1);
+    return { base, expanded };
+}
+
+function positionSidebarBannerTop(section) {
+    if (!section) return;
+    const topAnchor = getSidebarTopAnchor();
+    if (!topAnchor) {
+        section.style.removeProperty('top');
+        return;
+    }
+    const topOffset = topAnchor.getBoundingClientRect().top + window.scrollY;
+    section.style.top = `${Math.max(0, Math.round(topOffset))}px`;
+}
+
+function getSidebarTopAnchor() {
+    const topBannersSection = document.getElementById('topBannersSection');
+    if (topBannersSection && window.getComputedStyle(topBannersSection).display !== 'none') {
+        const topBannersGrid = document.getElementById('topBannersGrid');
+        const firstTopBannerCard = topBannersGrid ? topBannersGrid.querySelector('.top-banner-card') : null;
+        return firstTopBannerCard || topBannersGrid || topBannersSection;
+    }
+
+    const firstVisibleContentSection = Array.from(document.querySelectorAll('main .news-section, main .category-section'))
+        .find((section) => window.getComputedStyle(section).display !== 'none');
+
+    return firstVisibleContentSection || document.querySelector('main');
+}
+
+function shouldReserveSpaceForSidebarBanner(section) {
+    if (!section) return false;
+    if (window.innerWidth < 1200) return false;
+    if (window.getComputedStyle(section).display === 'none') return false;
+
+    const rect = section.getBoundingClientRect();
+    if (rect.height <= 0) return false;
+
+    const sectionTop = rect.top + window.scrollY;
+    const sectionBottom = sectionTop + rect.height;
+    const viewportTop = window.scrollY || window.pageYOffset || 0;
+    const viewportBottom = viewportTop + window.innerHeight;
+
+    return viewportBottom > sectionTop && viewportTop < sectionBottom;
+}
+
+function syncSidebarBannerVisibilityState() {
+    sidebarBannerVisibilitySyncRaf = 0;
+    const section = document.getElementById('sidebarBannerSection');
+    const isActive = Boolean(
+        hasConfiguredSidebarBanners() &&
+        window.innerWidth >= 1200 &&
+        section &&
+        window.getComputedStyle(section).display !== 'none' &&
+        section.getBoundingClientRect().height > 0 &&
+        shouldReserveSpaceForSidebarBanner(section)
+    );
+    setSidebarBannerVisibilityState(isActive);
+}
+
+function scheduleSidebarBannerVisibilitySync() {
+    if (sidebarBannerVisibilitySyncRaf) return;
+    sidebarBannerVisibilitySyncRaf = window.requestAnimationFrame(syncSidebarBannerVisibilityState);
+}
+
+function renderSidebarBanners() {
+    const section = document.getElementById('sidebarBannerSection');
+    const container = document.getElementById('sidebarBannersStickyContainer');
+    if (!section || !container) return;
+
+    // Banner lateral desativado por decisão de layout.
+    clearAllSidebarBannerTimers();
+    Object.keys(sidebarBannerStates).forEach(slotId => {
+        delete sidebarBannerStates[slotId];
+    });
+    container.innerHTML = '';
+    section.style.display = 'none';
+    section.style.removeProperty('top');
+    setSidebarBannerVisibilityState(false);
+}
+
+window.addEventListener('beforeunload', clearAllSidebarBannerTimers);
+window.addEventListener('scroll', scheduleSidebarBannerVisibilitySync, { passive: true });
+window.addEventListener('load', () => {
+    const section = document.getElementById('sidebarBannerSection');
+    if (section && window.getComputedStyle(section).display !== 'none') {
+        positionSidebarBannerTop(section);
+    }
+    scheduleSidebarBannerVisibilitySync();
+});
+
 // Obter logo do site configurada no admin
 function getSiteLogo() {
     const brandSettings = localStorage.getItem('publicSiteBrand');
@@ -936,8 +1232,8 @@ function createNewsCard(news) {
         sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
         sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
     } else {
-        // Notícia própria - usar logo do site configurada
-        sourceDomain = 'Nossa Notícia';
+        // Notícia prÃ³pria - usar logo do site configurada
+        sourceDomain = 'Nossa Noticia';
         const siteLogo = getSiteLogo();
         if (siteLogo) {
             sourceLogo = siteLogo;
@@ -966,7 +1262,7 @@ function createNewsCard(news) {
                 <span class="news-card-category-text">${categoryLabel}</span>
                 <div class="news-card-datetime">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    ${timeStr}  ${dateStr}
+                    ${timeStr} &#8226; ${dateStr}
                 </div>
                 <div class="news-card-source-row">
                     <div class="news-card-source">
@@ -995,7 +1291,7 @@ function createHorizontalNewsCard(news) {
         sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
         sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
     } else {
-        sourceDomain = 'Nossa Notícia';
+        sourceDomain = 'Nossa Noticia';
         const siteLogo = getSiteLogo();
         if (siteLogo) {
             sourceLogo = siteLogo;
@@ -1019,7 +1315,7 @@ function createHorizontalNewsCard(news) {
                 <div class="news-card-horizontal-footer">
                     <span class="news-card-horizontal-category">${categoryLabel}</span>
                     <div class="news-card-horizontal-subline">
-                        <span class="news-card-horizontal-time">${timeStr}  ${dateStr}</span>
+                        <span class="news-card-horizontal-time">${timeStr} &#8226; ${dateStr}</span>
                         <div class="news-card-horizontal-source-row">
                             <div class="news-card-horizontal-source">
                                 <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
@@ -1038,7 +1334,7 @@ function createHorizontalNewsCard(news) {
 }
 
 // Renderizar notícias com layout alternado
-// Renderizar bloco de notícias com padrão: 2 normais + 1 especial
+// Renderizar bloco de notícias com padrÃ£o: 2 normais + 1 especial
 function renderNewsBlockMobile(newsItems, container) {
     let html = '';
     let index = 0;
@@ -1052,62 +1348,134 @@ function renderNewsBlockMobile(newsItems, container) {
     }
 
     if (container) {
-        container.innerHTML = html || '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+        container.innerHTML = html || '<div class="empty-state">Nenhuma noticia encontrada.</div>';
     }
 
     return index;
 }
 
+function getSidebarAbsoluteBounds() {
+    if (window.innerWidth < 1200) return null;
+    if (!hasConfiguredSidebarBanners()) return null;
+
+    const section = document.getElementById('sidebarBannerSection');
+    if (!section) return null;
+    if (window.getComputedStyle(section).display === 'none') return null;
+
+    const rect = section.getBoundingClientRect();
+    if (rect.height <= 0) return null;
+
+    const top = rect.top + window.scrollY;
+    const bottom = top + rect.height;
+    return { top, bottom };
+}
+
+function buildDesktopNewsHtml(items, cardsPerRow, cardsInSpecialRow = 4) {
+    if (!Array.isArray(items) || items.length === 0) return '';
+
+    let html = '';
+    let index = 0;
+
+    // Padrão: 2 fileiras normais + 1 fileira horizontal
+    for (let cycle = 0; cycle < 2 && index < items.length; cycle++) {
+        if (index < items.length) {
+            for (let i = 0; i < cardsPerRow && index < items.length; i++) {
+                html += createNewsCard(items[index++]);
+            }
+        }
+
+        if (index < items.length) {
+            for (let i = 0; i < cardsPerRow && index < items.length; i++) {
+                html += createNewsCard(items[index++]);
+            }
+        }
+
+        if (index < items.length) {
+            html += '<div class="news-row-horizontal">';
+            for (let i = 0; i < cardsInSpecialRow && index < items.length; i++) {
+                html += createHorizontalNewsCard(items[index++]);
+            }
+            html += '</div>';
+        }
+    }
+
+    while (index < items.length) {
+        html += createNewsCard(items[index++]);
+    }
+
+    return html;
+}
+
 function renderNewsBlock(newsItems, startIndex, container) {
     if (isMobileViewport()) {
+        if (container) {
+            container.classList.remove('news-grid-split');
+            const sectionEl = container.closest('.news-section');
+            if (sectionEl) {
+                sectionEl.classList.remove('with-sidebar-gap', 'after-sidebar');
+            }
+        }
         return renderNewsBlockMobile(newsItems, container);
     }
 
-    const cardsPerRow = 5;
+    const { base, expanded } = getSidebarColumnsConfig();
     const cardsInSpecialRow = 4;
-    let html = '';
-    let index = startIndex;
-    let rowsRendered = 0;
+    const items = Array.isArray(newsItems) ? newsItems.slice(startIndex) : [];
+    const finalIndex = startIndex + items.length;
 
-    // Padrão: 2 normais + 1 especial (repetido 2x = 4 normais + 2 especiais)
-    for (let cycle = 0; cycle < 2 && index < newsItems.length; cycle++) {
-        // Fileira normal 1
-        if (index < newsItems.length) {
-            for (let i = 0; i < cardsPerRow && index < newsItems.length; i++) {
-                html += createNewsCard(newsItems[index++]);
-            }
-            rowsRendered++;
-        }
+    if (!container) return finalIndex;
 
-        // Fileira normal 2
-        if (index < newsItems.length) {
-            for (let i = 0; i < cardsPerRow && index < newsItems.length; i++) {
-                html += createNewsCard(newsItems[index++]);
-            }
-            rowsRendered++;
-        }
-
-        // Fileira especial horizontal
-        if (index < newsItems.length) {
-            html += '<div class="news-row-horizontal">';
-            for (let i = 0; i < cardsInSpecialRow && index < newsItems.length; i++) {
-                html += createHorizontalNewsCard(newsItems[index++]);
-            }
-            html += '</div>';
-            rowsRendered++;
-        }
+    container.classList.remove('news-grid-split');
+    const sectionEl = container.closest('.news-section');
+    if (sectionEl) {
+        sectionEl.classList.remove('with-sidebar-gap', 'after-sidebar');
     }
 
-    // Se sobrar notícias, completar com cards normais
-    while (index < newsItems.length) {
-        html += createNewsCard(newsItems[index++]);
+    if (items.length === 0) {
+        container.innerHTML = '<div class="empty-state">Nenhuma noticia encontrada.</div>';
+        return finalIndex;
     }
 
-    if (container) {
-        container.innerHTML = html || '<div class="empty-state">Nenhuma notícia encontrada.</div>';
+    const sidebarBounds = getSidebarAbsoluteBounds();
+    if (!sidebarBounds) {
+        const html = buildDesktopNewsHtml(items, base, cardsInSpecialRow);
+        container.innerHTML = html || '<div class="empty-state">Nenhuma noticia encontrada.</div>';
+        return finalIndex;
     }
 
-    return index; // Retorna o índice final
+    const gridTop = container.getBoundingClientRect().top + window.scrollY;
+    const overlapHeight = sidebarBounds.bottom - gridTop;
+
+    if (overlapHeight <= 0) {
+        if (sectionEl) sectionEl.classList.add('after-sidebar');
+        const html = buildDesktopNewsHtml(items, expanded, cardsInSpecialRow);
+        container.innerHTML = html || '<div class="empty-state">Nenhuma noticia encontrada.</div>';
+        return finalIndex;
+    }
+
+    if (sectionEl) sectionEl.classList.add('with-sidebar-gap');
+
+    const estimatedRowHeight = 248;
+    const overlapRows = Math.max(1, Math.ceil(overlapHeight / estimatedRowHeight));
+    const overlapCount = Math.min(items.length, overlapRows * base);
+
+    if (overlapCount >= items.length) {
+        const html = buildDesktopNewsHtml(items, base, cardsInSpecialRow);
+        container.innerHTML = html || '<div class="empty-state">Nenhuma noticia encontrada.</div>';
+        return finalIndex;
+    }
+
+    const firstItems = items.slice(0, overlapCount);
+    const remainingItems = items.slice(overlapCount);
+    const firstHtml = buildDesktopNewsHtml(firstItems, base, cardsInSpecialRow);
+    const remainingHtml = buildDesktopNewsHtml(remainingItems, expanded, cardsInSpecialRow);
+
+    container.classList.add('news-grid-split');
+    container.innerHTML = `
+        <div class="news-grid-part news-grid-part-base">${firstHtml}</div>
+        <div class="news-grid-part news-grid-part-expanded">${remainingHtml}</div>
+    `;
+    return finalIndex;
 }
 
 async function renderNews() {
@@ -1123,10 +1491,10 @@ async function renderNews() {
         if (featuredContainer) {
             featuredContainer.innerHTML = featured.length > 0
                 ? featured.map(createNewsCard).join('')
-                : '<div class="empty-state">Nenhuma notícia em destaque.</div>';
+                : '<div class="empty-state">Nenhuma noticia em destaque.</div>';
         }
 
-        // Últimas notícias - excluindo notícias do Instagram (têm seção própria)
+        // Últimas notícias - excluindo notícias do Instagram (tÃªm seÃ§Ã£o prÃ³pria)
         const latest = news
             .filter(n => n.source !== 'Instagram' && n.category !== 'instagram')
             .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1136,7 +1504,7 @@ async function renderNews() {
             renderNewsBlock(latest, 0, latestContainer);
         }
 
-        // Renderizar seções por categoria
+        // Renderizar seÃ§Ãµes por categoria
         const categories = [
             { id: 'esportes', containerId: 'categoryEsportes' },
             { id: 'politica', containerId: 'categoryPolitica' },
@@ -1163,6 +1531,9 @@ async function renderNews() {
                 }
             }
         });
+
+        scheduleSidebarBannerVisibilitySync();
+        requestAnimationFrame(scheduleSidebarBannerVisibilitySync);
 
     } catch (error) {
         console.error('[App] Erro ao renderizar notícias:', error);
@@ -1289,8 +1660,10 @@ async function filterByCategory(category) {
         if (filtered.length > 0) {
             renderNewsBlock(filtered, 0, container);
         } else {
-            container.innerHTML = '<div class="empty-state">Nenhuma notícia nesta categoria.</div>';
+            container.innerHTML = '<div class="empty-state">Nenhuma noticia nesta categoria.</div>';
         }
+        scheduleSidebarBannerVisibilitySync();
+        requestAnimationFrame(scheduleSidebarBannerVisibilitySync);
         container.scrollIntoView({ behavior: 'smooth' });
     }
 
@@ -1303,15 +1676,12 @@ async function filterByCategory(category) {
     closeSidePanel();
 }
 
-// Inicialização
+// InicializaÃ§Ã£o
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('[App] v2.5 - Inicializando...');
 
     // Inicializar dados
     await initializeData();
-
-    // Renderizar notícias
-    await renderNews();
 
     // Event Listeners
     document.querySelector('.btn-search')?.addEventListener('click', toggleSearchModal);
@@ -1363,7 +1733,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Carregar e aplicar configurações de links do rodapé
+    // Carregar e aplicar configuraÃ§Ãµes de links do rodapÃ©
     loadFooterLinks();
 
     // Carregar stories
@@ -1371,6 +1741,12 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Carregar banners do topo
     renderTopBanners();
+
+    // Carregar banners laterais (desktop)
+    renderSidebarBanners();
+
+    // Renderizar notícias (após medir banner lateral)
+    await renderNews();
 
     // Carregar notícias do Instagram
     await loadInstagramProfileSettings();
@@ -1380,7 +1756,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 });
 
 const footerInstitutionalContent = {
-    siteName: 'Mirador e Região Online',
+    siteName: 'Mirador e Regiao Online',
     about: '',
     privacy: '',
     terms: ''
@@ -1419,25 +1795,25 @@ function isLikelyUrlText(value) {
 function getSiteNameForFooter() {
     const footerSiteName = document.getElementById('footerSiteName');
     const fallbackName = footerSiteName ? footerSiteName.textContent.trim() : '';
-    return fallbackName || 'Mirador e Região Online';
+    return fallbackName || 'Mirador e Regiao Online';
 }
 
 function getDefaultAboutText(siteName) {
-    return `${siteName} nasceu para informar Mirador e toda a região com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
+    return `${siteName} nasceu para informar Mirador e toda a regiao com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
 }
 
 function getDefaultPrivacyText(siteName) {
-    return `${siteName} utiliza dados mínimos de navegação apenas para melhorar a experiência no portal e não comercializa dados pessoais de leitores.`;
+    return `${siteName} utiliza dados minimos de navegacao apenas para melhorar a experiencia no portal e nao comercializa dados pessoais de leitores.`;
 }
 
 function getDefaultTermsText(siteName) {
     return [
-        `Os termos de uso do ${siteName} definem as regras para acesso e utilização do conteúdo publicado no portal.`,
-        '1. O conteúdo tem finalidade jornalística e informativa.',
-        '2. A reprodução total do material depende de autorização prévia da redação.',
-        '3. Comentários e interações devem respeitar a legislação vigente e a boa convivência.',
-        '4. A equipe editorial pode atualizar, corrigir ou remover publicações para preservar qualidade e veracidade.',
-        '5. O uso contínuo do portal representa concordância com estes termos.'
+        `Os termos de uso do ${siteName} definem as regras para acesso e utilizacao do conteudo publicado no portal.`,
+        '1. O conteudo tem finalidade jornalistica e informativa.',
+        '2. A reproducao total do material depende de autorizacao previa da redacao.',
+        '3. Comentarios e interacoes devem respeitar a legislacao vigente e a boa convivencia.',
+        '4. A equipe editorial pode atualizar, corrigir ou remover publicacoes para preservar qualidade e veracidade.',
+        '5. O uso continuo do portal representa concordancia com estes termos.'
     ].join('\n\n');
 }
 
@@ -1461,7 +1837,7 @@ function getPhoneHref(value) {
 
 function persistInstitutionalContent(siteName) {
     const payload = {
-        siteName: String(siteName || '').trim() || 'Mirador e Região Online',
+        siteName: String(siteName || '').trim() || 'Mirador e Regiao Online',
         about: footerInstitutionalContent.about,
         privacy: footerInstitutionalContent.privacy,
         terms: footerInstitutionalContent.terms,
@@ -1473,7 +1849,7 @@ function persistInstitutionalContent(siteName) {
     } catch (_error) { }
 }
 
-// Carregar configurações de links do rodapé
+// Carregar configuraÃ§Ãµes de links do rodapÃ©
 async function loadFooterLinks() {
     try {
         const doc = await db.collection('settings').doc('footer').get();
@@ -1609,10 +1985,10 @@ function renderStories() {
         let avatarContent = '';
 
         if (story.type === 'text') {
-            // Story de texto - mostrar círculo com gradiente
+            // Story de texto - mostrar cÃ­rculo com gradiente
             avatarContent = `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${story.bgColor || 'linear-gradient(45deg, #f09433, #e6683c, #dc2743)'}; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">T</div>`;
         } else if (story.isVideo) {
-            // Story de vídeo - mostrar preview com ícone de play
+            // Story de vÃ­deo - mostrar preview com Ã­cone de play
             avatarContent = `
                 <img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
@@ -1674,7 +2050,7 @@ function showCurrentStory() {
             </div>
         `;
     } else if (story.isVideo) {
-        // Story de vídeo
+        // Story de vÃ­deo
         storyContent.innerHTML = `
             <video src="${story.image}" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline></video>
         `;
@@ -1688,7 +2064,7 @@ function showCurrentStory() {
 
     document.getElementById('storyTime').textContent = formatStoryTime(story.date);
 
-    // Esconder botão "Ver no Instagram" se não tiver link
+    // Esconder botÃ£o "Ver no Instagram" se não tiver link
     const storyLink = document.getElementById('storyLink');
     if (storyLink) {
         if (story.instagramUrl) {
@@ -1795,7 +2171,7 @@ let instagramStatsRefreshQueue = Promise.resolve();
 const instagramStatsLastFetchMap = new Map();
 let instagramMicrolinkCooldownUntil = 0;
 const DEFAULT_INSTAGRAM_PROFILE_SETTINGS = {
-    displayName: 'Mirador e Região Online',
+    displayName: 'Mirador e Regiao Online',
     username: 'mirador_e_regiao_online',
     profileImage: ''
 };
@@ -2190,6 +2566,8 @@ async function goToInstagramFeedSection() {
 
 window.addEventListener('public-layout-updated', async () => {
     renderTopBanners();
+    renderSidebarBanners();
+    await renderNews();
     if (typeof loadInstagramNews === 'function') {
         await loadInstagramProfileSettings();
         loadInstagramNews();
@@ -2204,11 +2582,12 @@ window.addEventListener('resize', () => {
     responsiveViewportTimer = setTimeout(async () => {
         const isMobileNow = isMobileViewport();
         renderTopBanners();
+        renderSidebarBanners();
+        await renderNews();
         updateInstagramMobileCarousels();
 
         if (isMobileNow !== lastMobileViewportState) {
             lastMobileViewportState = isMobileNow;
-            await renderNews();
             if (typeof loadInstagramNews === 'function') {
                 loadInstagramNews();
             }
@@ -2222,7 +2601,7 @@ async function loadInstagramNews() {
         let news = [];
 
         try {
-            // Tentar consulta com filtros (requer índice)
+            // Tentar consulta com filtros (requer Ã­ndice)
             const snapshot = await db.collection('news')
                 .where('source', '==', 'Instagram')
                 .where('status', '==', 'published')
@@ -2269,7 +2648,7 @@ async function loadInstagramNews() {
         renderInstagramFeedSection(news);
         updateInstagramMobileCarousels();
 
-        // Atualizar contagens reais de curtidas/comentários
+        // Atualizar contagens reais de curtidas/comentÃ¡rios
         queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: false });
         scheduleInstagramStatsAutoRefresh();
 
@@ -2278,7 +2657,7 @@ async function loadInstagramNews() {
     }
 }
 
-// Atualizar estatísticas do Instagram (curtidas e comentários)
+// Atualizar estatÃ­sticas do Instagram (curtidas e comentÃ¡rios)
 function getInstagramStatsFetchKey(newsItem = {}) {
     if (newsItem.id) return `id:${newsItem.id}`;
     if (newsItem.instagramUrl) return `url:${newsItem.instagramUrl}`;
@@ -2417,7 +2796,7 @@ document.addEventListener('visibilitychange', () => {
     });
 });
 
-// Variável para armazenar os dados dos posts do Instagram
+// VariÃ¡vel para armazenar os dados dos posts do Instagram
 let instagramPostsData = {};
 
 function getInstagramPrimaryMedia(post = {}) {
@@ -2874,7 +3253,7 @@ function closeInstagramVideoModal() {
 
     document.body.style.overflow = '';
 
-    // Ao fechar o player, fechar também o post expandido.
+    // Ao fechar o player, fechar tambÃ©m o post expandido.
     closeInstagramModal();
 }
 
@@ -2925,7 +3304,7 @@ function createInstagramCard(news) {
 
     const cachedPost = instagramPostsData[news.id] || {};
 
-    // Prioriza valores atualizados em runtime para não voltar a zero após re-render
+    // Prioriza valores atualizados em runtime para não voltar a zero apÃ³s re-render
     const likes = pickBestInstagramCount(
         cachedPost.likes,
         cachedPost.instagramLikes,
@@ -3007,7 +3386,7 @@ function createInstagramCard(news) {
             <div class="instagram-card-image-wrapper ${primaryMedia.type === 'video' ? 'is-video' : ''}">
                 ${primaryMedia.type === 'video'
             ? `<video src="${primaryMedia.url}" poster="${primaryMedia.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
-                       <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir vídeo">
+                       <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir video">
                            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                        </button>`
             : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
@@ -3022,7 +3401,7 @@ function createInstagramCard(news) {
                 ` : ''}
             </div>
             
-            <!-- Conteúdo Compacto -->
+            <!-- ConteÃºdo Compacto -->
             <div class="instagram-card-content">
                 <!-- Header com avatar -->
                 <div class="instagram-card-header">
@@ -3035,7 +3414,7 @@ function createInstagramCard(news) {
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                         </svg>
                     </div>
-                    <!-- Botão fechar (só aparece quando expandido) -->
+                    <!-- BotÃ£o fechar (sÃ³ aparece quando expandido) -->
                     <button class="instagram-card-close" style="display: none;" onclick="event.stopPropagation(); closeInstagramModal();">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -3043,7 +3422,7 @@ function createInstagramCard(news) {
                     </button>
                 </div>
                 
-                <!-- Título do post -->
+                <!-- TÃ­tulo do post -->
                 <div class="instagram-card-title-preview" style="font-size: 0.8125rem; color: #262626; line-height: 1.4; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${displayTitle}
                 </div>
@@ -3052,10 +3431,10 @@ function createInstagramCard(news) {
                     ${escapeHtml(content || displayTitle || '')}
                 </div>
                 
-                <!-- Legenda completa (só aparece quando expandido) -->
+                <!-- Legenda completa (sÃ³ aparece quando expandido) -->
                 <div class="instagram-card-caption-full"></div>
                 
-                <!-- Ações com contadores -->
+                <!-- AÃ§Ãµes com contadores -->
                 <div class="instagram-card-actions">
                     <div class="instagram-card-actions-left">
                         <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
@@ -3084,7 +3463,7 @@ function createInstagramCard(news) {
                 </div>
                 
                 <!-- Data -->
-                <div class="instagram-card-time">${dateStr} às ${timeStr}</div>
+                <div class="instagram-card-time">${dateStr} &agrave;s ${timeStr}</div>
             </div>
         </article>
     `;
@@ -3100,7 +3479,7 @@ function openInstagramModal(newsId, cardElement = null) {
     // Cada abertura do post conta como uma visualizacao
     void trackNewsView(newsId);
 
-    // Se já tem um card expandido, fechar ele primeiro
+    // Se jÃ¡ tem um card expandido, fechar ele primeiro
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
         if (currentExpanded) {
@@ -3120,7 +3499,7 @@ function openInstagramModal(newsId, cardElement = null) {
         hideLastCard(newsId, card);
     }
 
-    // DEPOIS: Expandir o card (agora tem espaço para ocupar 2 colunas)
+    // DEPOIS: Expandir o card (agora tem espaÃ§o para ocupar 2 colunas)
     card.classList.add('expanded');
     expandedCardId = newsId;
     const mobileCarousel = card.closest('.instagram-news-grid');
@@ -3128,7 +3507,7 @@ function openInstagramModal(newsId, cardElement = null) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
 
-    // Adicionar botão fechar se não existir
+    // Adicionar botÃ£o fechar se não existir
     let closeBtn = card.querySelector('.instagram-card-close');
     if (!closeBtn) {
         closeBtn = document.createElement('button');
@@ -3170,10 +3549,10 @@ function openInstagramModal(newsId, cardElement = null) {
         }
     }
     const captionText = getInstagramPostCaption(post, newsId);
-    captionFull.textContent = captionText || 'Sem legenda disponível.';
+    captionFull.textContent = captionText || 'Sem legenda disponivel.';
     captionFull.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow-y: auto !important; margin-bottom: 0.75rem !important; padding: 0 !important;';
 
-    // Atualizar contadores de curtidas e comentários
+    // Atualizar contadores de curtidas e comentÃ¡rios
     const likesEl = card.querySelector('.instagram-likes-count');
     const commentsEl = card.querySelector('.instagram-comments-count');
     if (likesEl) likesEl.textContent = formatNumber(post.likes || 0);
@@ -3191,7 +3570,7 @@ function openInstagramModal(newsId, cardElement = null) {
         btn.parentNode.replaceChild(newBtn, btn);
     });
 
-    // CONFIGURAR GALERIA se houver múltiplas mídias
+    // CONFIGURAR GALERIA se houver mÃºltiplas mÃ­dias
     setupInstagramGallery(card, post);
 
     // Scroll suave para o card
@@ -3200,15 +3579,15 @@ function openInstagramModal(newsId, cardElement = null) {
     }, 100);
 }
 
-// Configurar galeria de imagens/vídeos no card expandido
+// Configurar galeria de imagens/vÃ­deos no card expandido
 function setupInstagramGallery(card, post) {
     const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
     if (!imageWrapper) return;
 
-    // Montar array de todas as mídias válidas (capa + galeria)
+    // Montar array de todas as mÃ­dias vÃ¡lidas (capa + galeria)
     const allMedia = getInstagramAllMedia(post);
 
-    // Se só tem uma mídia, não precisa de navegação
+    // Se sÃ³ tem uma mÃ­dia, não precisa de navegação
     if (allMedia.length <= 1) {
         // Remover controles de galeria se existirem
         const existingControls = imageWrapper.querySelector('.instagram-gallery-controls');
@@ -3224,7 +3603,7 @@ function setupInstagramGallery(card, post) {
         imageWrapper.classList.toggle('is-video', primary.type === 'video');
         imageWrapper.innerHTML = primary.type === 'video'
             ? `<video src="${primary.url}" poster="${primary.poster || ''}" muted playsinline preload="metadata" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
-               <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)" aria-label="Reproduzir vídeo">
+               <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)" aria-label="Reproduzir video">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                </button>`
             : `<img src="${primary.url}" alt="${post.title || 'Post do Instagram'}" loading="lazy">`;
@@ -3292,7 +3671,7 @@ function setupInstagramGallery(card, post) {
         imageWrapper.appendChild(dots);
     }
 
-    // Mostrar primeira mídia
+    // Mostrar primeira mÃ­dia
     showGalleryMedia(card, allMedia, 0);
 }
 
@@ -3309,14 +3688,14 @@ function navigateGallery(cardOrNewsId, direction) {
     const post = instagramPostsData[newsId];
     if (!post) return;
 
-    // Montar array de mídias
+    // Montar array de mÃ­dias
     const allMedia = getInstagramAllMedia(post);
 
     const total = allMedia.length;
     if (total === 0) return;
     let currentIndex = parseInt(card.dataset.galleryIndex || '0');
 
-    // Calcular novo índice
+    // Calcular novo Ã­ndice
     currentIndex += direction;
     if (currentIndex < 0) currentIndex = total - 1;
     if (currentIndex >= total) currentIndex = 0;
@@ -3325,7 +3704,7 @@ function navigateGallery(cardOrNewsId, direction) {
     showGalleryMedia(card, allMedia, currentIndex);
 }
 
-// Mostrar mídia específica da galeria
+// Mostrar mÃ­dia especÃ­fica da galeria
 function showGalleryMedia(card, allMedia, index) {
     const galleryContainer = card.querySelector('.instagram-gallery-container');
     if (!galleryContainer) return;
@@ -3341,7 +3720,7 @@ function showGalleryMedia(card, allMedia, index) {
     // Limpar container
     galleryContainer.innerHTML = '';
 
-    // Criar elemento de mídia
+    // Criar elemento de mÃ­dia
     if (media.type === 'video') {
         const video = document.createElement('video');
         video.src = media.url;
@@ -3358,7 +3737,7 @@ function showGalleryMedia(card, allMedia, index) {
         const playOverlay = document.createElement('button');
         playOverlay.type = 'button';
         playOverlay.className = 'instagram-video-play-overlay';
-        playOverlay.setAttribute('aria-label', 'Reproduzir vídeo');
+        playOverlay.setAttribute('aria-label', 'Reproduzir video');
         playOverlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
         playOverlay.onclick = (event) => handleInstagramCardVideoClick(newsId, event, index, playOverlay);
         galleryContainer.appendChild(playOverlay);
@@ -3382,11 +3761,11 @@ function closeInstagramCard(card) {
     card.classList.remove('expanded');
     expandedCardId = null;
 
-    // PRIMEIRO: Esconder botão fechar e elementos do expandido
+    // PRIMEIRO: Esconder botÃ£o fechar e elementos do expandido
     const closeBtn = card.querySelector('.instagram-card-close');
     if (closeBtn) closeBtn.style.display = 'none';
 
-    // GARANTIR que legenda completa está totalmente escondida - ANTES de mostrar o card escondido
+    // GARANTIR que legenda completa estÃ¡ totalmente escondida - ANTES de mostrar o card escondido
     const captionFull = card.querySelector('.instagram-card-caption-full');
     if (captionFull) {
         captionFull.removeAttribute('style');
@@ -3428,7 +3807,7 @@ function closeInstagramCard(card) {
                 const playOverlay = document.createElement('button');
                 playOverlay.type = 'button';
                 playOverlay.className = 'instagram-video-play-overlay';
-                playOverlay.setAttribute('aria-label', 'Reproduzir vídeo');
+                playOverlay.setAttribute('aria-label', 'Reproduzir video');
                 playOverlay.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>';
                 playOverlay.onclick = (event) => handleInstagramCardVideoClick(newsId, event, null, playOverlay);
                 imageWrapper.appendChild(playOverlay);
@@ -3454,7 +3833,7 @@ function closeInstagramCard(card) {
         }
     }
 
-    // Mostrar preview novamente - FORÇAR com line-clamp
+    // Mostrar preview novamente - FORÃ‡AR com line-clamp
     const titlePreview = card.querySelector('.instagram-card-title-preview');
     if (titlePreview) {
         titlePreview.style.display = '-webkit-box';
@@ -3476,19 +3855,19 @@ function closeInstagramCard(card) {
 }
 
 function hideLastCard(newsIdToKeep, expandedCard = null) {
-    // Sempre esconder o último card visível para manter tudo na mesma fileira
-    // (exceto o card que está sendo expandido)
+    // Sempre esconder o último card visÃ­vel para manter tudo na mesma fileira
+    // (exceto o card que estÃ¡ sendo expandido)
     const scope = (expandedCard && typeof expandedCard.closest === 'function')
         ? expandedCard.closest('.instagram-news-grid')
         : null;
     const allCards = (scope || document).querySelectorAll('.instagram-card');
 
-    // Encontrar o último card que não é o que será expandido
+    // Encontrar o último card que não Ã© o que serÃ¡ expandido
     for (let i = allCards.length - 1; i >= 0; i--) {
         const card = allCards[i];
         const cardId = card.dataset.instagramId;
 
-        // Não esconder o card que está sendo expandido
+        // NÃ£o esconder o card que estÃ¡ sendo expandido
         if (cardId === newsIdToKeep) continue;
 
         // Esconder este card
@@ -3521,7 +3900,7 @@ function closeInstagramModal() {
     }
 }
 
-// Função para compartilhar notícia
+// FunÃ§Ã£o para compartilhar notícia
 async function shareNews(newsId, event) {
     if (event) {
         event.stopPropagation();
@@ -3537,14 +3916,14 @@ async function shareNews(newsId, event) {
     }
 
     if (!news) {
-        console.error('Notícia não encontrada:', newsId);
+        console.error('Noticia nao encontrada:', newsId);
         return;
     }
 
     const shareUrl = `${window.location.origin}/?news=${newsId}`;
     const shareData = {
-        title: news.title || 'Mirador e Região Online',
-        text: news.excerpt || news.content?.substring(0, 100) || 'Confira esta notícia',
+        title: news.title || 'Mirador e Regiao Online',
+        text: news.excerpt || news.content?.substring(0, 100) || 'Confira esta noticia',
         url: shareUrl
     };
 
@@ -3555,16 +3934,16 @@ async function shareNews(newsId, event) {
         } else {
             // Fallback: copiar para clipboard
             await navigator.clipboard.writeText(`${shareData.title}\n${shareData.url}`);
-            showToast('Link copiado para a área de transferência!');
+            showToast('Link copiado para a area de transferencia!');
         }
     } catch (error) {
-        // Usuário cancelou ou erro
+        // UsuÃ¡rio cancelou ou erro
         if (error.name !== 'AbortError') {
             console.error('Erro ao compartilhar:', error);
             // Tentar copiar como fallback
             try {
                 await navigator.clipboard.writeText(shareUrl);
-                showToast('Link copiado para a área de transferência!');
+                showToast('Link copiado para a area de transferencia!');
             } catch (clipboardError) {
                 console.error('Erro ao copiar:', clipboardError);
             }
@@ -3572,7 +3951,7 @@ async function shareNews(newsId, event) {
     }
 }
 
-// Função para mostrar toast
+// FunÃ§Ã£o para mostrar toast
 function showToast(message) {
     // Remover toast anterior se existir
     const existingToast = document.querySelector('.toast-notification');
@@ -3598,7 +3977,7 @@ function showToast(message) {
     `;
     toast.textContent = message;
 
-    // Adicionar animação
+    // Adicionar animaÃ§Ã£o
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideUp {
@@ -3614,7 +3993,7 @@ function showToast(message) {
 
     document.body.appendChild(toast);
 
-    // Remover após 3 segundos
+    // Remover apÃ³s 3 segundos
     setTimeout(() => {
         toast.style.animation = 'slideDown 0.3s ease forwards';
         setTimeout(() => toast.remove(), 300);
@@ -3632,7 +4011,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Formatar números (1.2K, 1.5M)
+// Formatar nÃºmeros (1.2K, 1.5M)
 function formatNumber(num) {
     if (!num || num === 0) return '0';
     if (num >= 1000000) {
@@ -3644,7 +4023,7 @@ function formatNumber(num) {
     return num.toString();
 }
 
-// Atualizar estatísticas no card
+// Atualizar estatÃ­sticas no card
 function updateInstagramCardStats(newsId, stats) {
     const likesEls = document.querySelectorAll(`.instagram-likes-count[data-id="${newsId}"]`);
     const commentsEls = document.querySelectorAll(`.instagram-comments-count[data-id="${newsId}"]`);
@@ -3746,7 +4125,7 @@ function updateInstagramCardStats(newsId, stats) {
         }
     }
 
-    // Persistir engagement no Firestore para não perder ao recarregar a página
+    // Persistir engagement no Firestore para não perder ao recarregar a pÃ¡gina
     if ((finalLikesValue > 0 || finalCommentsValue > 0) && typeof db !== 'undefined') {
         try {
             const updatePayload = {};
@@ -3754,7 +4133,7 @@ function updateInstagramCardStats(newsId, stats) {
             if (finalCommentsValue > 0) updatePayload.instagramComments = finalCommentsValue;
             if (Object.keys(updatePayload).length > 0) {
                 db.collection('news').doc(newsId).update(updatePayload).catch((err) => {
-                    console.log('[App] Não foi possível persistir engagement no Firestore:', err.message || err);
+                    console.log('[App] NÃ£o foi possÃ­vel persistir engagement no Firestore:', err.message || err);
                 });
             }
         } catch (_e) { }
@@ -3762,4 +4141,5 @@ function updateInstagramCardStats(newsId, stats) {
 }
 
 console.log('[App] v2.5 - Script finalizado');
+
 

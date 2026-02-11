@@ -12,7 +12,7 @@ let currentBrandSettings = null;
 // Iniciar listeners em tempo real
 function startRealtimeListeners() {
     console.log('[Firebase DB] Iniciando listeners em tempo real...');
-    
+
     // Listener para cores
     db.collection('settings').doc('colors')
         .onSnapshot((doc) => {
@@ -31,7 +31,7 @@ function startRealtimeListeners() {
             // Tentar localStorage
             loadColorsFromLocalStorage();
         });
-    
+
     // Listener para marca
     db.collection('settings').doc('brand')
         .onSnapshot((doc) => {
@@ -76,7 +76,7 @@ function showPermissionError() {
     console.error('â•‘  }                                                             â•‘');
     console.error('â•‘                                                                â•‘');
     console.error('â•šâ•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•');
-    
+
     // Mostrar aviso visual apÃ³s 3 segundos se as configuraÃ§Ãµes nÃ£o carregarem
     setTimeout(() => {
         if (!settingsLoaded.colors && !settingsLoaded.brand) {
@@ -89,7 +89,7 @@ function showPermissionError() {
 function showConfigWarning() {
     // Verificar se jÃ¡ existe
     if (document.getElementById('firebase-warning')) return;
-    
+
     const warning = document.createElement('div');
     warning.id = 'firebase-warning';
     warning.innerHTML = `
@@ -155,10 +155,10 @@ function loadBrandFromLocalStorage() {
 // Aplicar cores
 function applyColors(colors) {
     if (!colors) return;
-    
+
     const root = document.documentElement;
     let count = 0;
-    
+
     const colorMap = {
         'Primary': '--primary',
         'Secondary': '--secondary',
@@ -169,10 +169,11 @@ function applyColors(colors) {
         'MutedForeground': '--muted-foreground',
         'Header': '--header-bg',
         'HeaderText': '--header-text',
+        'HeaderMenuIcon': '--header-menu-icon-color',
         'Card': '--card-bg',
         'FooterText': '--footer-text'
     };
-    
+
     for (const [key, cssVar] of Object.entries(colorMap)) {
         if (colors[key]) {
             root.style.setProperty(cssVar, colors[key]);
@@ -185,7 +186,7 @@ function applyColors(colors) {
     } else {
         root.style.removeProperty('--footer-bg');
     }
-    
+
     console.log('[Aplicar Cores]', count, 'cores aplicadas');
 
     const customTopStripBg = String((currentBrandSettings && currentBrandSettings.topStripBgColor) || '').trim();
@@ -198,7 +199,7 @@ function applyColors(colors) {
             root.style.setProperty('--header-top-strip-bg', stripColor);
         }
     }
-    
+
     // Ajustar cor do texto do footer baseado na cor de fundo
     adjustFooterTextColor(colors);
 }
@@ -210,7 +211,7 @@ function getContrastColor(colorValue) {
 
     // Calcular luminosidade (fÃ³rmula YIQ)
     const yiq = ((rgb.r * 299) + (rgb.g * 587) + (rgb.b * 114)) / 1000;
-    
+
     // Retornar branco para fundos escuros, preto para fundos claros
     return (yiq >= 128) ? '#000000' : '#ffffff';
 }
@@ -284,7 +285,7 @@ function adjustFooterTextColor(colors) {
     const contrastColor = getContrastColor(footerBg);
 
     root.style.setProperty('--footer-text-auto', contrastColor);
-    
+
     console.log('[Aplicar Cores] Cor do footer ajustada:', contrastColor, 'para fundo:', footerBg);
 }
 
@@ -469,20 +470,27 @@ async function incrementViews(newsId) {
 // Aplicar layout
 function applyLayout(layout) {
     if (!layout) return;
-    
-    const cardsPerRow = layout.cardsPerRow || 3;
+
+    const cardsPerRow = Math.max(1, Math.min(8, Number(layout.cardsPerRow) || 3));
+    const expandedCardsPerRow = Math.max(cardsPerRow, Math.min(9, cardsPerRow + 1));
     const instagramPostsVisible = Math.max(1, Math.min(12, Number(layout.instagramPostsVisible) || 4));
     const topBanners = layout.topBanners && typeof layout.topBanners === 'object'
         ? layout.topBanners
         : {};
+    const sidebarBanners = layout.sidebarBanners && typeof layout.sidebarBanners === 'object'
+        ? layout.sidebarBanners
+        : {};
     const root = document.documentElement;
-    
+
     root.style.setProperty('--news-columns', cardsPerRow.toString());
+    root.style.setProperty('--news-columns-expanded', expandedCardsPerRow.toString());
     root.style.setProperty('--instagram-columns', instagramPostsVisible.toString());
     window.publicSiteLayoutConfig = {
         cardsPerRow,
+        expandedCardsPerRow,
         instagramPostsVisible,
-        topBanners
+        topBanners,
+        sidebarBanners
     };
     window.dispatchEvent(new CustomEvent('public-layout-updated', {
         detail: window.publicSiteLayoutConfig
@@ -507,24 +515,24 @@ async function applyFirebaseLayout() {
             try {
                 applyLayout(JSON.parse(saved));
                 return true;
-            } catch (e) {}
+            } catch (e) { }
         }
     }
     return false;
 }
 
 // InicializaÃ§Ã£o
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('[Firebase DB] DOM carregado, iniciando...');
-    
+
     // Carregar imediatamente
     applyFirebaseColors();
     applyFirebaseBrand();
     applyFirebaseLayout();
-    
+
     // Iniciar listeners em tempo real
     startRealtimeListeners();
-    
+
     // Listener para layout
     db.collection('settings').doc('layout').onSnapshot((doc) => {
         if (doc.exists) {
