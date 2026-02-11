@@ -62,6 +62,7 @@ const INSTAGRAM_META_CACHE_TTL_MS = 2 * 60 * 1000; // 2 min
 const instagramMetaCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const instagramOembedCache = new Map();
+const MAX_UPLOAD_FILE_BYTES = 120 * 1024 * 1024;
 
 function decodeHtmlEntities(text = '') {
     return String(text)
@@ -709,7 +710,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
     storage: storage,
     limits: {
-        fileSize: 50 * 1024 * 1024 // 50MB max
+        fileSize: MAX_UPLOAD_FILE_BYTES
     },
     fileFilter: (req, file, cb) => {
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
@@ -839,6 +840,23 @@ app.delete('/api/files/:key', async (req, res) => {
 });
 
 // Servir arquivos estáticos do admin
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({
+                error: `Arquivo excede o limite de ${Math.round(MAX_UPLOAD_FILE_BYTES / (1024 * 1024))}MB`
+            });
+        }
+        return res.status(400).json({ error: err.message || 'Erro de upload' });
+    }
+
+    if (err) {
+        return res.status(400).json({ error: err.message || 'Erro ao processar requisicao' });
+    }
+
+    return next();
+});
+
 app.use('/admin', express.static(path.join(__dirname, 'admin')));
 app.use(express.static(path.join(__dirname, 'public')));
 

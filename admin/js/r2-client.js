@@ -4,9 +4,64 @@
  */
 
 class R2Client {
-    constructor() {
-        // URL do Cloudflare Worker
-        this.baseUrl = 'https://mirador-r2.sitemirador2026.workers.dev';
+    constructor(options = {}) {
+        const defaultWorkerUrl = 'https://mirador-r2.sitemirador2026.workers.dev';
+        const defaultRenderUrl = 'https://mirador-admin.onrender.com';
+        const configuredBaseUrl = (options.baseUrl || defaultWorkerUrl).replace(/\/+$/, '');
+        const configuredFallbackUrls = Array.isArray(options.fallbackUrls) ? options.fallbackUrls : [];
+
+        const allCandidates = [
+            configuredBaseUrl,
+            ...configuredFallbackUrls,
+            defaultRenderUrl
+        ]
+            .map(url => String(url || '').trim().replace(/\/+$/, ''))
+            .filter(Boolean);
+
+        this.baseUrl = allCandidates[0] || defaultWorkerUrl;
+        this.baseUrls = Array.from(new Set(allCandidates));
+    }
+
+    buildCandidateUrls(path = '') {
+        const normalizedPath = String(path || '').startsWith('/') ? String(path || '') : `/${String(path || '')}`;
+        return this.baseUrls.map(base => `${base}${normalizedPath}`);
+    }
+
+    async requestWithFallback(path, init = {}) {
+        const requestUrls = this.buildCandidateUrls(path);
+        let lastError = null;
+
+        for (const url of requestUrls) {
+            try {
+                const response = await fetch(url, init);
+                if (!response.ok) {
+                    let errorMessage = `HTTP ${response.status}`;
+                    try {
+                        const errorJson = await response.clone().json();
+                        errorMessage = errorJson?.error || errorJson?.message || errorMessage;
+                    } catch (_jsonError) {
+                        try {
+                            const errorText = await response.clone().text();
+                            if (errorText) errorMessage = errorText;
+                        } catch (_textError) { }
+                    }
+
+                    const httpError = new Error(errorMessage);
+                    httpError.status = response.status;
+                    httpError.url = url;
+                    lastError = httpError;
+                    continue;
+                }
+
+                this.baseUrl = String(new URL(url).origin).replace(/\/+$/, '');
+                return response;
+            } catch (error) {
+                lastError = error;
+                continue;
+            }
+        }
+
+        throw lastError || new Error('Falha ao conectar com os endpoints de upload');
     }
 
     /**
@@ -23,17 +78,12 @@ class R2Client {
         try {
             if (onProgress) onProgress(10);
 
-            const response = await fetch(`${this.baseUrl}/api/upload`, {
+            const response = await this.requestWithFallback('/api/upload', {
                 method: 'POST',
                 body: formData
             });
 
             if (onProgress) onProgress(90);
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Erro no upload');
-            }
 
             const result = await response.json();
             
@@ -57,11 +107,7 @@ class R2Client {
      */
     async listFiles(prefix = '') {
         try {
-            const response = await fetch(`${this.baseUrl}/api/files?prefix=${prefix}`);
-            
-            if (!response.ok) {
-                throw new Error('Erro ao listar arquivos');
-            }
+            const response = await this.requestWithFallback(`/api/files?prefix=${encodeURIComponent(prefix || '')}`);
 
             const result = await response.json();
             return result;
@@ -77,13 +123,9 @@ class R2Client {
      */
     async deleteFile(key) {
         try {
-            const response = await fetch(`${this.baseUrl}/api/files/${encodeURIComponent(key)}`, {
+            const response = await this.requestWithFallback(`/api/files/${encodeURIComponent(key)}`, {
                 method: 'DELETE'
             });
-
-            if (!response.ok) {
-                throw new Error('Erro ao deletar');
-            }
 
             return await response.json();
 
@@ -98,7 +140,7 @@ class R2Client {
      */
     async testConnection() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/health`);
+            const response = await this.requestWithFallback('/api/health');
             return response.ok;
         } catch (error) {
             return false;
