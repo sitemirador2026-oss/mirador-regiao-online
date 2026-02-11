@@ -3353,9 +3353,12 @@
                                     <a id="cloudflareDashboardLink" class="account-link"
                                         href="https://dash.cloudflare.com" target="_blank"
                                         rel="noopener noreferrer">Dashboard Cloudflare</a>
+                                    <a id="cloudflareWorkerDeployLink" class="account-link"
+                                        href="https://dash.cloudflare.com/8341826f08014d0252c400798d657729/workers/services/edit/mirador-r2/production"
+                                        target="_blank" rel="noopener noreferrer">Deploy Worker</a>
                                     <a id="cloudflarePublicLink" class="account-link"
-                                        href="https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev" target="_blank"
-                                        rel="noopener noreferrer">Abrir Bucket Publico</a>
+                                        href="https://dash.cloudflare.com/8341826f08014d0252c400798d657729/r2/default/buckets/mirador-regiao-online"
+                                        target="_blank" rel="noopener noreferrer">Abrir Bucket no R2</a>
                                     <a id="cloudflareWorkerLink" class="account-link"
                                         href="https://mirador-r2.sitemirador2026.workers.dev/api/status" target="_blank"
                                         rel="noopener noreferrer">Status do Worker</a>
@@ -6932,6 +6935,7 @@
         const RENDER_DASHBOARD_URL = 'https://dashboard.render.com';
         const RENDER_SERVICE_URL = 'https://mirador-admin.onrender.com';
         const CLOUDFLARE_DASHBOARD_URL = 'https://dash.cloudflare.com';
+        const CLOUDFLARE_WORKER_DEPLOY_URL = 'https://dash.cloudflare.com/8341826f08014d0252c400798d657729/workers/services/edit/mirador-r2/production';
         const DEFAULT_CLOUDFLARE_PUBLIC_URL = 'https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev';
         const DEFAULT_CLOUDFLARE_WORKER_URL = 'https://mirador-r2.sitemirador2026.workers.dev';
 
@@ -6944,6 +6948,16 @@
                 return R2_CONFIG.publicUrl;
             }
             return DEFAULT_CLOUDFLARE_PUBLIC_URL;
+        }
+
+        function getCloudflareBucketDashboardUrl() {
+            const accountId = (typeof R2_CONFIG !== 'undefined' && R2_CONFIG.accountId)
+                ? String(R2_CONFIG.accountId).trim()
+                : '8341826f08014d0252c400798d657729';
+            const bucketName = (typeof R2_CONFIG !== 'undefined' && R2_CONFIG.bucketName)
+                ? String(R2_CONFIG.bucketName).trim()
+                : 'mirador-regiao-online';
+            return `https://dash.cloudflare.com/${encodeURIComponent(accountId)}/r2/default/buckets/${encodeURIComponent(bucketName)}`;
         }
 
         function getWorkerBaseUrl() {
@@ -6959,7 +6973,8 @@
                 renderDashboardLink: RENDER_DASHBOARD_URL,
                 renderServiceLink: RENDER_SERVICE_URL,
                 cloudflareDashboardLink: CLOUDFLARE_DASHBOARD_URL,
-                cloudflarePublicLink: getR2PublicUrl(),
+                cloudflareWorkerDeployLink: CLOUDFLARE_WORKER_DEPLOY_URL,
+                cloudflarePublicLink: getCloudflareBucketDashboardUrl(),
                 cloudflareWorkerLink: workerStatusUrl,
                 firebaseConsoleDataLink: buildFirebaseConsoleUrl('firestore/data'),
                 firebaseConsoleAuthLink: buildFirebaseConsoleUrl('authentication/users'),
