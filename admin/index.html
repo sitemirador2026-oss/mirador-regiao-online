@@ -2296,8 +2296,34 @@
             }
         }
     </style>
-    <!-- CSS das Configurações - Novo Design -->
-    <link rel="stylesheet" href="settings-new.css?v=2">
+    <!-- Melhorias visuais mínimas nas Configurações -->
+    <style>
+        /* Suavizações visuais sem alterar estrutura */
+        .settings-page .content-section {
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            transition: box-shadow 0.2s;
+        }
+        .settings-page .content-section:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+        .settings-page .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        .settings-page .btn {
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .settings-page .btn:hover {
+            transform: translateY(-1px);
+        }
+        /* Melhoria nos inputs de cor */
+        .color-item input[type="color"] {
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 
 <body>
@@ -3535,8 +3561,8 @@
 
                 </div>
 
-                <!-- Settings Page - NOVO DESIGN v2 -->
-                <div id="settingsPage" class="page-content settings-page settings-modern" style="display: none;">
+                <!-- Settings Page -->
+                <div id="settingsPage" class="page-content settings-page" style="display: none;">
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Configuracoes</h1>
@@ -13198,50 +13224,6 @@
             }
         }
     </style>
-
-    <!-- Script para carregar novo design das configurações -->
-    <script>
-    (function() {
-        // Aguardar o DOM estar pronto
-        function initSettingsNewDesign() {
-            const settingsPage = document.getElementById('settingsPage');
-            if (!settingsPage) return;
-            
-            // Verificar se já foi inicializado
-            if (settingsPage.dataset.newDesignLoaded === 'true') return;
-            
-            fetch('settings-page-new.html?v=4')
-                .then(response => response.text())
-                .then(html => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const newContent = doc.getElementById('settingsPage');
-                    
-                    if (newContent) {
-                        // Preservar ID e classes
-                        const originalId = settingsPage.id;
-                        const originalClasses = settingsPage.className;
-                        
-                        // Substituir conteúdo
-                        settingsPage.innerHTML = newContent.innerHTML;
-                        settingsPage.id = originalId;
-                        settingsPage.className = originalClasses + ' settings-modern';
-                        settingsPage.dataset.newDesignLoaded = 'true';
-                        
-                        console.log('[Settings] Novo design carregado com sucesso');
-                    }
-                })
-                .catch(err => console.error('[Settings] Erro ao carregar novo design:', err));
-        }
-        
-        // Inicializar quando DOM estiver pronto
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSettingsNewDesign);
-        } else {
-            initSettingsNewDesign();
-        }
-    })();
-    </script>
 </body>
 
 </html>
