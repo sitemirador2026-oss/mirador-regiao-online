@@ -2324,6 +2324,8 @@
             cursor: pointer;
         }
     </style>
+    <!-- CSS das Configurações - Novo Design -->
+    <link rel="stylesheet" href="settings-new.css?v=3">
 </head>
 
 <body>
@@ -3561,8 +3563,8 @@
 
                 </div>
 
-                <!-- Settings Page -->
-                <div id="settingsPage" class="page-content settings-page" style="display: none;">
+                <!-- Settings Page - NOVO DESIGN -->
+                <div id="settingsPage" class="page-content settings-page settings-modern" style="display: none;">
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Configuracoes</h1>
@@ -5682,9 +5684,44 @@
             if (pageName === 'dashboard') {
                 loadDashboard();
             } else if (pageName === 'settings') {
-                initializeSettingsPanels();
-                loadColors();
+                loadSettingsNewDesign(function() {
+                    initializeSettingsPanels();
+                    loadColors();
+                    loadBrand();
+                    loadFooterLinks();
+                    loadLayout();
+                    loadTopBannersSettings();
+                });
             }
+        }
+
+        // Carregar novo design das configurações
+        function loadSettingsNewDesign(callback) {
+            const settingsPage = document.getElementById('settingsPage');
+            if (!settingsPage || settingsPage.dataset.newDesignLoaded === 'true') {
+                if (callback) callback();
+                return;
+            }
+            
+            fetch('settings-page-new.html?v=5')
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('settingsPage');
+                    
+                    if (newContent) {
+                        settingsPage.innerHTML = newContent.innerHTML;
+                        settingsPage.classList.add('settings-modern');
+                        settingsPage.dataset.newDesignLoaded = 'true';
+                        console.log('[Settings] Novo design carregado');
+                    }
+                    if (callback) callback();
+                })
+                .catch(err => {
+                    console.error('[Settings] Erro:', err);
+                    if (callback) callback();
+                });
         }
 
         // Alternar entre tabs das Configurações
@@ -13224,6 +13261,27 @@
             }
         }
     </style>
+
+    <!-- Script auxiliar para novo design -->
+    <script>
+    // Garantir que as funções de tab existam globalmente
+    window.switchSettingsTab = function(tabName, btn) {
+        document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        document.querySelectorAll('.settings-tab-content').forEach(c => c.style.display = 'none');
+        const tab = document.getElementById('settingsTab-' + tabName);
+        if (tab) tab.style.display = 'block';
+    };
+    window.updateLayoutValue = function(input, displayId) {
+        const el = document.getElementById(displayId);
+        if (el) el.textContent = input.value;
+    };
+    window.updateColorPreview = function(input) {
+        const valEl = document.getElementById(input.id + 'Value');
+        if (valEl) valEl.textContent = input.value.toUpperCase();
+        if (typeof updateLivePreview === 'function') updateLivePreview();
+    };
+    </script>
 </body>
 
 </html>
