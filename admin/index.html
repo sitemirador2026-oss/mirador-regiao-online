@@ -2314,11 +2314,14 @@
             <form id="loginForm">
                 <div class="form-group">
                     <label for="email">Email</label>
-                    <input type="email" id="email" class="form-input" placeholder="seu@email.com" required>
+                    <input type="email" id="email" class="form-input" placeholder="seu@email.com" required
+                        autocomplete="username" autocapitalize="off" autocorrect="off" spellcheck="false"
+                        inputmode="email">
                 </div>
                 <div class="form-group">
                     <label for="password">Senha</label>
-                    <input type="password" id="password" class="form-input" placeholder="Sua senha" required>
+                    <input type="password" id="password" class="form-input" placeholder="Sua senha" required
+                        autocomplete="current-password" autocapitalize="off" autocorrect="off" spellcheck="false">
                 </div>
                 <button type="submit" class="btn-login">Entrar</button>
             </form>
@@ -3535,6 +3538,55 @@
 
                 <!-- Settings Page -->
                 <div id="settingsPage" class="page-content settings-page" style="display: none;">
+                    <style>
+                        /* Tabs Navigation - Estilo do Print */
+                        .settings-tabs-nav {
+                            display: flex;
+                            gap: 0.5rem;
+                            border-bottom: 1px solid var(--border);
+                            margin-bottom: 1.5rem;
+                            padding: 0 0.5rem;
+                        }
+                        
+                        .settings-tab-btn {
+                            display: flex;
+                            align-items: center;
+                            gap: 0.5rem;
+                            padding: 0.75rem 1rem;
+                            font-size: 0.875rem;
+                            font-weight: 500;
+                            color: var(--text-secondary);
+                            background: none;
+                            border: none;
+                            border-bottom: 2px solid transparent;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                            margin-bottom: -1px;
+                        }
+                        
+                        .settings-tab-btn:hover {
+                            color: var(--text-primary);
+                        }
+                        
+                        .settings-tab-btn.active {
+                            color: var(--primary);
+                            border-bottom-color: var(--primary);
+                        }
+                        
+                        .settings-tab-btn svg {
+                            width: 16px;
+                            height: 16px;
+                        }
+                        
+                        .settings-tab-panel {
+                            display: none;
+                        }
+                        
+                        .settings-tab-panel.active {
+                            display: block;
+                        }
+                    </style>
+
                     <div class="page-header">
                         <div>
                             <h1 class="page-title">Configuracoes</h1>
@@ -3542,7 +3594,43 @@
                         </div>
                     </div>
 
+                    <!-- Tabs Navigation -->
+                    <div class="settings-tabs-nav">
+                        <button class="settings-tab-btn active" onclick="switchSettingsTab('identity', this)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            Identidade
+                        </button>
+                        <button class="settings-tab-btn" onclick="switchSettingsTab('footer', this)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                            </svg>
+                            Rodape
+                        </button>
+                        <button class="settings-tab-btn" onclick="switchSettingsTab('colors', this)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                            </svg>
+                            Cores
+                        </button>
+                        <button class="settings-tab-btn" onclick="switchSettingsTab('layout', this)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                            </svg>
+                            Layout
+                        </button>
+                        <button class="settings-tab-btn" onclick="switchSettingsTab('banners', this)">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                            </svg>
+                            Banners
+                        </button>
+                    </div>
+
                     <div class="settings-stack">
+                        <!-- Tab Panel: Identidade -->
+                        <div id="tab-panel-identity" class="settings-tab-panel active">
                         <div class="content-section settings-section">
                         <div class="section-header">
                             <div class="settings-section-head">
@@ -3676,6 +3764,10 @@
 
                         </div>
                     </div>
+                        </div>
+
+                        <!-- Tab Panel: Rodape -->
+                        <div id="tab-panel-footer" class="settings-tab-panel">
 
                     <!-- CONFIGURACAO DE LINKS DO RODAPE -->
                     <div class="content-section settings-section">
@@ -3800,6 +3892,10 @@
                             </div>
                         </div>
                     </div>
+                        </div>
+
+                        <!-- Tab Panel: Cores -->
+                        <div id="tab-panel-colors" class="settings-tab-panel">
 
                     <!-- PERSONALIZAÃ‡ÃƒO DE CORES -->
                     <style>
@@ -4197,6 +4293,10 @@
 
                         </div>
                     </div>
+                        </div>
+
+                        <!-- Tab Panel: Layout -->
+                        <div id="tab-panel-layout" class="settings-tab-panel">
 
                     <!-- CONFIGURAÃ‡ÃƒO DE LAYOUT DOS CARDS -->
                     <style>
@@ -4561,6 +4661,10 @@
                             </div>
                         </div>
                     </div>
+                        </div>
+
+                        <!-- Tab Panel: Banners -->
+                        <div id="tab-panel-banners" class="settings-tab-panel">
 
                     <div class="content-section settings-section">
                         <div class="section-header">
@@ -4620,7 +4724,23 @@
                         </div>
                     </div>
                     </div>
+                        </div>
+                    </div>
+
                 </div>
+
+                <script>
+                // Tab switching function
+                function switchSettingsTab(tabName, btn) {
+                    // Remove active from all tabs
+                    document.querySelectorAll('.settings-tab-btn').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.settings-tab-panel').forEach(c => c.classList.remove('active'));
+                    
+                    // Add active to clicked tab
+                    btn.classList.add('active');
+                    document.getElementById('tab-panel-' + tabName).classList.add('active');
+                }
+                </script>
 
                 <!-- IMPORTAR NOTÃCIA PAGE -->
                 <div id="importNewsPage" class="page-content" style="display: none;">
@@ -5398,20 +5518,81 @@
 
         let settingsPanelsInitialized = false;
 
+        function getLoginErrorMessage(error) {
+            const code = String(error?.code || '').trim();
+            const errorMap = {
+                'auth/invalid-email': 'Email invalido. Confira o endereco digitado.',
+                'auth/missing-email': 'Informe o email para continuar.',
+                'auth/missing-password': 'Informe a senha para continuar.',
+                'auth/user-not-found': 'Email ou senha incorretos.',
+                'auth/wrong-password': 'Email ou senha incorretos.',
+                'auth/invalid-credential': 'Email ou senha incorretos.',
+                'auth/invalid-login-credentials': 'Email ou senha incorretos.',
+                'auth/user-disabled': 'Este usuario foi desativado no Firebase Auth.',
+                'auth/too-many-requests': 'Muitas tentativas de login. Aguarde alguns minutos e tente novamente.',
+                'auth/network-request-failed': 'Falha de conexao com o Firebase. Verifique a internet do celular.',
+                'auth/operation-not-allowed': 'Login por email/senha nao esta habilitado no Firebase Auth.'
+            };
+
+            return errorMap[code] || 'Nao foi possivel fazer login agora. Tente novamente.';
+        }
+
         // Login
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
             const errorElement = document.getElementById('loginError');
+            const submitButton = e.currentTarget?.querySelector('button[type="submit"]');
+
+            const normalizedEmail = String(emailInput?.value || '').trim().toLowerCase();
+            const rawPassword = String(passwordInput?.value || '');
+
+            if (emailInput) emailInput.value = normalizedEmail;
+            errorElement.textContent = '';
+            errorElement.style.display = 'none';
+
+            if (!normalizedEmail || !rawPassword) {
+                errorElement.textContent = 'Informe email e senha para entrar.';
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Entrando...';
+            }
 
             try {
-                await auth.signInWithEmailAndPassword(email, password);
+                await auth.signInWithEmailAndPassword(normalizedEmail, rawPassword);
                 showAdmin();
             } catch (error) {
-                console.error('Erro no login:', error);
-                errorElement.textContent = 'Email ou senha incorretos';
+                let finalError = error;
+                const trimmedPassword = rawPassword.trim();
+                const retryWithTrimmedPassword =
+                    trimmedPassword &&
+                    trimmedPassword !== rawPassword &&
+                    ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(String(error?.code || ''));
+
+                if (retryWithTrimmedPassword) {
+                    try {
+                        await auth.signInWithEmailAndPassword(normalizedEmail, trimmedPassword);
+                        showAdmin();
+                        return;
+                    } catch (retryError) {
+                        finalError = retryError;
+                    }
+                }
+
+                console.error('Erro no login:', finalError);
+                errorElement.textContent = getLoginErrorMessage(finalError);
                 errorElement.style.display = 'block';
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Entrar';
+                }
             }
         });
 
@@ -5656,7 +5837,9 @@
             } else if (pageName === 'settings') {
                 initializeSettingsPanels();
                 loadColors();
-                loadBrand();
+                loadBrand().catch(error => {
+                    console.log('[Admin] Erro ao carregar identidade visual na pagina de configuracoes:', error);
+                });
                 loadFooterLinks();
                 loadLayout();
                 loadTopBannersSettings();
@@ -8921,20 +9104,13 @@
         // Inicializar configuracoes de marca ao carregar
         // DOMContentLoaded unificado
         document.addEventListener('DOMContentLoaded', function () {
-            // Carregar configuracoes de marca
-            try {
-                var savedBrand = localStorage.getItem('siteBrand');
-                if (savedBrand) {
-                    var settings = JSON.parse(savedBrand);
-                    applyBrandToLogin(settings);
-                }
-            } catch (e) {
-                console.log('Error loading brand settings:', e);
-            }
+            // Carregar configuracoes de marca para login/admin (prioriza Firebase)
+            loadBrandSettings().catch(error => {
+                console.log('[Admin] Falha ao sincronizar identidade visual na inicializacao:', error);
+            });
 
             // Configurar upload de logo na pagina de configuracoes
             if (document.getElementById('logoUploadArea')) {
-                loadBrandSettings();
                 loadFooterLinks();
                 setupLogoDragAndDrop();
             }
@@ -9200,31 +9376,106 @@
             }
         }
 
-        // Carregar configuracoes de marca
-        function loadBrandSettings() {
-            const savedBrand = localStorage.getItem('siteBrand');
-            if (savedBrand) {
-                try {
-                    const settings = JSON.parse(savedBrand);
+        function getDefaultBrandSettingsAdmin() {
+            return {
+                siteName: 'Mirador Online',
+                siteTagline: 'Portal de Noticias',
+                topStripTitleText: '',
+                topStripSubtitleText: '',
+                topStripBgColor: '#2A0F33',
+                topStripTextColor: '#FFFFFF',
+                logo: null
+            };
+        }
 
-                    document.getElementById('siteName').value = settings.siteName || 'Mirador Online';
-                    document.getElementById('siteTagline').value = settings.siteTagline || 'Portal de Noticias';
-                    applySubheaderBrandDefaultsAdmin(settings);
-
-                    if (settings.logo) {
-                        currentLogo = settings.logo;
-                        updateLogoPreview(settings.logo);
-                    }
-
-                    applyBrandToAdmin(settings);
-                } catch (error) {
-                    console.error('[Admin] Erro ao carregar identidade visual salva:', error);
-                    applySubheaderBrandDefaultsAdmin();
-                }
-            } else {
-                applySubheaderBrandDefaultsAdmin();
+        function readLocalBrandSettingsAdmin() {
+            try {
+                const savedBrand = localStorage.getItem('siteBrand');
+                if (!savedBrand) return null;
+                const parsed = JSON.parse(savedBrand);
+                return parsed && typeof parsed === 'object' ? parsed : null;
+            } catch (error) {
+                console.log('[Admin] Erro ao ler identidade visual do localStorage:', error);
+                return null;
             }
+        }
+
+        async function fetchBrandSettingsFromFirebaseAdmin() {
+            const docRef = db.collection('settings').doc('brand');
+
+            try {
+                const serverDoc = await docRef.get({ source: 'server' });
+                if (serverDoc && serverDoc.exists) {
+                    return serverDoc.data() || {};
+                }
+            } catch (error) {
+                console.log('[Admin] Erro ao carregar identidade visual (server):', error);
+            }
+
+            try {
+                const cachedDoc = await docRef.get();
+                if (cachedDoc && cachedDoc.exists) {
+                    return cachedDoc.data() || {};
+                }
+            } catch (error) {
+                console.log('[Admin] Erro ao carregar identidade visual (cache):', error);
+            }
+
+            return null;
+        }
+
+        // Carregar configuracoes de marca
+        async function loadBrandSettings() {
+            const defaultSettings = getDefaultBrandSettingsAdmin();
+            let loadedSettings = await fetchBrandSettingsFromFirebaseAdmin();
+
+            if (!loadedSettings) {
+                loadedSettings = readLocalBrandSettingsAdmin();
+            }
+
+            const settings = {
+                ...defaultSettings,
+                ...(loadedSettings && typeof loadedSettings === 'object' ? loadedSettings : {})
+            };
+
+            const siteNameInput = document.getElementById('siteName');
+            const siteTaglineInput = document.getElementById('siteTagline');
+
+            if (siteNameInput) siteNameInput.value = settings.siteName || defaultSettings.siteName;
+            if (siteTaglineInput) siteTaglineInput.value = settings.siteTagline || defaultSettings.siteTagline;
+            applySubheaderBrandDefaultsAdmin(settings);
+
+            if (settings.logo) {
+                currentLogo = settings.logo;
+                updateLogoPreview(settings.logo);
+            } else {
+                currentLogo = null;
+                const uploadArea = document.getElementById('logoUploadArea');
+                const placeholder = document.getElementById('uploadPlaceholder');
+                const changePlaceholder = document.getElementById('uploadChangePlaceholder');
+                const previewContainer = document.getElementById('logoPreviewContainer');
+                const previewDark = document.getElementById('logoPreviewDark');
+                const previewLight = document.getElementById('logoPreviewLight');
+
+                if (uploadArea) uploadArea.classList.remove('has-image');
+                if (placeholder) placeholder.style.display = 'block';
+                if (changePlaceholder) changePlaceholder.style.display = 'none';
+                if (previewContainer) previewContainer.style.display = 'none';
+                if (previewDark) previewDark.src = '';
+                if (previewLight) previewLight.src = '';
+            }
+
+            localStorage.setItem('siteBrand', JSON.stringify(settings));
+            localStorage.setItem('publicSiteBrand', JSON.stringify(settings));
+
+            applyBrandToLogin(settings);
+            applyBrandToAdmin(settings);
             updateBrandPreview();
+            return settings;
+        }
+
+        async function loadBrand() {
+            return loadBrandSettings();
         }
 
         // Salvar configuracoes de links do rodape
@@ -9316,6 +9567,13 @@
                 if (sidebarIconMode) sidebarIconMode.style.display = 'none';
                 if (sidebarLogoMode) {
                     sidebarLogoMode.style.display = 'flex';
+                    sidebarLogo.onerror = function () {
+                        this.style.display = 'none';
+                        if (sidebarIconMode) sidebarIconMode.style.display = 'flex';
+                        if (sidebarLogoMode) sidebarLogoMode.style.display = 'none';
+                        if (sidebarIcon) sidebarIcon.textContent = siteName.charAt(0).toUpperCase();
+                    };
+                    sidebarLogo.style.display = 'block';
                     sidebarLogo.src = settings.logo;
                     sidebarLogo.alt = siteName;
                 }
@@ -9326,6 +9584,10 @@
                 if (sidebarLogoMode) sidebarLogoMode.style.display = 'none';
                 if (sidebarIcon) {
                     sidebarIcon.textContent = siteName.charAt(0).toUpperCase();
+                }
+                if (sidebarLogo) {
+                    sidebarLogo.onerror = null;
+                    sidebarLogo.src = '';
                 }
                 const sidebarBrandText = document.getElementById('sidebarBrandText');
                 const sidebarTagline = document.getElementById('sidebarTagline');
@@ -9353,6 +9615,14 @@
                 if (settings.logo && loginLogoImg) {
                     // Com logo: mostra logo
                     if (loginLogoIcon) loginLogoIcon.style.display = 'none';
+                    loginLogoImg.onerror = function () {
+                        this.style.display = 'none';
+                        if (loginLogoIcon) {
+                            loginLogoIcon.style.display = 'flex';
+                            loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
+                        }
+                    };
+                    loginLogoImg.alt = siteName;
                     loginLogoImg.src = settings.logo;
                     loginLogoImg.style.display = 'block';
                 } else {
@@ -9361,7 +9631,11 @@
                         loginLogoIcon.style.display = 'flex';
                         loginLogoIcon.textContent = siteName.charAt(0).toUpperCase();
                     }
-                    if (loginLogoImg) loginLogoImg.style.display = 'none';
+                    if (loginLogoImg) {
+                        loginLogoImg.onerror = null;
+                        loginLogoImg.src = '';
+                        loginLogoImg.style.display = 'none';
+                    }
                 }
 
                 if (loginTitle) loginTitle.textContent = 'Painel Administrativo';
