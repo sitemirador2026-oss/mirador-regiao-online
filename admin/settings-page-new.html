@@ -341,24 +341,3 @@
         </div>
     </div>
 </div>
-
-<script>
-function switchSettingsTab(tabName, btn) {
-    document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.settings-tab-content').forEach(c => c.style.display = 'none');
-    document.getElementById('settingsTab-' + tabName).style.display = 'block';
-}
-
-function updateLayoutValue(input, displayId) {
-    document.getElementById(displayId).textContent = input.value;
-}
-
-function updateColorPreview(input) {
-    const valueEl = document.getElementById(input.id + 'Value');
-    if (valueEl) valueEl.textContent = input.value.toUpperCase();
-    if (typeof updateLivePreview === 'function') {
-        updateLivePreview();
-    }
-}
-</script>

@@ -2297,7 +2297,7 @@
         }
     </style>
     <!-- CSS das Configurações - Novo Design -->
-    <link rel="stylesheet" href="settings-new.css?v=1">
+    <link rel="stylesheet" href="settings-new.css?v=2">
 </head>
 
 <body>
@@ -5658,6 +5658,33 @@
             } else if (pageName === 'settings') {
                 initializeSettingsPanels();
                 loadColors();
+            }
+        }
+
+        // Alternar entre tabs das Configurações
+        function switchSettingsTab(tabName, btn) {
+            // Atualizar botões
+            document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            
+            // Mostrar conteúdo correto
+            document.querySelectorAll('.settings-tab-content').forEach(c => c.style.display = 'none');
+            const tabContent = document.getElementById('settingsTab-' + tabName);
+            if (tabContent) tabContent.style.display = 'block';
+        }
+
+        // Atualizar valor do slider de layout
+        function updateLayoutValue(input, displayId) {
+            const display = document.getElementById(displayId);
+            if (display) display.textContent = input.value;
+        }
+
+        // Atualizar preview de cor
+        function updateColorPreview(input) {
+            const valueEl = document.getElementById(input.id + 'Value');
+            if (valueEl) valueEl.textContent = input.value.toUpperCase();
+            if (typeof updateLivePreview === 'function') {
+                updateLivePreview();
             }
         }
 
@@ -13174,28 +13201,46 @@
 
     <!-- Script para carregar novo design das configurações -->
     <script>
-    // Carregar novo design das configurações
-    document.addEventListener('DOMContentLoaded', function() {
-        const settingsPage = document.getElementById('settingsPage');
-        if (settingsPage) {
-            fetch('settings-page-new.html?v=2')
+    (function() {
+        // Aguardar o DOM estar pronto
+        function initSettingsNewDesign() {
+            const settingsPage = document.getElementById('settingsPage');
+            if (!settingsPage) return;
+            
+            // Verificar se já foi inicializado
+            if (settingsPage.dataset.newDesignLoaded === 'true') return;
+            
+            fetch('settings-page-new.html?v=4')
                 .then(response => response.text())
                 .then(html => {
-                    // Criar um container temporário
-                    const temp = document.createElement('div');
-                    temp.innerHTML = html;
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('settingsPage');
                     
-                    // Extrair o conteúdo principal
-                    const newContent = temp.querySelector('#settingsPage');
                     if (newContent) {
-                        // Preservar o ID e classe
+                        // Preservar ID e classes
+                        const originalId = settingsPage.id;
+                        const originalClasses = settingsPage.className;
+                        
+                        // Substituir conteúdo
                         settingsPage.innerHTML = newContent.innerHTML;
-                        settingsPage.classList.add('settings-modern');
+                        settingsPage.id = originalId;
+                        settingsPage.className = originalClasses + ' settings-modern';
+                        settingsPage.dataset.newDesignLoaded = 'true';
+                        
+                        console.log('[Settings] Novo design carregado com sucesso');
                     }
                 })
-                .catch(err => console.log('Erro ao carregar novo design:', err));
+                .catch(err => console.error('[Settings] Erro ao carregar novo design:', err));
         }
-    });
+        
+        // Inicializar quando DOM estiver pronto
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSettingsNewDesign);
+        } else {
+            initSettingsNewDesign();
+        }
+    })();
     </script>
 </body>
 
