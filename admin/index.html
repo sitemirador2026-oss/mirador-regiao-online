@@ -498,6 +498,8 @@
             min-width: 0;
             min-height: 100vh;
             overflow-x: hidden;
+            overflow-y: auto;
+            height: 100vh;
         }
 
         /* Top Header */
@@ -6169,38 +6171,36 @@
         function lockAdminZoomGestures() {
             const preventDefault = (event) => event.preventDefault();
             let lastTouchEnd = 0;
+            const isTouchDevice = (navigator.maxTouchPoints || 0) > 0
+                || (typeof window.matchMedia === 'function' && window.matchMedia('(pointer: coarse)').matches);
 
-            document.addEventListener('gesturestart', preventDefault, { passive: false });
-            document.addEventListener('gesturechange', preventDefault, { passive: false });
-            document.addEventListener('gestureend', preventDefault, { passive: false });
+            if (isTouchDevice) {
+                document.addEventListener('gesturestart', preventDefault, { passive: false });
+                document.addEventListener('gesturechange', preventDefault, { passive: false });
+                document.addEventListener('gestureend', preventDefault, { passive: false });
 
-            document.addEventListener('touchstart', function (event) {
-                if (event.touches && event.touches.length > 1) {
-                    event.preventDefault();
-                }
-            }, { passive: false });
+                document.addEventListener('touchstart', function (event) {
+                    if (event.touches && event.touches.length > 1) {
+                        event.preventDefault();
+                    }
+                }, { passive: false });
 
-            document.addEventListener('touchmove', function (event) {
-                if (event.touches && event.touches.length > 1) {
-                    event.preventDefault();
-                }
-            }, { passive: false });
+                document.addEventListener('touchmove', function (event) {
+                    if (event.touches && event.touches.length > 1) {
+                        event.preventDefault();
+                    }
+                }, { passive: false });
 
-            document.addEventListener('touchend', function (event) {
-                const now = Date.now();
-                if (now - lastTouchEnd <= 320) {
-                    event.preventDefault();
-                }
-                lastTouchEnd = now;
-            }, { passive: false });
+                document.addEventListener('touchend', function (event) {
+                    const now = Date.now();
+                    if (now - lastTouchEnd <= 320) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, { passive: false });
 
-            document.addEventListener('dblclick', preventDefault, { passive: false });
-
-            window.addEventListener('wheel', function (event) {
-                if (event.ctrlKey) {
-                    event.preventDefault();
-                }
-            }, { passive: false });
+                document.addEventListener('dblclick', preventDefault, { passive: false });
+            }
 
             document.addEventListener('keydown', function (event) {
                 const zoomKeys = ['+', '=', '-', '0'];
