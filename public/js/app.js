@@ -3605,6 +3605,11 @@ let expandedCardId = null;
 let instagramExpandedViewportState = null;
 let instagramLockedScrollY = 0;
 
+function setInstagramExpandedFocusMode(isEnabled) {
+    const enabled = Boolean(isEnabled);
+    document.body.classList.toggle('instagram-post-focus-mode', enabled);
+}
+
 function lockInstagramExpandedPageScroll(targetY = null) {
     if (!isMobileViewport()) return;
     if (document.body.dataset.instagramScrollLocked === '1') return;
@@ -3656,7 +3661,7 @@ function openInstagramModal(newsId, cardElement = null) {
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
         if (currentExpanded) {
-            closeInstagramCard(currentExpanded, { restoreViewport: false, keepScrollLock: true });
+            closeInstagramCard(currentExpanded, { restoreViewport: false, keepScrollLock: true, keepExpandedUi: true });
         }
     }
 
@@ -3688,6 +3693,7 @@ function openInstagramModal(newsId, cardElement = null) {
     // DEPOIS: Expandir o card (agora tem espaÃ§o para ocupar 2 colunas)
     card.classList.add('expanded');
     expandedCardId = newsId;
+    setInstagramExpandedFocusMode(true);
     const mobileCarousel = card.closest('.instagram-news-grid');
     if (mobileCarousel) {
         updateInstagramSwipeHintState(mobileCarousel);
@@ -3955,6 +3961,7 @@ function closeInstagramCard(card, options = {}) {
     if (!card) return;
     const restoreViewport = options.restoreViewport !== false;
     const keepScrollLock = options.keepScrollLock === true;
+    const keepExpandedUi = options.keepExpandedUi === true;
     const savedViewportState = instagramExpandedViewportState;
 
     const inlineVideo = card.querySelector('video[data-inline-playing="1"]');
@@ -4066,6 +4073,10 @@ function closeInstagramCard(card, options = {}) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
 
+    if (!keepExpandedUi) {
+        setInstagramExpandedFocusMode(false);
+    }
+
     if (
         restoreViewport &&
         savedViewportState &&
@@ -4153,6 +4164,7 @@ function closeInstagramModal() {
     if (isMobileViewport()) {
         unlockInstagramExpandedPageScroll();
     }
+    setInstagramExpandedFocusMode(false);
 }
 
 // FunÃ§Ã£o para compartilhar notícia

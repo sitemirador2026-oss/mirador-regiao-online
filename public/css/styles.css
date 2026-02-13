@@ -1148,6 +1148,17 @@ body {
     gap: 0.75rem;
 }
 
+@media (max-width: 768px) {
+    body.instagram-post-focus-mode #topBannersSection {
+        display: none !important;
+    }
+
+    body.instagram-post-focus-mode .instagram-news-section .instagram-section-header,
+    body.instagram-post-focus-mode #instagramFeedSection .instagram-section-header {
+        display: none !important;
+    }
+}
+
 .instagram-carousel-shell {
     position: relative;
     --instagram-swipe-hint-top: 50%;
