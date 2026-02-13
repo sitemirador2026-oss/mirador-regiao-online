@@ -559,6 +559,15 @@
             height: 20px;
         }
 
+        .mobile-header-logout {
+            display: none;
+            align-items: center;
+            gap: 0.35rem;
+            min-height: 36px;
+            padding: 0.45rem 0.65rem;
+            font-size: 0.8125rem;
+        }
+
         .notification-dot {
             position: absolute;
             top: 8px;
@@ -2039,6 +2048,14 @@
                 height: 36px;
             }
 
+            .header-help-btn {
+                display: none;
+            }
+
+            .mobile-header-logout {
+                display: inline-flex;
+            }
+
             .page-content {
                 padding-top: 0.75rem !important;
                 padding-bottom: 0.75rem !important;
@@ -2152,27 +2169,66 @@
                 padding: 0.7rem 0.45rem;
             }
 
-            .news-table colgroup col:nth-child(n + 3),
-            .news-table th:nth-child(n + 3),
-            .news-table td:nth-child(n + 3) {
+            .news-table colgroup col:nth-child(3),
+            .news-table colgroup col:nth-child(4),
+            .news-table th:nth-child(3),
+            .news-table th:nth-child(4),
+            .news-table td:nth-child(3),
+            .news-table td:nth-child(4) {
                 display: none;
             }
 
             .news-table colgroup col:first-child,
             .news-table th:first-child,
             .news-table td:first-child {
-                width: 72px !important;
+                width: 64px !important;
+            }
+
+            .news-table colgroup col:nth-child(5),
+            .news-table th:nth-child(5),
+            .news-table td:nth-child(5) {
+                display: table-cell;
+                width: 104px !important;
+                text-align: right;
+                vertical-align: middle;
             }
 
             .news-title {
                 max-width: 100%;
+                white-space: normal !important;
+                overflow: hidden !important;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                line-height: 1.3;
+            }
+
+            .news-title-cell {
+                min-width: 0;
+            }
+
+            .news-meta {
+                margin-top: 0.2rem;
+                font-size: 0.72rem;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
-            .news-title-cell {
-                min-width: 0;
+            .actions-cell {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+                gap: 0.25rem;
+            }
+
+            .action-btn {
+                width: 28px;
+                height: 28px;
+            }
+
+            .action-btn svg {
+                width: 13px;
+                height: 13px;
             }
 
             .media-toolbar-controls {
@@ -2355,10 +2411,47 @@
                 gap: 0.5rem !important;
             }
 
-            #instagramImportTab [style*="display: flex"][style*="justify-content: flex-end"] .btn,
-            #instagramImportTab button[onclick="saveInstagramProfileSettingsAdmin()"],
-            #instagramImportTab #instagramDefaultProfileRemoveBtn {
+            #instagramImportTab [style*="display: flex"][style*="justify-content: flex-end"] .btn {
                 width: 100%;
+            }
+
+            #instagramImportTab button[onclick="saveInstagramProfileSettingsAdmin()"] {
+                width: auto;
+                align-self: flex-start;
+            }
+
+            #instagramImportTab #instagramDefaultProfilePreviewWrap {
+                width: 42px !important;
+                height: 42px !important;
+                min-width: 42px !important;
+                min-height: 42px !important;
+                max-width: 42px !important;
+                max-height: 42px !important;
+                border-radius: 50% !important;
+                flex: 0 0 42px;
+            }
+
+            #instagramImportTab #instagramDefaultProfilePreview {
+                width: 100% !important;
+                height: 100% !important;
+                border-radius: 50% !important;
+                object-fit: cover !important;
+                aspect-ratio: 1 / 1;
+                display: block;
+            }
+
+            #instagramImportTab #instagramDefaultProfilePreviewName {
+                min-width: 0;
+                flex: 1 1 auto;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            #instagramImportTab #instagramDefaultProfileRemoveBtn {
+                width: auto !important;
+                flex: 0 0 auto;
+                margin-left: auto;
             }
 
             body.login-mode {
@@ -2846,11 +2939,19 @@
                             </svg>
                             <span class="notification-dot"></span>
                         </button>
-                        <button class="header-btn">
+                        <button class="header-btn header-help-btn">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
+                        </button>
+                        <button class="btn btn-secondary btn-sm mobile-header-logout" onclick="logout()"
+                            title="Sair do painel">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H9m6 4v1a2 2 0 01-2 2H6a2 2 0 01-2-2V7a2 2 0 012-2h7a2 2 0 012 2v1" />
+                            </svg>
+                            Sair
                         </button>
                     </div>
                 </header>
@@ -10976,7 +11077,7 @@
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-13-007';
+            const cssVersion = '2026-02-13-008';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
