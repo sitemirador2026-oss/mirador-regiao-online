@@ -2927,6 +2927,23 @@ body {
         grid-auto-rows: auto;
     }
 
+    .instagram-news-grid.instagram-mobile-carousel.has-expanded-card {
+        overflow-x: hidden;
+        gap: 0;
+        scroll-snap-type: none;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel.has-expanded-card .instagram-card:not(.expanded) {
+        display: none !important;
+    }
+
+    .instagram-news-grid.instagram-mobile-carousel.has-expanded-card .instagram-card.expanded {
+        flex: 0 0 100%;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+
     .instagram-news-grid.instagram-mobile-carousel::-webkit-scrollbar {
         display: none;
     }

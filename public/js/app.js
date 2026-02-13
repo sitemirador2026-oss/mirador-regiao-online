@@ -3817,6 +3817,15 @@ function openInstagramModal(newsId, cardElement = null) {
     expandedCardId = newsId;
     setInstagramExpandedFocusMode(true);
     const mobileCarousel = card.closest('.instagram-news-grid');
+    if (isMobileViewport() && mobileCarousel && mobileCarousel.classList.contains('instagram-mobile-carousel')) {
+        mobileCarousel.classList.add('has-expanded-card');
+        requestAnimationFrame(() => {
+            mobileCarousel.scrollTo({
+                left: 0,
+                behavior: 'auto'
+            });
+        });
+    }
     if (mobileCarousel) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
@@ -4191,6 +4200,9 @@ function closeInstagramCard(card, options = {}) {
     showLastCard(card);
 
     const mobileCarousel = card.closest('.instagram-news-grid');
+    if (isMobileViewport() && mobileCarousel && mobileCarousel.classList.contains('instagram-mobile-carousel')) {
+        mobileCarousel.classList.remove('has-expanded-card');
+    }
     if (mobileCarousel) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
