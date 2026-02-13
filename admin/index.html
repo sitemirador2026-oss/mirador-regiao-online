@@ -2007,93 +2007,25 @@
         /* ========================================
            SWIPE ACTIONS - Mobile swipe to reveal
            ======================================== */
-        .swipe-row {
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Por padrão (desktop), esconde os elementos swipe */
-        .swipe-container {
-            display: contents;
-        }
-
-        .data-table tbody td .swipe-container,
-        .data-table tbody td .swipe-content,
-        .data-table tbody td .swipe-actions,
-        .data-table tbody td .swipe-hint {
-            display: none;
-        }
-
-        /* Mostra o conteúdo desktop por padrão */
-        .desktop-row-content {
-            display: contents;
-        }
-
-        .swipe-row-inner {
-            display: flex;
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .swipe-content {
-            flex: 1;
-            min-width: 0;
-            background: var(--bg-card);
-        }
-
-        .swipe-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0 0.75rem;
-            background: var(--bg-secondary);
-            min-width: fit-content;
-        }
-
+        
+        /* Por padrão (desktop), swipe não existe - layout normal */
+        .swipe-container,
+        .swipe-content,
+        .swipe-actions,
+        .swipe-hint,
         .swipe-action-btn {
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .swipe-action-btn.edit {
-            background: var(--info-light);
-            color: var(--info);
-        }
-
-        .swipe-action-btn.edit:hover {
-            background: var(--info);
-            color: white;
-        }
-
-        .swipe-action-btn.delete {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-
-        .swipe-action-btn.delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .swipe-action-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .swipe-hint {
             display: none;
         }
 
         @media (max-width: 768px) {
+            html, body {
+                overflow-x: hidden !important;
+                max-width: 100vw;
+            }
+
             .admin-layout {
                 padding-left: 0;
+                overflow-x: hidden;
             }
 
             .sidebar {
@@ -2112,6 +2044,12 @@
                 overflow-y: auto;
                 overscroll-behavior-x: none;
                 -webkit-overflow-scrolling: touch;
+            }
+
+            /* Previne scroll horizontal geral */
+            body {
+                overflow-x: hidden !important;
+                touch-action: pan-y;
             }
 
             .top-header {
@@ -2350,6 +2288,7 @@
                 display: flex !important;
                 position: relative;
                 overflow: hidden;
+                touch-action: pan-y; /* Permite scroll vertical, bloqueia horizontal */
             }
 
             .data-table tbody tr:last-child {
@@ -2371,6 +2310,14 @@
             .data-table tbody td .swipe-content {
                 flex: 1;
                 min-width: 0;
+                display: flex !important;
+                align-items: center;
+                padding: 0.75rem 0.5rem;
+                background: var(--bg-card);
+                transition: transform 0.25s ease-out;
+                position: relative;
+                z-index: 2;
+                touch-action: pan-y;
                 padding: 0.75rem 0.5rem;
                 background: var(--bg-card);
                 transition: transform 0.25s ease-out;
@@ -2380,7 +2327,7 @@
             }
 
             .data-table tbody td .swipe-actions {
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 gap: 0.5rem;
                 padding: 0 0.75rem;
@@ -2390,14 +2337,16 @@
                 top: 0;
                 bottom: 0;
                 z-index: 1;
+                width: 110px; /* Largura fixa para os botões */
+                justify-content: center;
             }
 
             .data-table tbody td .swipe-action-btn {
-                width: 48px;
-                height: 48px;
+                width: 44px;
+                height: 44px;
                 border: none;
                 border-radius: var(--radius);
-                display: flex;
+                display: flex !important;
                 align-items: center;
                 justify-content: center;
                 cursor: pointer;
@@ -2421,25 +2370,33 @@
             }
 
             .data-table tbody td .swipe-hint {
-                display: block;
-                position: absolute;
-                right: 8px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--text-muted);
-                font-size: 0.7rem;
-                opacity: 0.6;
-                pointer-events: none;
-            }
-
-            .data-table tbody td .swipe-hint::after {
-                content: '‹';
-                margin-left: 2px;
-                font-size: 0.9rem;
+                display: none !important;
             }
 
             .data-table tbody td .swipe-content.swiped-left {
-                transform: translateX(-110px);
+                transform: translateX(-110px) !important;
+            }
+
+            /* Previne scroll horizontal na página durante swipe */
+            body.swipe-active {
+                overflow-x: hidden !important;
+                touch-action: none;
+            }
+
+            /* Garante que o swipe container não cause scroll */
+            .swipe-container {
+                max-width: 100%;
+                width: 100%;
+            }
+
+            /* Remove overflow-x de tabelas no mobile */
+            .data-table {
+                overflow-x: hidden !important;
+            }
+
+            /* Garante que nada vaze a tela */
+            .content-section {
+                overflow-x: hidden;
             }
 
             /* Ajustes específicos para tabela de notícias */
@@ -8154,7 +8111,6 @@
                                             <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
                                         </div>
                                     </div>
-                                    <span class="swipe-hint">deslize</span>
                                 </div>
                                 <div class="swipe-actions">
                                     <button class="swipe-action-btn edit" onclick="showCreateNewsPage('${n.id}')" title="Editar">
@@ -8358,7 +8314,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <span class="swipe-hint">deslize</span>
                                 </div>
                                 <div class="swipe-actions">
                                     ${swipeOpenSourceAction}
@@ -8548,7 +8503,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <span class="swipe-hint">deslize</span>
                                 </div>
                                 <div class="swipe-actions">
                                     ${swipeOpenSourceAction}
@@ -14257,14 +14211,16 @@
         // SWIPE FUNCTIONALITY FOR MOBILE
         // ========================================
         let swipeStartX = 0;
+        let swipeStartY = 0;
         let swipeCurrentX = 0;
         let swipedElement = null;
         let isSwiping = false;
+        let isHorizontalSwipe = false;
 
         function initSwipeHandlers() {
             // Usar event delegation para gerenciar swipe em elementos dinâmicos
             document.addEventListener('touchstart', handleSwipeStart, { passive: true });
-            document.addEventListener('touchmove', handleSwipeMove, { passive: true });
+            document.addEventListener('touchmove', handleSwipeMove, { passive: false }); // false para permitir preventDefault
             document.addEventListener('touchend', handleSwipeEnd, { passive: true });
             
             // Também suportar mouse para testes em desktop
@@ -14278,21 +14234,40 @@
 
         function handleSwipeStart(e) {
             const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) return;
+            if (!swipeContent) {
+                // Fecha qualquer swipe aberto se tocou fora
+                closeAllSwipes();
+                return;
+            }
             
             swipeStartX = e.touches[0].clientX;
+            swipeStartY = e.touches[0].clientY;
             swipedElement = swipeContent;
             isSwiping = true;
+            isHorizontalSwipe = false;
         }
 
         function handleSwipeMove(e) {
             if (!isSwiping || !swipedElement) return;
             
-            swipeCurrentX = e.touches[0].clientX;
-            const diffX = swipeStartX - swipeCurrentX;
+            const touchX = e.touches[0].clientX;
+            const touchY = e.touches[0].clientY;
+            const diffX = swipeStartX - touchX;
+            const diffY = swipeStartY - touchY;
             
-            // Limitar o swipe
-            if (diffX > 0 && diffX < 120) {
+            // Determina se é swipe horizontal ou vertical
+            if (!isHorizontalSwipe && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
+                isHorizontalSwipe = true;
+            }
+            
+            // Se for horizontal, previne o scroll da página
+            if (isHorizontalSwipe) {
+                e.preventDefault();
+                document.body.classList.add('swipe-active');
+            }
+            
+            // Limitar o swipe (máximo 110px para mostrar os botões)
+            if (diffX > 0 && diffX < 110) {
                 swipedElement.style.transform = `translateX(-${diffX}px)`;
             }
         }
@@ -14303,10 +14278,18 @@
             const diffX = swipeStartX - swipeCurrentX;
             const threshold = 50; // pixels para ativar o swipe
             
+            // Fecha todos os outros swipes primeiro
+            document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
+                if (el !== swipedElement) {
+                    el.classList.remove('swiped-left');
+                    el.style.transform = '';
+                }
+            });
+            
             if (diffX > threshold) {
                 // Abrir - mostrar ações
                 swipedElement.classList.add('swiped-left');
-                swipedElement.style.transform = '';
+                swipedElement.style.transform = 'translateX(-110px)';
             } else {
                 // Fechar - esconder ações
                 swipedElement.classList.remove('swiped-left');
@@ -14314,7 +14297,16 @@
             }
             
             isSwiping = false;
+            isHorizontalSwipe = false;
             swipedElement = null;
+            document.body.classList.remove('swipe-active');
+        }
+
+        function closeAllSwipes() {
+            document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
+                el.classList.remove('swiped-left');
+                el.style.transform = '';
+            });
         }
 
         // Mouse handlers para testes em desktop
@@ -14357,12 +14349,11 @@
         }
 
         function handleClickOutside(e) {
-            // Se clicou fora de um elemento swipado, fecha todos
+            // Se clicou fora de um elemento swipado E não clicou em um botão de ação, fecha todos
             const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) {
-                document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
-                    el.classList.remove('swiped-left');
-                });
+            const swipeAction = e.target.closest('.swipe-actions');
+            if (!swipeContent && !swipeAction) {
+                closeAllSwipes();
             }
         }
 
