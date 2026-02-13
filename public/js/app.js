@@ -1220,30 +1220,54 @@ function getSiteLogo() {
     return null;
 }
 
+function getCurrentSiteDomain() {
+    const host = String(window.location.hostname || '').trim().replace(/^www\./i, '');
+    return host || 'miradoronline.com.br';
+}
+
+function buildSourceFavicon(domain) {
+    const safeDomain = String(domain || '').trim();
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(safeDomain)}&sz=64`;
+}
+
+function getNewsSourceInfo(news, isExternal) {
+    const siteDomain = getCurrentSiteDomain();
+
+    if (isExternal) {
+        const sourceDomain = String(news.sourceDomain || getDomainFromUrl(news.externalUrl) || siteDomain).trim();
+        return {
+            domain: sourceDomain,
+            logo: buildSourceFavicon(sourceDomain),
+            isSiteLogo: false
+        };
+    }
+
+    const siteLogo = getSiteLogo();
+    if (siteLogo) {
+        return {
+            domain: siteDomain,
+            logo: siteLogo,
+            isSiteLogo: true
+        };
+    }
+
+    return {
+        domain: siteDomain,
+        logo: buildSourceFavicon(siteDomain),
+        isSiteLogo: false
+    };
+}
+
 // Criar card de notícia
 function createNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
-    const isExternal = news.externalUrl || news.isImported;
-
-    let sourceDomain, sourceLogo;
-
-    if (isExternal) {
-        // Notícia de terceiros - usar favicon
-        sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
-        sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
-    } else {
-        // Notícia prÃ³pria - usar logo do site configurada
-        sourceDomain = 'Nossa Noticia';
-        const siteLogo = getSiteLogo();
-        if (siteLogo) {
-            sourceLogo = siteLogo;
-        } else {
-            // Se não tiver logo, usar favicon como fallback
-            sourceDomain = window.location.hostname || 'miradoronline.com.br';
-            sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
-        }
-    }
-
+    const isExternal = Boolean(news.externalUrl || news.isImported);
+    const sourceInfo = getNewsSourceInfo(news, isExternal);
+    const sourceDomain = escapeHtml(sourceInfo.domain);
+    const sourceLogo = sourceInfo.logo;
+    const sourceLogoClass = sourceInfo.isSiteLogo
+        ? 'news-card-source-logo-img is-site-logo'
+        : 'news-card-source-logo-img';
     // Formatar data e hora separadamente
     const dateObj = new Date(news.date);
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -1266,8 +1290,8 @@ function createNewsCard(news) {
                 </div>
                 <div class="news-card-source-row">
                     <div class="news-card-source">
-                        <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 80px; height: 16px; object-fit: contain;"' : ''}>
-                        ${isExternal ? `<span class="news-card-source-name">${sourceDomain}</span>` : ''}
+                        <img src="${sourceLogo}" alt="${sourceDomain}" class="${sourceLogoClass}">
+                        <span class="news-card-source-name">${sourceDomain}</span>
                     </div>
                     <button class="news-card-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
@@ -1283,24 +1307,13 @@ function createNewsCard(news) {
 // Criar card de notícia HORIZONTAL - layout especial (foto esquerda, texto direita)
 function createHorizontalNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
-    const isExternal = news.externalUrl || news.isImported;
-
-    let sourceDomain, sourceLogo;
-
-    if (isExternal) {
-        sourceDomain = news.sourceDomain || getDomainFromUrl(news.externalUrl);
-        sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
-    } else {
-        sourceDomain = 'Nossa Noticia';
-        const siteLogo = getSiteLogo();
-        if (siteLogo) {
-            sourceLogo = siteLogo;
-        } else {
-            sourceDomain = window.location.hostname || 'miradoronline.com.br';
-            sourceLogo = `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`;
-        }
-    }
-
+    const isExternal = Boolean(news.externalUrl || news.isImported);
+    const sourceInfo = getNewsSourceInfo(news, isExternal);
+    const sourceDomain = escapeHtml(sourceInfo.domain);
+    const sourceLogo = sourceInfo.logo;
+    const sourceLogoClass = sourceInfo.isSiteLogo
+        ? 'news-card-horizontal-source-logo-img is-site-logo'
+        : 'news-card-horizontal-source-logo-img';
     const dateObj = new Date(news.date);
     const timeStr = dateObj.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
     const dateStr = dateObj.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
@@ -1318,7 +1331,8 @@ function createHorizontalNewsCard(news) {
                         <span class="news-card-horizontal-time">${timeStr} &#8226; ${dateStr}</span>
                         <div class="news-card-horizontal-source-row">
                             <div class="news-card-horizontal-source">
-                                <img src="${sourceLogo}" alt="${sourceDomain}" ${!isExternal && getSiteLogo() ? 'style="width: auto; max-width: 50px; height: 12px;"' : ''}>
+                                <img src="${sourceLogo}" alt="${sourceDomain}" class="${sourceLogoClass}">
+                                <span class="news-card-source-name">${sourceDomain}</span>
                             </div>
                             <button class="news-card-horizontal-share-btn" onclick="shareNews('${news.id}', event)" title="Compartilhar">
                                 <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
