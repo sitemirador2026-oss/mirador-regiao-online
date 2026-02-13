@@ -85,6 +85,12 @@
             box-sizing: border-box;
         }
 
+        html {
+            width: 100%;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: var(--bg-primary);
@@ -94,6 +100,8 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
         }
 
         /* ========================================
@@ -2004,10 +2012,17 @@
             .main-content {
                 width: 100%;
                 min-width: 0;
+                overflow-x: hidden !important;
+                overflow-y: auto;
+                overscroll-behavior-x: none;
+                -webkit-overflow-scrolling: touch;
             }
 
             .top-header {
-                padding: 0.65rem 0.5rem;
+                padding-top: 0.65rem;
+                padding-bottom: 0.65rem;
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
                 gap: 0.5rem;
             }
 
@@ -2025,8 +2040,19 @@
             }
 
             .page-content {
-                padding: 0.5rem !important;
+                padding-top: 0.75rem !important;
+                padding-bottom: 0.75rem !important;
+                padding-left: max(0.875rem, env(safe-area-inset-left)) !important;
+                padding-right: max(0.875rem, env(safe-area-inset-right)) !important;
                 max-width: none;
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                overflow-x: hidden;
+            }
+
+            .page-content > * {
+                max-width: 100%;
             }
 
             .page-header {
@@ -2041,6 +2067,13 @@
             .page-subtitle {
                 font-size: 0.875rem;
                 line-height: 1.35;
+            }
+
+            .page-title,
+            .page-subtitle,
+            .section-title {
+                max-width: 100%;
+                overflow-wrap: break-word;
             }
 
             .stats-grid {
@@ -2103,22 +2136,43 @@
             }
 
             .table-container {
-                overflow-x: auto;
+                overflow-x: hidden;
                 -webkit-overflow-scrolling: touch;
             }
 
             .data-table {
-                min-width: 680px;
+                min-width: 0;
+                width: 100%;
+                table-layout: fixed;
                 font-size: 0.8125rem;
             }
 
             .data-table th,
             .data-table td {
-                padding: 0.75rem 0.5rem;
+                padding: 0.7rem 0.45rem;
+            }
+
+            .news-table colgroup col:nth-child(n + 3),
+            .news-table th:nth-child(n + 3),
+            .news-table td:nth-child(n + 3) {
+                display: none;
+            }
+
+            .news-table colgroup col:first-child,
+            .news-table th:first-child,
+            .news-table td:first-child {
+                width: 72px !important;
             }
 
             .news-title {
-                max-width: 240px;
+                max-width: 100%;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .news-title-cell {
+                min-width: 0;
             }
 
             .media-toolbar-controls {
@@ -2160,6 +2214,10 @@
                 -webkit-overflow-scrolling: touch;
                 flex-wrap: nowrap !important;
                 gap: 0.25rem !important;
+                margin-left: 0 !important;
+                margin-right: 0 !important;
+                padding-left: 0.25rem !important;
+                padding-right: 0.25rem !important;
                 padding-bottom: 0.25rem !important;
             }
 
@@ -2202,12 +2260,6 @@
             #createNewsPage .page-header>div>div {
                 min-width: 0;
                 flex: 1 1 220px;
-            }
-
-            #createNewsPage .page-header .page-subtitle {
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
             }
 
             #createNewsPage .page-header .btn {
@@ -2311,14 +2363,18 @@
 
             body.login-mode {
                 overflow: hidden;
+                height: 100dvh;
             }
 
             body.login-mode .login-container {
                 position: fixed;
                 inset: 0;
-                min-height: 100vh;
-                height: 100svh;
-                padding: 1rem;
+                min-height: 100dvh;
+                height: 100dvh;
+                padding-top: max(0.75rem, env(safe-area-inset-top));
+                padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+                padding-left: max(0.875rem, env(safe-area-inset-left));
+                padding-right: max(0.875rem, env(safe-area-inset-right));
                 align-items: center;
                 justify-content: center;
                 overflow: hidden;
@@ -2326,8 +2382,9 @@
 
             body.login-mode .login-box {
                 max-width: 400px;
+                width: min(100%, 400px);
                 min-height: auto;
-                max-height: calc(100svh - 2rem);
+                max-height: calc(100dvh - 1.75rem);
                 border-radius: var(--radius-lg);
                 border: 1px solid var(--border);
                 box-shadow: var(--shadow);
@@ -2370,11 +2427,17 @@
 
         @media (max-width: 520px) {
             .top-header {
-                padding: 0.5rem 0.35rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.5rem;
+                padding-left: max(0.625rem, env(safe-area-inset-left));
+                padding-right: max(0.625rem, env(safe-area-inset-right));
             }
 
             .page-content {
-                padding: 0.35rem !important;
+                padding-top: 0.625rem !important;
+                padding-bottom: 0.625rem !important;
+                padding-left: max(0.625rem, env(safe-area-inset-left)) !important;
+                padding-right: max(0.625rem, env(safe-area-inset-right)) !important;
             }
 
             .content-section {
@@ -5031,8 +5094,6 @@
                         </div>
                     </div>
 
-                </div>
-
                 <script>
                 // Tab switching function
                 function switchSettingsTab(tabName, btn) {
@@ -5043,6 +5104,9 @@
                     // Add active to clicked tab
                     btn.classList.add('active');
                     document.getElementById('tab-panel-' + tabName).classList.add('active');
+                    if (typeof resetAdminViewportPosition === 'function') {
+                        resetAdminViewportPosition();
+                    }
                 }
                 </script>
 
@@ -5816,11 +5880,14 @@
         let authPersistenceReady = Promise.resolve();
 
         try {
-            // Persistencia normal de sessao (comportamento esperado de app web).
+            // Persistencia de sessao pelo Firebase Auth (sem salvar senha no app).
             authPersistenceReady = auth
                 .setPersistence(firebase.auth.Auth.Persistence.LOCAL)
-                .catch(error => {
-                    console.warn('[Auth] Nao foi possivel configurar persistencia LOCAL:', error);
+                .catch(localError => {
+                    console.warn('[Auth] Nao foi possivel configurar persistencia LOCAL:', localError);
+                    return auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(sessionError => {
+                        console.warn('[Auth] Nao foi possivel configurar persistencia SESSION:', sessionError);
+                    });
                 });
         } catch (error) {
             console.warn('[Auth] Nao foi possivel configurar persistencia LOCAL:', error);
@@ -5947,6 +6014,40 @@
             }
         }
 
+        function resetAdminViewportPosition() {
+            const applyReset = () => {
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.scrollTop = 0;
+                    mainContent.scrollLeft = 0;
+                }
+
+                if (document.documentElement) {
+                    document.documentElement.scrollTop = 0;
+                    document.documentElement.scrollLeft = 0;
+                }
+
+                if (document.body) {
+                    document.body.scrollTop = 0;
+                    document.body.scrollLeft = 0;
+                }
+
+                try {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+                } catch (_error) {
+                    window.scrollTo(0, 0);
+                }
+            };
+
+            applyReset();
+
+            if (typeof requestAnimationFrame === 'function') {
+                requestAnimationFrame(applyReset);
+            }
+
+            setTimeout(applyReset, 120);
+        }
+
         // Mostrar admin
         function showAdmin() {
             document.getElementById('loginContainer').style.display = 'none';
@@ -5957,6 +6058,7 @@
 
             // Restaurar pagina salva ou ir para dashboard
             restoreLastPage();
+            resetAdminViewportPosition();
             requestAnimationFrame(ensureVisibleAdminPage);
         }
 
@@ -6212,6 +6314,7 @@
                 loadTopBannersSettings();
             }
 
+            resetAdminViewportPosition();
             ensureVisibleAdminPage();
         }
 
@@ -10424,6 +10527,7 @@
 
             // Mostrar pagina do editor
             document.getElementById('createNewsPage').style.display = 'block';
+            resetAdminViewportPosition();
 
             // Resetar formulario se for nova noticia
             if (!newsId) {
@@ -10872,7 +10976,7 @@
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-13-004';
+            const cssVersion = '2026-02-13-007';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
@@ -11307,6 +11411,8 @@
             if (tab === 'publicacoes') {
                 loadNewsPage();
             }
+
+            resetAdminViewportPosition();
         }
 
         function switchImportNewsTab(tab) {
@@ -11334,6 +11440,8 @@
             if (tab === 'publicacoes') {
                 loadImportedNewsPage();
             }
+
+            resetAdminViewportPosition();
         }
 
         function switchInstagramTab(tab) {
@@ -11361,6 +11469,8 @@
             if (tab === 'posts') {
                 loadInstagramPostsPage();
             }
+
+            resetAdminViewportPosition();
         }
 
         async function loadInstagramAdmin() {
