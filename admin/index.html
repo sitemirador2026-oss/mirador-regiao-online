@@ -2199,14 +2199,10 @@
                 overflow-x: auto;
                 overflow-y: hidden;
                 -webkit-overflow-scrolling: touch;
-                overscroll-behavior-x: contain;
-                touch-action: pan-x pan-y;
-                width: 100%;
-                max-width: 100%;
             }
 
             .data-table {
-                min-width: 100%;
+                min-width: 760px;
                 width: 100%;
                 table-layout: fixed;
                 font-size: 0.8125rem;
@@ -2220,7 +2216,6 @@
             .news-table {
                 width: 100% !important;
                 table-layout: fixed !important;
-                min-width: 470px !important;
             }
 
             .news-table th:first-child,
@@ -2231,37 +2226,32 @@
             .news-table th:nth-child(2),
             .news-table td:nth-child(2) {
                 width: auto !important;
-                min-width: 220px !important;
+                min-width: 260px !important;
             }
 
             .news-table th:nth-child(3),
             .news-table td:nth-child(3) {
-                display: none;
+                width: 120px !important;
             }
 
             .news-table th:nth-child(4),
             .news-table td:nth-child(4) {
-                display: none;
+                width: 100px !important;
             }
 
             .news-table th:nth-child(5),
             .news-table td:nth-child(5) {
-                width: 108px !important;
+                width: 110px !important;
                 text-align: right;
                 vertical-align: middle;
             }
 
             .news-title {
                 max-width: 100%;
-                white-space: normal !important;
+                white-space: nowrap !important;
                 overflow: hidden !important;
-                text-overflow: ellipsis;
+                text-overflow: ellipsis !important;
                 line-height: 1.35;
-                display: -webkit-box;
-                -webkit-line-clamp: 2;
-                line-clamp: 2;
-                -webkit-box-orient: vertical;
-                word-break: break-word;
             }
 
             .news-title-cell {
@@ -2277,7 +2267,7 @@
             }
 
             .actions-cell {
-                justify-content: flex-end;
+                justify-content: flex-start;
                 flex-wrap: nowrap;
                 gap: 0.3rem;
             }
