@@ -1157,6 +1157,11 @@ body {
     body.instagram-post-focus-mode #instagramFeedSection .instagram-section-header {
         display: none !important;
     }
+
+    body.instagram-post-focus-mode main>.news-section:not(.instagram-news-section):not(#instagramFeedSection),
+    body.instagram-post-focus-mode footer.footer {
+        display: none !important;
+    }
 }
 
 .instagram-carousel-shell {

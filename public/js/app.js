@@ -1,4 +1,4 @@
-// App principal do site pÃºblico
+﻿// App principal do site pÃƒÂºblico
 
 console.log('[App] v2.5 - Script carregado');
 
@@ -12,29 +12,29 @@ const sampleNews = [
         categoryName: "Mirador",
         image: "https://via.placeholder.com/800x400/2563eb/ffffff?text=Mirador",
         date: "2026-02-03T12:30:00",
-        author: "Redação",
+        author: "RedaÃ§Ã£o",
         featured: true
     },
     {
         id: '2',
-        title: "Região registra crescimento econômico no último trimestre",
+        title: "RegiÃ£o registra crescimento econÃ´mico no Ãºltimo trimestre",
         excerpt: "Dados mostram aumento de 15% na atividade economica regional.",
         category: "regiao",
-        categoryName: "Região",
-        image: "https://via.placeholder.com/800x400/059669/ffffff?text=Região",
+        categoryName: "RegiÃ£o",
+        image: "https://via.placeholder.com/800x400/059669/ffffff?text=RegiÃ£o",
         date: "2026-02-03T10:15:00",
-        author: "Redação",
+        author: "RedaÃ§Ã£o",
         featured: true
     },
     {
         id: '3',
-        title: "Seleção Brasileira se prepara para próximos jogos",
+        title: "SeleÃ§Ã£o Brasileira se prepara para prÃ³ximos jogos",
         excerpt: "Tecnico convoca novos jogadores para amistosos internacionais.",
         category: "brasil",
         categoryName: "Brasil",
         image: "https://via.placeholder.com/800x400/dc2626/ffffff?text=Brasil",
         date: "2026-02-02T18:05:00",
-        author: "Redação",
+        author: "RedaÃ§Ã£o",
         featured: false
     }
 ];
@@ -44,14 +44,14 @@ async function initializeData() {
     try {
         const snapshot = await db.collection('news').limit(1).get();
         if (snapshot.empty) {
-            console.log('[App] Adicionando notícias de exemplo...');
+            console.log('[App] Adicionando notÃ­cias de exemplo...');
             const batch = db.batch();
             sampleNews.forEach(news => {
                 const ref = db.collection('news').doc(news.id);
                 batch.set(ref, { ...news, views: 0 });
             });
             await batch.commit();
-            console.log('[App] Notícias adicionadas!');
+            console.log('[App] NotÃ­cias adicionadas!');
         }
     } catch (error) {
         console.error('[App] Erro ao inicializar dados:', error);
@@ -390,7 +390,7 @@ function normalizeInstagramMeta(meta = {}, instagramUrl = '') {
     };
 }
 
-// Buscar dados de engagement do Instagram diretamente do navegador do usuÃ¡rio
+// Buscar dados de engagement do Instagram diretamente do navegador do usuÃƒÂ¡rio
 async function fetchInstagramEmbedDataFromBrowser(instagramUrl) {
     try {
         const parsed = new URL(instagramUrl);
@@ -442,7 +442,7 @@ async function fetchInstagramEmbedDataFromBrowser(instagramUrl) {
             return { likes, comments };
         }
 
-        // Tenta extrair do texto visÃ­vel do embed (ex: "1.700 curtidas")
+        // Tenta extrair do texto visÃƒÂ­vel do embed (ex: "1.700 curtidas")
         const textLikes = html.match(/([\d.,]+)\s*(?:likes?|curtidas?)/i);
         const textComments = html.match(/([\d.,]+)\s*(?:comments?|comentarios?)/i);
         const parsedTextLikes = textLikes ? parseInstagramCount(textLikes[1]) : 0;
@@ -542,7 +542,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
         hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
 
-    // Fallback final: buscar embed diretamente do navegador do usuÃ¡rio
+    // Fallback final: buscar embed diretamente do navegador do usuÃƒÂ¡rio
     if (resolvedLikes <= 0 && resolvedComments <= 0) {
         try {
             const embedData = await fetchInstagramEmbedDataFromBrowser(instagramUrl);
@@ -1098,7 +1098,7 @@ function renderSidebarBannerSlot(slotId, slotConfig, card) {
         startSidebarBannerRotation(slotId, config.intervalSeconds);
     }
 
-    // Ajustar aspect-ratio baseado na primeira imagem (para slideshow não ficar com altura 0)
+    // Ajustar aspect-ratio baseado na primeira imagem (para slideshow nÃ£o ficar com altura 0)
     applySidebarBannerCardAspectRatio(card, validMedia);
 
     return true;
@@ -1111,8 +1111,8 @@ function applySidebarBannerCardAspectRatio(card, media = []) {
     const first = Array.isArray(media) ? media.find(item => item && item.url) : null;
     if (!first || !first.url) return;
 
-    // Tentar obter dimensÃµes se disponÃ­veis no objeto de mÃ­dia (se o admin salvar)
-    // Se não, carregar a imagem para descobrir
+    // Tentar obter dimensÃƒÂµes se disponÃƒÂ­veis no objeto de mÃƒÂ­dia (se o admin salvar)
+    // Se nÃ£o, carregar a imagem para descobrir
     const probe = new Image();
     probe.onload = () => {
         if (probe.naturalWidth > 0 && probe.naturalHeight > 0) {
@@ -1202,7 +1202,7 @@ function renderSidebarBanners() {
     const container = document.getElementById('sidebarBannersStickyContainer');
     if (!section || !container) return;
 
-    // Banner lateral desativado por decisão de layout.
+    // Banner lateral desativado por decisÃ£o de layout.
     clearAllSidebarBannerTimers();
     Object.keys(sidebarBannerStates).forEach(slotId => {
         delete sidebarBannerStates[slotId];
@@ -1273,7 +1273,7 @@ function getNewsSourceInfo(news, isExternal) {
     };
 }
 
-// Criar card de notícia
+// Criar card de notÃ­cia
 function createNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
     const isExternal = Boolean(news.externalUrl || news.isImported);
@@ -1319,7 +1319,7 @@ function createNewsCard(news) {
     `;
 }
 
-// Criar card de notícia HORIZONTAL - layout especial (foto esquerda, texto direita)
+// Criar card de notÃ­cia HORIZONTAL - layout especial (foto esquerda, texto direita)
 function createHorizontalNewsCard(news) {
     const categoryLabel = news.categoryName || news.category || 'Geral';
     const isExternal = Boolean(news.externalUrl || news.isImported);
@@ -1362,8 +1362,8 @@ function createHorizontalNewsCard(news) {
     `;
 }
 
-// Renderizar notícias com layout alternado
-// Renderizar bloco de notícias com padrÃ£o: 2 normais + 1 especial
+// Renderizar notÃ­cias com layout alternado
+// Renderizar bloco de notÃ­cias com padrÃƒÂ£o: 2 normais + 1 especial
 function renderNewsBlockMobile(newsItems, container) {
     let html = '';
     let index = 0;
@@ -1405,7 +1405,7 @@ function buildDesktopNewsHtml(items, cardsPerRow, cardsInSpecialRow = 4) {
     let html = '';
     let index = 0;
 
-    // Padrão: 2 fileiras normais + 1 fileira horizontal
+    // PadrÃ£o: 2 fileiras normais + 1 fileira horizontal
     for (let cycle = 0; cycle < 2 && index < items.length; cycle++) {
         if (index < items.length) {
             for (let i = 0; i < cardsPerRow && index < items.length; i++) {
@@ -1511,7 +1511,7 @@ async function renderNews() {
     try {
         const news = await loadNewsFromFirebase();
 
-        // Armazenar todas as notícias globalmente para compartilhamento
+        // Armazenar todas as notÃ­cias globalmente para compartilhamento
         window.allNews = news;
 
         // Destaques
@@ -1523,7 +1523,7 @@ async function renderNews() {
                 : '<div class="empty-state">Nenhuma noticia em destaque.</div>';
         }
 
-        // Últimas notícias - excluindo notícias do Instagram (tÃªm seÃ§Ã£o prÃ³pria)
+        // Ãšltimas notÃ­cias - excluindo notÃ­cias do Instagram (tÃƒÂªm seÃƒÂ§ÃƒÂ£o prÃƒÂ³pria)
         const latest = news
             .filter(n => n.source !== 'Instagram' && n.category !== 'instagram')
             .sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -1533,7 +1533,7 @@ async function renderNews() {
             renderNewsBlock(latest, 0, latestContainer);
         }
 
-        // Renderizar seÃ§Ãµes por categoria
+        // Renderizar seÃƒÂ§ÃƒÂµes por categoria
         const categories = [
             { id: 'esportes', containerId: 'categoryEsportes' },
             { id: 'politica', containerId: 'categoryPolitica' },
@@ -1565,11 +1565,11 @@ async function renderNews() {
         requestAnimationFrame(scheduleSidebarBannerVisibilitySync);
 
     } catch (error) {
-        console.error('[App] Erro ao renderizar notícias:', error);
+        console.error('[App] Erro ao renderizar notÃ­cias:', error);
     }
 }
 
-// Ver detalhes da notícia
+// Ver detalhes da notÃ­cia
 function viewNews(id) {
     localStorage.setItem('currentNewsId', id);
     window.location.href = 'noticia.html?id=' + id;
@@ -1705,7 +1705,7 @@ async function filterByCategory(category) {
     closeSidePanel();
 }
 
-// InicializaÃ§Ã£o
+// InicializaÃƒÂ§ÃƒÂ£o
 document.addEventListener('DOMContentLoaded', async function () {
     console.log('[App] v2.5 - Inicializando...');
 
@@ -1762,7 +1762,7 @@ document.addEventListener('DOMContentLoaded', async function () {
         }
     });
 
-    // Carregar e aplicar configuraÃ§Ãµes de links do rodapÃ©
+    // Carregar e aplicar configuraÃƒÂ§ÃƒÂµes de links do rodapÃƒÂ©
     loadFooterLinks();
 
     // Carregar stories
@@ -1774,10 +1774,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     // Carregar banners laterais (desktop)
     renderSidebarBanners();
 
-    // Renderizar notícias (após medir banner lateral)
+    // Renderizar notÃ­cias (apÃ³s medir banner lateral)
     await renderNews();
 
-    // Carregar notícias do Instagram
+    // Carregar notÃ­cias do Instagram
     await loadInstagramProfileSettings();
     loadInstagramNews();
 
@@ -1878,7 +1878,7 @@ function persistInstitutionalContent(siteName) {
     } catch (_error) { }
 }
 
-// Carregar configuraÃ§Ãµes de links do rodapÃ©
+// Carregar configuraÃƒÂ§ÃƒÂµes de links do rodapÃƒÂ©
 async function loadFooterLinks() {
     try {
         const doc = await db.collection('settings').doc('footer').get();
@@ -2014,10 +2014,10 @@ function renderStories() {
         let avatarContent = '';
 
         if (story.type === 'text') {
-            // Story de texto - mostrar cÃ­rculo com gradiente
+            // Story de texto - mostrar cÃƒÂ­rculo com gradiente
             avatarContent = `<div style="width: 100%; height: 100%; border-radius: 50%; background: ${story.bgColor || 'linear-gradient(45deg, #f09433, #e6683c, #dc2743)'}; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; font-weight: bold;">T</div>`;
         } else if (story.isVideo) {
-            // Story de vÃ­deo - mostrar preview com Ã­cone de play
+            // Story de vÃƒÂ­deo - mostrar preview com ÃƒÂ­cone de play
             avatarContent = `
                 <img src="${story.image}" alt="${story.title}" style="width: 100%; height: 100%; object-fit: cover;">
                 <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.5); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
@@ -2067,7 +2067,7 @@ function showCurrentStory() {
 
     const storyContent = document.querySelector('.story-content');
 
-    // Limpar conteúdo anterior
+    // Limpar conteÃºdo anterior
     storyContent.innerHTML = '';
 
     // Renderizar baseado no tipo
@@ -2079,7 +2079,7 @@ function showCurrentStory() {
             </div>
         `;
     } else if (story.isVideo) {
-        // Story de vÃ­deo
+        // Story de vÃƒÂ­deo
         storyContent.innerHTML = `
             <video src="${story.image}" style="width: 100%; height: 100%; object-fit: cover;" autoplay playsinline></video>
         `;
@@ -2093,7 +2093,7 @@ function showCurrentStory() {
 
     document.getElementById('storyTime').textContent = formatStoryTime(story.date);
 
-    // Esconder botÃ£o "Ver no Instagram" se não tiver link
+    // Esconder botÃƒÂ£o "Ver no Instagram" se nÃ£o tiver link
     const storyLink = document.getElementById('storyLink');
     if (storyLink) {
         if (story.instagramUrl) {
@@ -2635,7 +2635,7 @@ async function loadInstagramNews() {
         let news = [];
 
         try {
-            // Tentar consulta com filtros (requer Ã­ndice)
+            // Tentar consulta com filtros (requer ÃƒÂ­ndice)
             const snapshot = await db.collection('news')
                 .where('source', '==', 'Instagram')
                 .where('status', '==', 'published')
@@ -2647,7 +2647,7 @@ async function loadInstagramNews() {
             });
         } catch (indexError) {
             // Fallback: carregar todas e filtrar no cliente
-            console.log('[App] Usando fallback para carregar notícias do Instagram');
+            console.log('[App] Usando fallback para carregar notÃ­cias do Instagram');
             const snapshot = await db.collection('news')
                 .orderBy('date', 'desc')
                 .get();
@@ -2683,7 +2683,7 @@ async function loadInstagramNews() {
         renderInstagramFeedSection(news);
         updateInstagramMobileCarousels();
 
-        // Atualizar contagens reais de curtidas/comentÃ¡rios
+        // Atualizar contagens reais de curtidas/comentÃƒÂ¡rios
         queueInstagramStatsRefresh(newsToShow, {
             force: true,
             forceFresh: false,
@@ -2692,11 +2692,11 @@ async function loadInstagramNews() {
         scheduleInstagramStatsAutoRefresh();
 
     } catch (error) {
-        console.error('[App] Erro ao carregar notícias do Instagram:', error);
+        console.error('[App] Erro ao carregar notÃ­cias do Instagram:', error);
     }
 }
 
-// Atualizar estatÃ­sticas do Instagram (curtidas e comentÃ¡rios)
+// Atualizar estatÃƒÂ­sticas do Instagram (curtidas e comentÃƒÂ¡rios)
 function getInstagramStatsFetchKey(newsItem = {}) {
     if (newsItem.id) return `id:${newsItem.id}`;
     if (newsItem.instagramUrl) return `url:${newsItem.instagramUrl}`;
@@ -2835,7 +2835,7 @@ document.addEventListener('visibilitychange', () => {
     });
 });
 
-// VariÃ¡vel para armazenar os dados dos posts do Instagram
+// VariÃƒÂ¡vel para armazenar os dados dos posts do Instagram
 let instagramPostsData = {};
 
 function getInstagramPrimaryMedia(post = {}) {
@@ -3378,7 +3378,7 @@ function closeInstagramVideoModal() {
 
     document.body.style.overflow = '';
 
-    // Ao fechar o player, fechar tambÃ©m o post expandido.
+    // Ao fechar o player, fechar tambÃƒÂ©m o post expandido.
     closeInstagramModal();
 }
 
@@ -3429,7 +3429,7 @@ function createInstagramCard(news) {
 
     const cachedPost = instagramPostsData[news.id] || {};
 
-    // Prioriza valores atualizados em runtime para não voltar a zero apÃ³s re-render
+    // Prioriza valores atualizados em runtime para nÃ£o voltar a zero apÃƒÂ³s re-render
     const likes = pickBestInstagramCount(
         cachedPost.likes,
         cachedPost.instagramLikes,
@@ -3532,7 +3532,7 @@ function createInstagramCard(news) {
                 ` : ''}
             </div>
             
-            <!-- ConteÃºdo Compacto -->
+            <!-- ConteÃƒÂºdo Compacto -->
             <div class="instagram-card-content">
                 <!-- Header com avatar -->
                 <div class="instagram-card-header">
@@ -3545,7 +3545,7 @@ function createInstagramCard(news) {
                             <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                         </svg>
                     </div>
-                    <!-- BotÃ£o fechar (sÃ³ aparece quando expandido) -->
+                    <!-- BotÃƒÂ£o fechar (sÃƒÂ³ aparece quando expandido) -->
                     <button class="instagram-card-close" style="display: none;" onclick="event.stopPropagation(); closeInstagramModal();">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -3553,7 +3553,7 @@ function createInstagramCard(news) {
                     </button>
                 </div>
                 
-                <!-- TÃ­tulo do post -->
+                <!-- TÃƒÂ­tulo do post -->
                 <div class="instagram-card-title-preview" style="font-size: 0.8125rem; color: #262626; line-height: 1.4; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                     ${displayTitle}
                 </div>
@@ -3562,10 +3562,10 @@ function createInstagramCard(news) {
                     ${escapeHtml(content || displayTitle || '')}
                 </div>
                 
-                <!-- Legenda completa (sÃ³ aparece quando expandido) -->
+                <!-- Legenda completa (sÃƒÂ³ aparece quando expandido) -->
                 <div class="instagram-card-caption-full"></div>
                 
-                <!-- AÃ§Ãµes com contadores -->
+                <!-- AÃƒÂ§ÃƒÂµes com contadores -->
                 <div class="instagram-card-actions">
                     <div class="instagram-card-actions-left">
                         <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
@@ -3657,7 +3657,7 @@ function openInstagramModal(newsId, cardElement = null) {
     // Cada abertura do post conta como uma visualizacao
     void trackNewsView(newsId);
 
-    // Se jÃ¡ tem um card expandido, fechar ele primeiro
+    // Se jÃƒÂ¡ tem um card expandido, fechar ele primeiro
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
         if (currentExpanded) {
@@ -3681,16 +3681,12 @@ function openInstagramModal(newsId, cardElement = null) {
         containerScrollLeft: parentCarousel ? parentCarousel.scrollLeft : 0
     };
 
-    if (isMobileViewport()) {
-        lockInstagramExpandedPageScroll(currentScrollY);
-    }
-
-    // Em desktop, escondemos o último card para preservar a grade quando o card expande.
+    // Em desktop, escondemos o Ãºltimo card para preservar a grade quando o card expande.
     if (!isMobileViewport()) {
         hideLastCard(newsId, card);
     }
 
-    // DEPOIS: Expandir o card (agora tem espaÃ§o para ocupar 2 colunas)
+    // DEPOIS: Expandir o card (agora tem espaÃƒÂ§o para ocupar 2 colunas)
     card.classList.add('expanded');
     expandedCardId = newsId;
     setInstagramExpandedFocusMode(true);
@@ -3699,7 +3695,7 @@ function openInstagramModal(newsId, cardElement = null) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
 
-    // Adicionar botÃ£o fechar se não existir
+    // Adicionar botÃƒÂ£o fechar se nÃ£o existir
     let closeBtn = card.querySelector('.instagram-card-close');
     if (!closeBtn) {
         closeBtn = document.createElement('button');
@@ -3718,14 +3714,14 @@ function openInstagramModal(newsId, cardElement = null) {
     }
     closeBtn.style.display = 'flex';
 
-    // Esconder preview e mostrar conteúdo completo
+    // Esconder preview e mostrar conteÃºdo completo
     const titlePreview = card.querySelector('.instagram-card-title-preview');
     if (titlePreview) titlePreview.style.display = 'none';
 
     const time = card.querySelector('.instagram-card-time');
     if (time) time.style.display = 'none';
 
-    // Adicionar legenda completa se não existir
+    // Adicionar legenda completa se nÃ£o existir
     let captionFull = card.querySelector('.instagram-card-caption-full');
     if (!captionFull) {
         captionFull = document.createElement('div');
@@ -3744,7 +3740,7 @@ function openInstagramModal(newsId, cardElement = null) {
     captionFull.textContent = captionText || 'Sem legenda disponivel.';
     captionFull.style.cssText = 'display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow-y: auto !important; margin-bottom: 0.75rem !important; padding: 0 !important;';
 
-    // Atualizar contadores de curtidas e comentÃ¡rios
+    // Atualizar contadores de curtidas e comentÃƒÂ¡rios
     const likesEl = card.querySelector('.instagram-likes-count');
     const commentsEl = card.querySelector('.instagram-comments-count');
     if (likesEl) likesEl.textContent = formatNumber(post.likes || 0);
@@ -3762,7 +3758,7 @@ function openInstagramModal(newsId, cardElement = null) {
         btn.parentNode.replaceChild(newBtn, btn);
     });
 
-    // CONFIGURAR GALERIA se houver mÃºltiplas mÃ­dias
+    // CONFIGURAR GALERIA se houver mÃƒÂºltiplas mÃƒÂ­dias
     setupInstagramGallery(card, post);
 
     // Desktop: manter foco visual no card expandido.
@@ -3774,15 +3770,15 @@ function openInstagramModal(newsId, cardElement = null) {
     }
 }
 
-// Configurar galeria de imagens/vÃ­deos no card expandido
+// Configurar galeria de imagens/vÃƒÂ­deos no card expandido
 function setupInstagramGallery(card, post) {
     const imageWrapper = card.querySelector('.instagram-card-image-wrapper');
     if (!imageWrapper) return;
 
-    // Montar array de todas as mÃ­dias vÃ¡lidas (capa + galeria)
+    // Montar array de todas as mÃƒÂ­dias vÃƒÂ¡lidas (capa + galeria)
     const allMedia = getInstagramAllMedia(post);
 
-    // Se sÃ³ tem uma mÃ­dia, não precisa de navegação
+    // Se sÃƒÂ³ tem uma mÃƒÂ­dia, nÃ£o precisa de navegaÃ§Ã£o
     if (allMedia.length <= 1) {
         // Remover controles de galeria se existirem
         const existingControls = imageWrapper.querySelector('.instagram-gallery-controls');
@@ -3818,7 +3814,7 @@ function setupInstagramGallery(card, post) {
     card.dataset.galleryIndex = '0';
     card.dataset.galleryTotal = allMedia.length;
 
-    // Criar container da galeria se não existir
+    // Criar container da galeria se nÃ£o existir
     let galleryContainer = imageWrapper.querySelector('.instagram-gallery-container');
     if (!galleryContainer) {
         galleryContainer = document.createElement('div');
@@ -3840,7 +3836,7 @@ function setupInstagramGallery(card, post) {
         imageWrapper.appendChild(galleryContainer);
     }
 
-    // Criar controles de navegação
+    // Criar controles de navegaÃ§Ã£o
     let controls = imageWrapper.querySelector('.instagram-gallery-controls');
     if (!controls) {
         controls = document.createElement('div');
@@ -3871,7 +3867,7 @@ function setupInstagramGallery(card, post) {
         imageWrapper.appendChild(dots);
     }
 
-    // Mostrar primeira mÃ­dia
+    // Mostrar primeira mÃƒÂ­dia
     showGalleryMedia(card, allMedia, 0);
 }
 
@@ -3888,14 +3884,14 @@ function navigateGallery(cardOrNewsId, direction) {
     const post = instagramPostsData[newsId];
     if (!post) return;
 
-    // Montar array de mÃ­dias
+    // Montar array de mÃƒÂ­dias
     const allMedia = getInstagramAllMedia(post);
 
     const total = allMedia.length;
     if (total === 0) return;
     let currentIndex = parseInt(card.dataset.galleryIndex || '0');
 
-    // Calcular novo Ã­ndice
+    // Calcular novo ÃƒÂ­ndice
     currentIndex += direction;
     if (currentIndex < 0) currentIndex = total - 1;
     if (currentIndex >= total) currentIndex = 0;
@@ -3904,7 +3900,7 @@ function navigateGallery(cardOrNewsId, direction) {
     showGalleryMedia(card, allMedia, currentIndex);
 }
 
-// Mostrar mÃ­dia especÃ­fica da galeria
+// Mostrar mÃƒÂ­dia especÃƒÂ­fica da galeria
 function showGalleryMedia(card, allMedia, index) {
     const galleryContainer = card.querySelector('.instagram-gallery-container');
     if (!galleryContainer) return;
@@ -3920,7 +3916,7 @@ function showGalleryMedia(card, allMedia, index) {
     // Limpar container
     galleryContainer.innerHTML = '';
 
-    // Criar elemento de mÃ­dia
+    // Criar elemento de mÃƒÂ­dia
     if (media.type === 'video') {
         const video = document.createElement('video');
         video.src = media.url;
@@ -3975,11 +3971,11 @@ function closeInstagramCard(card, options = {}) {
     card.classList.remove('expanded');
     expandedCardId = null;
 
-    // PRIMEIRO: Esconder botÃ£o fechar e elementos do expandido
+    // PRIMEIRO: Esconder botÃƒÂ£o fechar e elementos do expandido
     const closeBtn = card.querySelector('.instagram-card-close');
     if (closeBtn) closeBtn.style.display = 'none';
 
-    // GARANTIR que legenda completa estÃ¡ totalmente escondida - ANTES de mostrar o card escondido
+    // GARANTIR que legenda completa estÃƒÂ¡ totalmente escondida - ANTES de mostrar o card escondido
     const captionFull = card.querySelector('.instagram-card-caption-full');
     if (captionFull) {
         captionFull.removeAttribute('style');
@@ -4053,7 +4049,7 @@ function closeInstagramCard(card, options = {}) {
         }
     }
 
-    // Mostrar preview novamente - FORÃ‡AR com line-clamp
+    // Mostrar preview novamente - FORÃƒâ€¡AR com line-clamp
     const titlePreview = card.querySelector('.instagram-card-title-preview');
     if (titlePreview) {
         titlePreview.style.display = '-webkit-box';
@@ -4093,8 +4089,14 @@ function closeInstagramCard(card, options = {}) {
             }
 
             if (isMobileViewport()) {
-                if (!keepScrollLock) {
+                if (!keepScrollLock && document.body.dataset.instagramScrollLocked === '1') {
                     unlockInstagramExpandedPageScroll(savedViewportState.scrollY);
+                } else if (Number.isFinite(savedViewportState.scrollY)) {
+                    window.scrollTo({
+                        top: savedViewportState.scrollY,
+                        left: 0,
+                        behavior: 'auto'
+                    });
                 }
             } else if (Number.isFinite(savedViewportState.scrollY)) {
                 window.scrollTo({
@@ -4116,19 +4118,19 @@ function closeInstagramCard(card, options = {}) {
 }
 
 function hideLastCard(newsIdToKeep, expandedCard = null) {
-    // Sempre esconder o último card visÃ­vel para manter tudo na mesma fileira
-    // (exceto o card que estÃ¡ sendo expandido)
+    // Sempre esconder o Ãºltimo card visÃƒÂ­vel para manter tudo na mesma fileira
+    // (exceto o card que estÃƒÂ¡ sendo expandido)
     const scope = (expandedCard && typeof expandedCard.closest === 'function')
         ? expandedCard.closest('.instagram-news-grid')
         : null;
     const allCards = (scope || document).querySelectorAll('.instagram-card');
 
-    // Encontrar o último card que não Ã© o que serÃ¡ expandido
+    // Encontrar o Ãºltimo card que nÃ£o ÃƒÂ© o que serÃƒÂ¡ expandido
     for (let i = allCards.length - 1; i >= 0; i--) {
         const card = allCards[i];
         const cardId = card.dataset.instagramId;
 
-        // NÃ£o esconder o card que estÃ¡ sendo expandido
+        // NÃƒÂ£o esconder o card que estÃƒÂ¡ sendo expandido
         if (cardId === newsIdToKeep) continue;
 
         // Esconder este card
@@ -4167,17 +4169,17 @@ function closeInstagramModal() {
     setInstagramExpandedFocusMode(false);
 }
 
-// FunÃ§Ã£o para compartilhar notícia
+// FunÃƒÂ§ÃƒÂ£o para compartilhar notÃ­cia
 async function shareNews(newsId, event) {
     if (event) {
         event.stopPropagation();
         event.preventDefault();
     }
 
-    // Buscar dados da notícia
+    // Buscar dados da notÃ­cia
     let news = instagramPostsData[newsId];
 
-    // Se não encontrar nos posts do Instagram, buscar no array de notícias
+    // Se nÃ£o encontrar nos posts do Instagram, buscar no array de notÃ­cias
     if (!news && window.allNews) {
         news = window.allNews.find(n => n.id === newsId);
     }
@@ -4204,7 +4206,7 @@ async function shareNews(newsId, event) {
             showToast('Link copiado para a area de transferencia!');
         }
     } catch (error) {
-        // UsuÃ¡rio cancelou ou erro
+        // UsuÃƒÂ¡rio cancelou ou erro
         if (error.name !== 'AbortError') {
             console.error('Erro ao compartilhar:', error);
             // Tentar copiar como fallback
@@ -4218,7 +4220,7 @@ async function shareNews(newsId, event) {
     }
 }
 
-// FunÃ§Ã£o para mostrar toast
+// FunÃƒÂ§ÃƒÂ£o para mostrar toast
 function showToast(message) {
     // Remover toast anterior se existir
     const existingToast = document.querySelector('.toast-notification');
@@ -4244,7 +4246,7 @@ function showToast(message) {
     `;
     toast.textContent = message;
 
-    // Adicionar animaÃ§Ã£o
+    // Adicionar animaÃƒÂ§ÃƒÂ£o
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideUp {
@@ -4260,7 +4262,7 @@ function showToast(message) {
 
     document.body.appendChild(toast);
 
-    // Remover apÃ³s 3 segundos
+    // Remover apÃƒÂ³s 3 segundos
     setTimeout(() => {
         toast.style.animation = 'slideDown 0.3s ease forwards';
         setTimeout(() => toast.remove(), 300);
@@ -4278,7 +4280,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Formatar nÃºmeros (1.2K, 1.5M)
+// Formatar nÃƒÂºmeros (1.2K, 1.5M)
 function formatNumber(num) {
     if (!num || num === 0) return '0';
     if (num >= 1000000) {
@@ -4290,7 +4292,7 @@ function formatNumber(num) {
     return num.toString();
 }
 
-// Atualizar estatÃ­sticas no card
+// Atualizar estatÃƒÂ­sticas no card
 function updateInstagramCardStats(newsId, stats) {
     const likesEls = document.querySelectorAll(`.instagram-likes-count[data-id="${newsId}"]`);
     const commentsEls = document.querySelectorAll(`.instagram-comments-count[data-id="${newsId}"]`);
@@ -4392,7 +4394,7 @@ function updateInstagramCardStats(newsId, stats) {
         }
     }
 
-    // Persistir engagement no Firestore para não perder ao recarregar a pÃ¡gina
+    // Persistir engagement no Firestore para nÃ£o perder ao recarregar a pÃƒÂ¡gina
     if ((finalLikesValue > 0 || finalCommentsValue > 0) && typeof db !== 'undefined') {
         try {
             const updatePayload = {};
@@ -4400,7 +4402,7 @@ function updateInstagramCardStats(newsId, stats) {
             if (finalCommentsValue > 0) updatePayload.instagramComments = finalCommentsValue;
             if (Object.keys(updatePayload).length > 0) {
                 db.collection('news').doc(newsId).update(updatePayload).catch((err) => {
-                    console.log('[App] NÃ£o foi possÃ­vel persistir engagement no Firestore:', err.message || err);
+                    console.log('[App] NÃƒÂ£o foi possÃƒÂ­vel persistir engagement no Firestore:', err.message || err);
                 });
             }
         } catch (_e) { }
@@ -4408,5 +4410,6 @@ function updateInstagramCardStats(newsId, stats) {
 }
 
 console.log('[App] v2.5 - Script finalizado');
+
 
 
