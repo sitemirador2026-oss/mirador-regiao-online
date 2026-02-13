@@ -2004,93 +2004,6 @@
             }
         }
 
-        /* ========================================
-           SWIPE ACTIONS - Mobile swipe to reveal
-           ======================================== */
-        .swipe-row {
-            position: relative;
-            overflow: hidden;
-        }
-
-        /* Por padrão (desktop), esconde os elementos swipe */
-        .swipe-container {
-            display: contents;
-        }
-
-        .data-table tbody td .swipe-container,
-        .data-table tbody td .swipe-content,
-        .data-table tbody td .swipe-actions,
-        .data-table tbody td .swipe-hint {
-            display: none;
-        }
-
-        /* Mostra o conteúdo desktop por padrão */
-        .desktop-row-content {
-            display: contents;
-        }
-
-        .swipe-row-inner {
-            display: flex;
-            transition: transform 0.3s ease;
-            position: relative;
-        }
-
-        .swipe-content {
-            flex: 1;
-            min-width: 0;
-            background: var(--bg-card);
-        }
-
-        .swipe-actions {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0 0.75rem;
-            background: var(--bg-secondary);
-            min-width: fit-content;
-        }
-
-        .swipe-action-btn {
-            width: 44px;
-            height: 44px;
-            border: none;
-            border-radius: var(--radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .swipe-action-btn.edit {
-            background: var(--info-light);
-            color: var(--info);
-        }
-
-        .swipe-action-btn.edit:hover {
-            background: var(--info);
-            color: white;
-        }
-
-        .swipe-action-btn.delete {
-            background: var(--danger-light);
-            color: var(--danger);
-        }
-
-        .swipe-action-btn.delete:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .swipe-action-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        .swipe-hint {
-            display: none;
-        }
-
         @media (max-width: 768px) {
             .admin-layout {
                 padding-left: 0;
@@ -2330,154 +2243,6 @@
             .action-btn svg {
                 width: 12px;
                 height: 12px;
-            }
-
-            /* Swipe functionality on mobile */
-            .data-table tbody tr {
-                position: relative;
-                overflow: hidden;
-                display: block;
-                border-bottom: 1px solid var(--border-light);
-            }
-
-            /* Esconde o conteúdo desktop no mobile */
-            .desktop-row-content {
-                display: none !important;
-            }
-
-            /* Mostra o swipe container no mobile */
-            .swipe-container {
-                display: flex !important;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .data-table tbody tr:last-child {
-                border-bottom: none;
-            }
-
-            .data-table tbody td {
-                display: block;
-                padding: 0;
-                border: none;
-            }
-
-            .data-table tbody td .swipe-container {
-                display: flex;
-                position: relative;
-                overflow: hidden;
-            }
-
-            .data-table tbody td .swipe-content {
-                flex: 1;
-                min-width: 0;
-                padding: 0.75rem 0.5rem;
-                background: var(--bg-card);
-                transition: transform 0.25s ease-out;
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-            }
-
-            .data-table tbody td .swipe-actions {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                padding: 0 0.75rem;
-                background: var(--bg-secondary);
-                position: absolute;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 1;
-            }
-
-            .data-table tbody td .swipe-action-btn {
-                width: 48px;
-                height: 48px;
-                border: none;
-                border-radius: var(--radius);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: var(--transition);
-                flex-shrink: 0;
-            }
-
-            .data-table tbody td .swipe-action-btn.edit {
-                background: var(--info-light);
-                color: var(--info);
-            }
-
-            .data-table tbody td .swipe-action-btn.delete {
-                background: var(--danger-light);
-                color: var(--danger);
-            }
-
-            .data-table tbody td .swipe-action-btn svg {
-                width: 22px;
-                height: 22px;
-            }
-
-            .data-table tbody td .swipe-hint {
-                display: block;
-                position: absolute;
-                right: 8px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: var(--text-muted);
-                font-size: 0.7rem;
-                opacity: 0.6;
-                pointer-events: none;
-            }
-
-            .data-table tbody td .swipe-hint::after {
-                content: '‹';
-                margin-left: 2px;
-                font-size: 0.9rem;
-            }
-
-            .data-table tbody td .swipe-content.swiped-left {
-                transform: translateX(-110px);
-            }
-
-            /* Ajustes específicos para tabela de notícias */
-            .news-table thead {
-                display: none !important;
-            }
-
-            .news-table tbody tr {
-                border-bottom: 1px solid var(--border-light);
-            }
-
-            .news-table tbody td:first-child {
-                width: 100% !important;
-                min-width: auto !important;
-                max-width: none !important;
-            }
-
-            .news-table tbody td:nth-child(2) {
-                width: 100% !important;
-            }
-
-            /* Esconder colunas de categoria e data em suas células individuais no mobile */
-            .news-table tbody td:nth-child(3),
-            .news-table tbody td:nth-child(4) {
-                display: none !important;
-            }
-
-            /* A coluna de ações deve ocupar toda a largura */
-            .news-table tbody td:nth-child(5) {
-                width: 100% !important;
-                min-width: auto !important;
-                max-width: none !important;
-                padding: 0 !important;
-            }
-
-            /* Esconder actions-cell original no mobile (substituído pelo swipe) */
-            .news-table tbody td:nth-child(5) .actions-cell {
-                display: none !important;
             }
 
             .media-toolbar-controls {
@@ -8144,56 +7909,25 @@
 
                 const html = `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
-                                        </div>
-                                    </div>
-                                    <span class="swipe-hint">deslize</span>
-                                </div>
-                                <div class="swipe-actions">
-                                    <button class="swipe-action-btn edit" onclick="showCreateNewsPage('${n.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="swipe-action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- Layout desktop/tablet original -->
-                            <div style="display: contents;" class="desktop-row-content">
-                                <table style="width: 100%; table-layout: fixed;"><tr>
-                                    <td style="width: 60px;">${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                        <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
-                                    </td>
-                                    <td style="width: 100px;"><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
-                                    <td style="width: 90px;">${date}</td>
-                                    <td style="width: 80px;">
-                                        <div class="actions-cell">
-                                            <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${n.title}</div>
+                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
+                        </td>
+                        <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -8336,72 +8070,30 @@
                        </button>`
                     : '';
 
-                const swipeOpenSourceAction = sourceUrl
-                    ? `<button class="swipe-action-btn edit" onclick="window.open('${safeSourceUrl}', '_blank')" title="Abrir fonte">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                       </button>`
-                    : '';
-
                 importedList.innerHTML += `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
-                                            <div class="news-meta">
-                                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="swipe-hint">deslize</span>
-                                </div>
-                                <div class="swipe-actions">
-                                    ${swipeOpenSourceAction}
-                                    <button class="swipe-action-btn edit" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="swipe-action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
+                            <div class="news-meta">
+                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
                             </div>
-                            <!-- Layout desktop/tablet original -->
-                            <div style="display: contents;" class="desktop-row-content">
-                                <table style="width: 100%; table-layout: fixed;"><tr>
-                                    <td style="width: 60px;">${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
-                                        <div class="news-meta">
-                                            ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
-                                        </div>
-                                    </td>
-                                    <td style="width: 100px;"><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
-                                    <td style="width: 90px;">${date}</td>
-                                    <td style="width: 80px;">
-                                        <div class="actions-cell">
-                                            ${openSourceAction}
-                                            <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        </td>
+                        <td><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                ${openSourceAction}
+                                <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -8525,63 +8217,25 @@
                        </button>`
                     : '';
 
-                // Ações para swipe no mobile
-                const swipeOpenSourceAction = sourceUrl
-                    ? `<button class="swipe-action-btn edit" onclick="window.open('${safeSourceUrl}', '_blank')" title="Abrir no Instagram">
-                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                        </svg>
-                       </button>`
-                    : '';
-
                 const html = `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
-                                            <div class="news-meta">
-                                                ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <span class="swipe-hint">deslize</span>
-                                </div>
-                                <div class="swipe-actions">
-                                    ${swipeOpenSourceAction}
-                                    <button class="swipe-action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
+                            <div class="news-meta">
+                                ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
                             </div>
-                            <!-- Layout desktop/tablet original -->
-                            <div style="display: none;" class="desktop-row-content">
-                                <table style="width: 100%;"><tr>
-                                    <td>${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
-                                        <div class="news-meta">
-                                            ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
-                                        </div>
-                                    </td>
-                                    <td><span class="category-badge">Instagram</span></td>
-                                    <td>${date}</td>
-                                    <td>
-                                        <div class="actions-cell">
-                                            ${openSourceAction}
-                                            <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        </td>
+                        <td><span class="category-badge">Instagram</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                ${openSourceAction}
+                                <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -14253,125 +13907,6 @@
             }
         }
 
-        // ========================================
-        // SWIPE FUNCTIONALITY FOR MOBILE
-        // ========================================
-        let swipeStartX = 0;
-        let swipeCurrentX = 0;
-        let swipedElement = null;
-        let isSwiping = false;
-
-        function initSwipeHandlers() {
-            // Usar event delegation para gerenciar swipe em elementos dinâmicos
-            document.addEventListener('touchstart', handleSwipeStart, { passive: true });
-            document.addEventListener('touchmove', handleSwipeMove, { passive: true });
-            document.addEventListener('touchend', handleSwipeEnd, { passive: true });
-            
-            // Também suportar mouse para testes em desktop
-            document.addEventListener('mousedown', handleMouseDown);
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-            
-            // Fechar swipe ao clicar fora
-            document.addEventListener('click', handleClickOutside);
-        }
-
-        function handleSwipeStart(e) {
-            const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) return;
-            
-            swipeStartX = e.touches[0].clientX;
-            swipedElement = swipeContent;
-            isSwiping = true;
-        }
-
-        function handleSwipeMove(e) {
-            if (!isSwiping || !swipedElement) return;
-            
-            swipeCurrentX = e.touches[0].clientX;
-            const diffX = swipeStartX - swipeCurrentX;
-            
-            // Limitar o swipe
-            if (diffX > 0 && diffX < 120) {
-                swipedElement.style.transform = `translateX(-${diffX}px)`;
-            }
-        }
-
-        function handleSwipeEnd(e) {
-            if (!isSwiping || !swipedElement) return;
-            
-            const diffX = swipeStartX - swipeCurrentX;
-            const threshold = 50; // pixels para ativar o swipe
-            
-            if (diffX > threshold) {
-                // Abrir - mostrar ações
-                swipedElement.classList.add('swiped-left');
-                swipedElement.style.transform = '';
-            } else {
-                // Fechar - esconder ações
-                swipedElement.classList.remove('swiped-left');
-                swipedElement.style.transform = '';
-            }
-            
-            isSwiping = false;
-            swipedElement = null;
-        }
-
-        // Mouse handlers para testes em desktop
-        function handleMouseDown(e) {
-            const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) return;
-            
-            swipeStartX = e.clientX;
-            swipedElement = swipeContent;
-            isSwiping = true;
-        }
-
-        function handleMouseMove(e) {
-            if (!isSwiping || !swipedElement) return;
-            
-            swipeCurrentX = e.clientX;
-            const diffX = swipeStartX - swipeCurrentX;
-            
-            if (diffX > 0 && diffX < 120) {
-                swipedElement.style.transform = `translateX(-${diffX}px)`;
-            }
-        }
-
-        function handleMouseUp(e) {
-            if (!isSwiping || !swipedElement) return;
-            
-            const diffX = swipeStartX - (swipeCurrentX || swipeStartX);
-            const threshold = 50;
-            
-            if (diffX > threshold) {
-                swipedElement.classList.add('swiped-left');
-                swipedElement.style.transform = '';
-            } else {
-                swipedElement.classList.remove('swiped-left');
-                swipedElement.style.transform = '';
-            }
-            
-            isSwiping = false;
-            swipedElement = null;
-        }
-
-        function handleClickOutside(e) {
-            // Se clicou fora de um elemento swipado, fecha todos
-            const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) {
-                document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
-                    el.classList.remove('swiped-left');
-                });
-            }
-        }
-
-        // Inicializar swipe handlers quando o DOM estiver pronto
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSwipeHandlers);
-        } else {
-            initSwipeHandlers();
-        }
     </script>
     <!-- Story Modal -->
     <div class="modal-overlay" id="storyModalOverlay"
