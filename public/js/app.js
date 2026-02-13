@@ -3605,10 +3605,31 @@ function createInstagramCard(news) {
     const allMedia = getInstagramAllMedia(news);
     const primaryMedia = allMedia[0] || { type: 'image', url: '', poster: '' };
     const fallbackPoster = sanitizeMediaUrl(news.image);
+    const explicitPrimaryPoster = [
+        primaryMedia.poster,
+        cachedPost.instagramPosterUrl,
+        news.poster,
+        news.thumbnail,
+        news.thumbnailUrl,
+        news.thumb,
+        news.coverImage,
+        news.instagramThumbnail,
+        news.instagramCoverImage,
+        news.imageUrl
+    ]
+        .map(sanitizeMediaUrl)
+        .find(url => url && !isLikelyVideoUrl(url)) || '';
     const primaryPoster = primaryMedia.type === 'video'
-        ? (sanitizeMediaUrl(primaryMedia.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : ''))
+        ? (explicitPrimaryPoster || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : ''))
         : '';
     const primaryPosterAttr = primaryPoster ? ` poster="${primaryPoster}"` : '';
+    const primaryAlt = escapeHtml(news.title || 'Post do Instagram');
+    const useStaticPreviewForVideo = primaryMedia.type === 'video' && Boolean(primaryPoster);
+    const primaryPreviewHtml = primaryMedia.type === 'video'
+        ? (useStaticPreviewForVideo
+            ? `<img src="${primaryPoster}" alt="${primaryAlt}" loading="lazy" decoding="async" data-instagram-video-poster="true">`
+            : `<video src="${primaryMedia.url}"${primaryPosterAttr} muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>`)
+        : `<img src="${primaryMedia.url}" alt="${primaryAlt}" loading="lazy" decoding="async">`;
     const hasGallery = allMedia.length > 1;
     const totalMedia = allMedia.length;
 
@@ -3641,13 +3662,12 @@ function createInstagramCard(news) {
         <article class="instagram-card" data-instagram-id="${news.id}" onclick="openInstagramModal('${news.id}', this)">
             <!-- Imagem de Capa -->
             <div class="instagram-card-image-wrapper ${primaryMedia.type === 'video' ? 'is-video' : ''}">
-                ${primaryMedia.type === 'video'
-            ? `<video src="${primaryMedia.url}"${primaryPosterAttr} muted playsinline preload="auto" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>
-                       <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir video">
-                           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
-                       </button>`
-            : `<img src="${primaryMedia.url}" alt="${news.title}" loading="lazy">`
-        }
+                ${primaryPreviewHtml}
+                ${primaryMedia.type === 'video' ? `
+                    <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)" aria-label="Reproduzir video">
+                        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                ` : ''}
                 ${hasGallery ? `
                     <div class="instagram-gallery-indicator">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
@@ -4137,24 +4157,44 @@ function closeInstagramCard(card, options = {}) {
             const primary = getInstagramPrimaryMedia(post);
             imageWrapper.classList.toggle('is-video', primary.type === 'video');
             if (primary.type === 'video') {
-                const video = document.createElement('video');
-                video.src = primary.url;
                 const fallbackPoster = sanitizeMediaUrl(post.image);
-                const restorePoster = sanitizeMediaUrl(primary.poster) || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : '');
+                const explicitRestorePoster = [
+                    primary.poster,
+                    post.instagramPosterUrl,
+                    post.poster,
+                    post.thumbnail,
+                    post.thumbnailUrl,
+                    post.thumb,
+                    post.coverImage,
+                    post.instagramThumbnail,
+                    post.instagramCoverImage,
+                    post.imageUrl
+                ]
+                    .map(sanitizeMediaUrl)
+                    .find(url => url && !isLikelyVideoUrl(url)) || '';
+                const restorePoster = explicitRestorePoster || (!isLikelyVideoUrl(fallbackPoster) ? fallbackPoster : '');
+                const title = post.title || 'Post do Instagram';
                 if (restorePoster) {
-                    video.poster = restorePoster;
+                    const img = document.createElement('img');
+                    img.src = restorePoster;
+                    img.alt = title;
+                    img.loading = 'lazy';
+                    img.decoding = 'async';
+                    img.dataset.instagramVideoPoster = 'true';
+                    imageWrapper.appendChild(img);
                 } else {
-                    video.removeAttribute('poster');
+                    // Fallback extremo: se nao houver capa valida, manter video em modo preview.
+                    const video = document.createElement('video');
+                    video.src = primary.url;
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.preload = 'metadata';
+                    video.dataset.instagramCardVideo = 'true';
+                    video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, null, video));
+                    video.addEventListener('loadedmetadata', () => primeInstagramCardVideoFrame(video), { once: true });
+                    imageWrapper.appendChild(video);
+                    primeInstagramCardVideoFrame(video);
                 }
-                video.muted = true;
-                video.playsInline = true;
-                video.preload = 'auto';
-                video.dataset.instagramCardVideo = 'true';
-                video.addEventListener('click', (event) => handleInstagramCardVideoClick(newsId, event, null, video));
-                video.addEventListener('loadedmetadata', () => primeInstagramCardVideoFrame(video), { once: true });
-                imageWrapper.appendChild(video);
-                primeInstagramCardVideoFrame(video);
-
                 const playOverlay = document.createElement('button');
                 playOverlay.type = 'button';
                 playOverlay.className = 'instagram-video-play-overlay';
