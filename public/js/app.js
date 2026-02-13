@@ -2543,6 +2543,7 @@ function updateInstagramSwipeHintState(container) {
 
 function updateInstagramMobileCarousels() {
     const isMobile = isMobileViewport();
+    const mobileVisibleCount = Math.max(1, Math.min(3, Number(getInstagramVisiblePostsCount()) || 2));
     const sections = [
         { containerId: 'instagramNewsGrid', buttonId: 'instagramTopNextBtn' },
         { containerId: 'categoryInstagramFeed', buttonId: 'instagramFeedNextBtn' }
@@ -2558,12 +2559,16 @@ function updateInstagramMobileCarousels() {
 
         if (isMobile) {
             container.classList.add('instagram-mobile-carousel');
+            container.style.setProperty('--instagram-mobile-visible-count', String(mobileVisibleCount));
             if (button) {
-                const cardCount = container.querySelectorAll('.instagram-card').length;
-                button.style.display = cardCount > 1 ? 'inline-flex' : 'none';
+                requestAnimationFrame(() => {
+                    const hasOverflow = (container.scrollWidth - container.clientWidth) > 8;
+                    button.style.display = hasOverflow ? 'inline-flex' : 'none';
+                });
             }
         } else {
             container.classList.remove('instagram-mobile-carousel');
+            container.style.removeProperty('--instagram-mobile-visible-count');
             container.scrollLeft = 0;
             if (button) {
                 button.style.display = 'none';

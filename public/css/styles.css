@@ -2816,7 +2816,9 @@ body {
         display: flex;
         overflow-x: auto;
         overflow-y: hidden;
-        gap: 0.75rem;
+        --instagram-mobile-visible-count: 1;
+        --instagram-mobile-carousel-gap: 0.75rem;
+        gap: var(--instagram-mobile-carousel-gap);
         scroll-snap-type: x mandatory;
         -webkit-overflow-scrolling: touch;
         padding-bottom: 0.35rem;
@@ -2834,9 +2836,9 @@ body {
     }
 
     .instagram-news-grid.instagram-mobile-carousel .instagram-card {
-        flex: 0 0 100%;
-        width: 100%;
-        max-width: 100%;
+        flex: 0 0 calc((100% - (var(--instagram-mobile-visible-count) - 1) * var(--instagram-mobile-carousel-gap)) / var(--instagram-mobile-visible-count));
+        width: calc((100% - (var(--instagram-mobile-visible-count) - 1) * var(--instagram-mobile-carousel-gap)) / var(--instagram-mobile-visible-count));
+        max-width: calc((100% - (var(--instagram-mobile-visible-count) - 1) * var(--instagram-mobile-carousel-gap)) / var(--instagram-mobile-visible-count));
         scroll-snap-align: start;
     }
 
