@@ -2003,28 +2003,80 @@
 
             .main-content {
                 width: 100%;
-            }
-
-            .page-content {
-                padding: 1.5rem;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
+                min-width: 0;
             }
 
             .top-header {
-                padding: 1rem 1.5rem;
+                padding: 0.65rem 0.5rem;
+                gap: 0.5rem;
             }
 
             .header-search {
                 display: none;
             }
 
+            .header-actions {
+                gap: 0.25rem;
+            }
+
+            .header-btn {
+                width: 36px;
+                height: 36px;
+            }
+
+            .page-content {
+                padding: 0.5rem !important;
+                max-width: none;
+            }
+
+            .page-header {
+                margin-bottom: 1rem;
+            }
+
+            .page-title {
+                font-size: 1.4rem;
+                line-height: 1.2;
+            }
+
+            .page-subtitle {
+                font-size: 0.875rem;
+                line-height: 1.35;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+
+            .content-grid {
+                gap: 0.75rem;
+            }
+
+            .content-section,
+            .stat-card,
+            .action-card,
+            .editor-main,
+            .editor-sidebar-card,
+            .import-url-box,
+            .import-preview-card {
+                border-radius: 10px;
+            }
+
             .section-header {
                 flex-direction: column;
-                gap: 1rem;
+                gap: 0.625rem;
                 align-items: flex-start;
+                padding: 0.875rem 1rem;
+            }
+
+            .section-actions {
+                width: 100%;
+                flex-wrap: wrap;
+            }
+
+            .section-actions .btn {
+                flex: 1 1 auto;
+                min-width: 0;
             }
 
             .account-head {
@@ -2050,18 +2102,23 @@
                 width: 100%;
             }
 
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
             .data-table {
+                min-width: 680px;
                 font-size: 0.8125rem;
             }
 
             .data-table th,
             .data-table td {
-                padding: 0.875rem 0.5rem;
+                padding: 0.75rem 0.5rem;
             }
 
-            /* Responsive News Table */
             .news-title {
-                max-width: 150px;
+                max-width: 240px;
             }
 
             .media-toolbar-controls {
@@ -2083,14 +2140,233 @@
 
             .settings-stack {
                 max-width: 100%;
+                gap: 0.75rem;
             }
 
             .settings-section-body {
-                padding: 1rem;
+                padding: 0.875rem;
             }
 
             .settings-form-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .settings-tabs-nav,
+            #newsPage>div[style*="border-bottom"],
+            #instagramPage>div[style*="border-bottom"],
+            #importNewsPage>div[style*="border-bottom"] {
+                overflow-x: auto;
+                overflow-y: hidden;
+                -webkit-overflow-scrolling: touch;
+                flex-wrap: nowrap !important;
+                gap: 0.25rem !important;
+                padding-bottom: 0.25rem !important;
+            }
+
+            .settings-tabs-nav::-webkit-scrollbar,
+            #newsPage>div[style*="border-bottom"]::-webkit-scrollbar,
+            #instagramPage>div[style*="border-bottom"]::-webkit-scrollbar,
+            #importNewsPage>div[style*="border-bottom"]::-webkit-scrollbar {
+                display: none;
+            }
+
+            .settings-tab-btn,
+            #tabNewsPublicacoes,
+            #tabNewsCriar,
+            #tabPosts,
+            #tabImport,
+            #tabImportNewsPublicacoes,
+            #tabImportNewsImportar {
+                flex: 0 0 auto;
+                white-space: nowrap;
+                padding: 0.75rem 0.75rem !important;
+                font-size: 0.8125rem !important;
+            }
+
+            #createNewsPage .news-editor-container {
+                max-width: none !important;
+                width: 100%;
+            }
+
+            #createNewsPage .page-header {
+                margin-bottom: 0.875rem !important;
+            }
+
+            #createNewsPage .page-header>div {
+                display: flex !important;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.625rem !important;
+            }
+
+            #createNewsPage .page-header>div>div {
+                min-width: 0;
+                flex: 1 1 220px;
+            }
+
+            #createNewsPage .page-header .page-subtitle {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            #createNewsPage .page-header .btn {
+                flex: 0 0 auto;
+            }
+
+            #createNewsPage .news-editor-layout {
+                grid-template-columns: 1fr !important;
+                gap: 0.75rem;
+            }
+
+            #createNewsPage .editor-main {
+                padding: 0.875rem;
+            }
+
+            #createNewsPage .editor-sidebar-card {
+                padding: 0.875rem;
+            }
+
+            #createNewsPage .editor-toolbar {
+                display: grid;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+                gap: 0.35rem;
+                padding: 0.5rem;
+            }
+
+            #createNewsPage .editor-toolbar button {
+                width: 100%;
+                min-height: 34px;
+                padding: 0.45rem 0.35rem;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
+
+            #createNewsPage .editor-toolbar span[style*="width: 1px"] {
+                display: none !important;
+            }
+
+            #createNewsPage .editor-content {
+                min-height: 260px;
+                padding: 0.75rem;
+                line-height: 1.6;
+            }
+
+            #createNewsPage .status-radio {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            #createNewsPage .status-radio label {
+                width: 100%;
+            }
+
+            #importNewsImportarTab .import-container,
+            #instagramImportTab>div {
+                max-width: none !important;
+                width: 100%;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            #importNewsImportarTab .import-url-box {
+                padding: 1rem;
+            }
+
+            #importNewsImportarTab .import-url-input {
+                max-width: none;
+                font-size: 16px;
+            }
+
+            #importNewsImportarTab .import-url-box>div[style*="justify-content: center"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            #importNewsImportarTab .import-url-box>div[style*="justify-content: center"] .btn {
+                width: 100%;
+            }
+
+            #instagramImportTab [style*="grid-template-columns: 1fr 1fr"] {
+                grid-template-columns: 1fr !important;
+            }
+
+            #instagramImportTab [style*="display: flex; justify-content: space-between; align-items: center"] {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+
+            #instagramImportTab [style*="display: flex; gap: 0.75rem; justify-content: flex-end"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+
+            #instagramImportTab [style*="display: flex; gap: 0.75rem; justify-content: flex-end"] .btn {
+                width: 100%;
+            }
+
+            .login-container {
+                min-height: 100dvh;
+                padding: 0;
+                align-items: stretch;
+                justify-content: stretch;
+            }
+
+            .login-box {
+                max-width: none;
+                min-height: 100dvh;
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+                padding: 1rem;
+                padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+            }
+
+            .login-logo {
+                margin-bottom: 1.25rem;
+            }
+
+            .login-logo-img {
+                max-width: min(72vw, 220px);
+                max-height: 72px;
+            }
+
+            .form-input {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .top-header {
+                padding: 0.5rem 0.35rem;
+            }
+
+            .page-content {
+                padding: 0.35rem !important;
+            }
+
+            .content-section {
+                border-radius: 8px;
+            }
+
+            .page-title {
+                font-size: 1.3rem;
+            }
+
+            #createNewsPage .editor-toolbar {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            #createNewsPage .editor-toolbar button {
+                font-size: 0.75rem;
+            }
+
+            .login-box {
+                padding: 0.75rem;
+                padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
             }
         }
 
@@ -5509,6 +5785,18 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
         const auth = firebase.auth();
+        let authPersistenceReady = Promise.resolve();
+
+        try {
+            // Exigencia de seguranca: nao persistir sessao em localStorage/sessionStorage.
+            authPersistenceReady = auth
+                .setPersistence(firebase.auth.Auth.Persistence.NONE)
+                .catch(error => {
+                    console.warn('[Auth] Nao foi possivel configurar persistencia NONE:', error);
+                });
+        } catch (error) {
+            console.warn('[Auth] Nao foi possivel configurar persistencia NONE:', error);
+        }
 
         // Inicializar R2 Client
         document.addEventListener('DOMContentLoaded', function () {
@@ -5537,6 +5825,25 @@
             return errorMap[code] || 'Nao foi possivel fazer login agora. Tente novamente.';
         }
 
+        function getEmailInputHint(emailValue) {
+            const normalized = String(emailValue || '').trim().toLowerCase();
+            if (!normalized) return '';
+
+            if (!normalized.includes('@')) {
+                return 'Email invalido. Use o formato nome@dominio.com.';
+            }
+
+            if (/\.(con)$/i.test(normalized)) {
+                return 'Email parece digitado com erro: terminou em ".con". Confirme se o correto e ".com".';
+            }
+
+            if (/@gmai\.com$/i.test(normalized)) {
+                return 'Email parece digitado com erro: "gmai.com". Confirme se o correto e "gmail.com".';
+            }
+
+            return '';
+        }
+
         // Login
         document.getElementById('loginForm').addEventListener('submit', async function (e) {
             e.preventDefault();
@@ -5559,12 +5866,20 @@
                 return;
             }
 
+            const emailHint = getEmailInputHint(normalizedEmail);
+            if (emailHint) {
+                errorElement.textContent = emailHint;
+                errorElement.style.display = 'block';
+                return;
+            }
+
             if (submitButton) {
                 submitButton.disabled = true;
                 submitButton.textContent = 'Entrando...';
             }
 
             try {
+                await authPersistenceReady;
                 await auth.signInWithEmailAndPassword(normalizedEmail, rawPassword);
                 showAdmin();
             } catch (error) {
@@ -5613,6 +5928,24 @@
 
             // Restaurar pagina salva ou ir para dashboard
             restoreLastPage();
+            requestAnimationFrame(ensureVisibleAdminPage);
+        }
+
+        function ensureVisibleAdminPage() {
+            const pages = Array.from(document.querySelectorAll('.page-content'));
+            const hasVisiblePage = pages.some(page => page && page.style.display !== 'none');
+            if (hasVisiblePage) return;
+
+            const dashboardPage = document.getElementById('dashboardPage');
+            if (dashboardPage) {
+                dashboardPage.style.display = 'block';
+            }
+
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            if (navItems[0]) {
+                navItems[0].classList.add('active');
+            }
         }
 
         // Restaurar ultima pagina visitada
@@ -5828,7 +6161,12 @@
 
             // Fechar sidebar no mobile
             if (window.innerWidth <= 768) {
-                toggleSidebar();
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                const isSidebarOpen = sidebar?.classList.contains('active') || overlay?.classList.contains('active');
+                if (isSidebarOpen) {
+                    toggleSidebar();
+                }
             }
 
             // Carregar dados se necessario
@@ -5844,6 +6182,8 @@
                 loadLayout();
                 loadTopBannersSettings();
             }
+
+            ensureVisibleAdminPage();
         }
 
         // Carregar Dashboard
@@ -10502,7 +10842,7 @@
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-09-002';
+            const cssVersion = '2026-02-13-003';
             const lastVersion = localStorage.getItem('admin_css_version');
             if (lastVersion !== cssVersion) {
                 localStorage.setItem('admin_css_version', cssVersion);
