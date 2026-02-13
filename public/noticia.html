@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Notícias de Mirador, região e Brasil">
     <title id="siteTitle">Notícia - Mirador e Região Online</title>
-    <link rel="stylesheet" href="css/styles.css?v=157">
+    <link rel="stylesheet" href="css/styles.css?v=163">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -258,6 +258,67 @@
             border-top: 1px solid var(--border);
         }
 
+        .article-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .article-action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--accent);
+            color: var(--foreground);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            line-height: 1;
+            padding: 0.56rem 0.9rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .article-action-btn:hover {
+            transform: translateY(-1px);
+            opacity: 0.92;
+        }
+
+        .article-action-btn svg {
+            width: 17px;
+            height: 17px;
+            flex-shrink: 0;
+        }
+
+        .article-action-btn.like-btn.is-liked {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+            cursor: default;
+        }
+
+        .article-action-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.78;
+        }
+
+        .article-like-count {
+            color: var(--muted-foreground);
+            font-size: 0.86rem;
+            font-weight: 600;
+        }
+
+        .article-action-feedback {
+            width: 100%;
+            min-height: 1rem;
+            color: var(--muted-foreground);
+            font-size: 0.82rem;
+        }
+
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -317,6 +378,19 @@
             .article-content {
                 font-size: 1rem;
                 line-height: 1.65;
+            }
+
+            .article-actions {
+                gap: 0.6rem;
+            }
+
+            .article-action-btn {
+                font-size: 0.83rem;
+                padding: 0.5rem 0.75rem;
+            }
+
+            .article-like-count {
+                width: 100%;
             }
 
             .article-embed-frame {
@@ -431,10 +505,13 @@
                 <div class="footer-col footer-col-social">
                     <h4 class="footer-heading">Siga-nos</h4>
                     <div class="social-links" id="footerSocialLinks">
-                        <a href="https://instagram.com/miradoreregiao" target="_blank" aria-label="Instagram" id="footerSocialInstagramEl" style="display: none;">
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" />
+                        <a href="https://instagram.com/miradoreregiao" target="_blank" aria-label="Instagram" id="footerSocialInstagramEl" class="social-link-with-label" style="display: none;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                                <circle cx="12" cy="12" r="4.2"></circle>
+                                <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"></circle>
                             </svg>
+                            <span>Instagram</span>
                         </a>
                         <a href="https://facebook.com/miradoreregiao" target="_blank" aria-label="Facebook" id="footerSocialFacebookEl" style="display: none;">
                             <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
@@ -696,6 +773,130 @@
             });
 
             return template.innerHTML;
+        }
+
+        let currentArticleContext = null;
+        let articleActionFeedbackTimer = null;
+
+        function formatArticleLikeCount(value) {
+            const safeValue = Math.max(0, Number(value) || 0);
+            const amount = new Intl.NumberFormat('pt-BR').format(safeValue);
+            return `${amount} ${safeValue === 1 ? 'curtida' : 'curtidas'}`;
+        }
+
+        function getLikedArticlesMap() {
+            try {
+                const parsed = JSON.parse(localStorage.getItem('likedArticlesMap') || '{}');
+                return parsed && typeof parsed === 'object' ? parsed : {};
+            } catch (_error) {
+                return {};
+            }
+        }
+
+        function hasLikedArticle(newsId) {
+            if (!newsId) return false;
+            const likesMap = getLikedArticlesMap();
+            return likesMap[newsId] === true;
+        }
+
+        function markArticleAsLiked(newsId) {
+            if (!newsId) return;
+            const likesMap = getLikedArticlesMap();
+            likesMap[newsId] = true;
+            try {
+                localStorage.setItem('likedArticlesMap', JSON.stringify(likesMap));
+            } catch (_error) { }
+        }
+
+        function setArticleActionFeedback(message) {
+            const feedbackEl = document.getElementById('articleActionFeedback');
+            if (!feedbackEl) return;
+            feedbackEl.textContent = String(message || '').trim();
+            if (articleActionFeedbackTimer) {
+                clearTimeout(articleActionFeedbackTimer);
+                articleActionFeedbackTimer = null;
+            }
+            if (feedbackEl.textContent) {
+                articleActionFeedbackTimer = setTimeout(() => {
+                    feedbackEl.textContent = '';
+                }, 3000);
+            }
+        }
+
+        function refreshArticleActionsUi() {
+            if (!currentArticleContext) return;
+            const likeBtn = document.getElementById('articleLikeBtn');
+            const likeLabel = document.getElementById('articleLikeLabel');
+            const likeCount = document.getElementById('articleLikeCount');
+
+            if (likeCount) {
+                likeCount.textContent = formatArticleLikeCount(currentArticleContext.likes);
+            }
+
+            if (likeBtn) {
+                likeBtn.classList.toggle('is-liked', currentArticleContext.liked === true);
+                likeBtn.disabled = currentArticleContext.liked === true;
+                likeBtn.setAttribute('aria-pressed', currentArticleContext.liked ? 'true' : 'false');
+            }
+
+            if (likeLabel) {
+                likeLabel.textContent = currentArticleContext.liked ? 'Curtido' : 'Curtir notícia';
+            }
+        }
+
+        function shareArticleToWhatsApp() {
+            if (!currentArticleContext) return;
+            const title = String(currentArticleContext.title || 'Confira esta notícia');
+            const text = encodeURIComponent(`${title}\n${currentArticleContext.url}`);
+            window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');
+            setArticleActionFeedback('Link preparado para compartilhar no WhatsApp.');
+        }
+
+        async function shareArticleToInstagram() {
+            if (!currentArticleContext) return;
+            const urlToShare = currentArticleContext.url;
+            let copied = false;
+
+            if (navigator.clipboard && window.isSecureContext) {
+                try {
+                    await navigator.clipboard.writeText(urlToShare);
+                    copied = true;
+                } catch (_error) { }
+            }
+
+            window.open('https://www.instagram.com/', '_blank', 'noopener');
+            if (copied) {
+                setArticleActionFeedback('Link copiado. Cole no Instagram.');
+            } else {
+                setArticleActionFeedback('Abra o Instagram e compartilhe o link da notícia.');
+            }
+        }
+
+        async function likeCurrentArticle() {
+            if (!currentArticleContext || !currentArticleContext.id) return;
+            if (currentArticleContext.liked) {
+                setArticleActionFeedback('Você já curtiu esta notícia.');
+                return;
+            }
+
+            const likeBtn = document.getElementById('articleLikeBtn');
+            if (likeBtn) likeBtn.disabled = true;
+
+            try {
+                await db.collection('news').doc(currentArticleContext.id).set({
+                    articleLikes: firebase.firestore.FieldValue.increment(1)
+                }, { merge: true });
+
+                currentArticleContext.likes = Math.max(0, Number(currentArticleContext.likes || 0) + 1);
+                currentArticleContext.liked = true;
+                markArticleAsLiked(currentArticleContext.id);
+                refreshArticleActionsUi();
+                setArticleActionFeedback('Curtida registrada com sucesso.');
+            } catch (error) {
+                console.error('Erro ao registrar curtida:', error);
+                if (likeBtn) likeBtn.disabled = false;
+                setArticleActionFeedback('Não foi possível registrar a curtida agora.');
+            }
         }
 
         // Carregar configurações do Firebase
@@ -1086,12 +1287,10 @@
                 `
                 : '';
 
-            // Status da publicação
-            const statusText = article.status === 'draft' ? 'Rascunho' : 'Publicado';
-            const statusClass = article.status === 'draft' ? 'draft' : 'published';
             const safeContentHtml = sanitizeArticleHtml(article.content || '');
             const safeExcerptHtml = sanitizeArticleHtml(article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : '');
             const articleImage = sanitizeMediaUrl(article.image || '');
+            const articleLikes = Math.max(0, Number(article.articleLikes) || 0);
 
             // Montar HTML da notícia
             let html = `
@@ -1111,18 +1310,6 @@
                 html += `
                     <div class="article-image-container">
                         <img src="${articleImage}" alt="${safeTitle}" class="article-image">
-                        <div class="article-status ${statusClass}">
-                            <span class="status-dot"></span>
-                            ${statusText}
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Status mesmo sem imagem
-                html += `
-                    <div class="article-status ${statusClass}" style="margin-bottom: 1.5rem;">
-                        <span class="status-dot"></span>
-                        ${statusText}
                     </div>
                 `;
             }
@@ -1155,12 +1342,45 @@
 
             html += `
                 <div class="article-footer">
+                    <div class="article-actions">
+                        <button type="button" class="article-action-btn" onclick="shareArticleToWhatsApp()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-15.53-6.17A9 9 0 0 1 21 12Z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.3 10.7 1.5 2.6a1 1 0 0 0 1.3.4l1.6-.7"></path>
+                            </svg>
+                            <span>WhatsApp</span>
+                        </button>
+                        <button type="button" class="article-action-btn" onclick="shareArticleToInstagram()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                                <circle cx="12" cy="12" r="4.2"></circle>
+                                <circle cx="17.2" cy="6.8" r="1.2" fill="currentColor" stroke="none"></circle>
+                            </svg>
+                            <span>Instagram</span>
+                        </button>
+                        <button type="button" class="article-action-btn like-btn" id="articleLikeBtn" aria-pressed="false" onclick="likeCurrentArticle()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m20.8 5.6-.1-.1a5.4 5.4 0 0 0-7.7 0L12 6.6l-1-1.1a5.4 5.4 0 0 0-7.7 0l-.1.1a5.7 5.7 0 0 0 0 7.9L12 22l8.8-8.5a5.7 5.7 0 0 0 0-7.9z"></path>
+                            </svg>
+                            <span id="articleLikeLabel">Curtir notícia</span>
+                        </button>
+                        <span class="article-like-count" id="articleLikeCount"></span>
+                        <div class="article-action-feedback" id="articleActionFeedback" aria-live="polite"></div>
+                    </div>
                     <a href="index.html" class="back-link">&larr; Voltar para home</a>
                 </div>
             `;
             
             container.innerHTML = html;
-            
+            currentArticleContext = {
+                id: newsId,
+                title: article.title || 'Notícia',
+                url: window.location.href,
+                likes: articleLikes,
+                liked: hasLikedArticle(newsId)
+            };
+            refreshArticleActionsUi();
+             
             // Incrementar visualizacoes
             void incrementNewsViews(newsId);
         });
