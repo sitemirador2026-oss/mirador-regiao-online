@@ -104,6 +104,17 @@
             max-width: 100%;
         }
 
+        body.auth-loading {
+            background: #0F172A;
+            overflow: hidden;
+        }
+
+        body.auth-loading #loginContainer,
+        body.auth-loading #adminContainer {
+            visibility: hidden !important;
+            pointer-events: none !important;
+        }
+
         /* ========================================
            LOGIN STYLES - DISCRETO E MODERNO
            ======================================== */
@@ -2812,9 +2823,9 @@
     </style>
 </head>
 
-<body class="login-mode">
+<body class="auth-loading">
     <!-- Login -->
-    <div class="login-container" id="loginContainer">
+    <div class="login-container" id="loginContainer" style="display: none;">
         <div class="login-box">
             <div class="login-logo">
                 <div id="loginLogoWrapper">
@@ -6275,6 +6286,7 @@
         function showAdmin() {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('adminContainer').style.display = 'block';
+            document.body.classList.remove('auth-loading');
             document.body.classList.remove('login-mode');
             updateUserInfo();
             loadDashboard();
@@ -11541,22 +11553,19 @@
                 return;
             }
 
+            document.body.classList.remove('auth-loading');
             document.body.classList.add('login-mode');
             document.getElementById('loginContainer').style.display = 'flex';
             document.getElementById('adminContainer').style.display = 'none';
         }
 
-        authPersistenceReady
-            .catch(() => null)
-            .finally(() => {
-                auth.onAuthStateChanged((user) => {
-                    applyAuthStateToUi(user);
-                });
-            });
+        auth.onAuthStateChanged((user) => {
+            applyAuthStateToUi(user);
+        });
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-13-010';
+            const cssVersion = '2026-02-13-011';
             let lastVersion = null;
             try {
                 lastVersion = localStorage.getItem('admin_css_version');
