@@ -3293,87 +3293,39 @@
                                 <h2 class="section-title">Categorias Existentes</h2>
                             </div>
                             <div style="padding: 1.5rem;">
-                                <div id="categoriesList" style="display: grid; gap: 0.75rem;">
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: var(--primary); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Mirador</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: var(--success); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Regiao</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: var(--danger); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Brasil</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: var(--warning); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Policia</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: var(--info); border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Esportes</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                    <div
-                                        style="display: flex; align-items: center; justify-content: space-between; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border);">
-                                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                            <span
-                                                style="width: 12px; height: 12px; background: #8b5cf6; border-radius: 50%;"></span>
-                                            <span style="font-weight: 500;">Politica</span>
-                                        </div>
-                                        <span style="font-size: 0.875rem; color: var(--text-muted);">0 noticias</span>
-                                    </div>
-                                </div>
+                                <div id="categoriesList" style="display: grid; gap: 0.75rem;"></div>
                             </div>
                         </div>
 
                         <div class="content-section" style="max-width: 400px;">
                             <div class="section-header">
-                                <h2 class="section-title">Adicionar Categoria</h2>
+                                <h2 class="section-title" id="categoryFormTitle">Adicionar Categoria</h2>
                             </div>
                             <div style="padding: 1.5rem;">
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label
                                         style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Nome
                                         da Categoria</label>
-                                    <input type="text" class="form-input" placeholder="Ex: Tecnologia"
+                                    <input type="text" id="categoryNameInput" class="form-input" placeholder="Ex: Tecnologia"
                                         style="width: 100%; padding: 0.625rem; border: 1px solid var(--border); border-radius: var(--radius);">
                                 </div>
                                 <div class="form-group" style="margin-bottom: 1rem;">
                                     <label
                                         style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;">Cor</label>
-                                    <input type="color" value="#2563eb"
+                                    <input type="color" id="categoryColorInput" value="#2563eb"
                                         style="width: 100%; height: 40px; border: 1px solid var(--border); border-radius: var(--radius);">
                                 </div>
-                                <button class="btn btn-primary" style="width: 100%;"
-                                    onclick="showModal('Em breve!', 'Gerenciamento de categorias em desenvolvimento.', 'info')">
-                                    Adicionar Categoria
-                                </button>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-primary" style="width: 100%;" onclick="saveCategoryForm()">
+                                        Salvar Categoria
+                                    </button>
+                                    <button id="cancelCategoryEditBtn" class="btn btn-secondary" style="display: none; width: 100%;" onclick="resetCategoryForm()">
+                                        Cancelar
+                                    </button>
+                                </div>
+                                <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.75rem;">
+                                    Dica: para excluir uma categoria, ela precisa estar sem noticias vinculadas.
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -3814,13 +3766,6 @@
                                         <select id="instagramNewsCategory"
                                             style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);">
                                             <option value="instagram" selected> Instagram</option>
-                                            <option value="mirador">Mirador</option>
-                                            <option value="regiao">Regiao</option>
-                                            <option value="brasil">Brasil</option>
-                                            <option value="policia">Policia</option>
-                                            <option value="esportes">Esportes</option>
-                                            <option value="politica">Politica</option>
-                                            <option value="geral">Geral</option>
                                         </select>
                                     </div>
 
@@ -5574,13 +5519,6 @@
                                         <select id="importNewsCategory" class="form-select"
                                             style="margin-bottom: 1rem;">
                                             <option value="">Selecione uma categoria...</option>
-                                            <option value="mirador">Mirador</option>
-                                            <option value="regiao">Regiao</option>
-                                            <option value="brasil">Brasil</option>
-                                            <option value="policia">Policia</option>
-                                            <option value="esportes">Esportes</option>
-                                            <option value="politica">Politica</option>
-                                            <option value="geral">Geral</option>
                                         </select>
                                         <div style="display: flex; gap: 0.75rem;">
                                             <button class="btn btn-secondary" onclick="cancelImport()">
@@ -6105,13 +6043,6 @@
                                     <div class="form-group" style="margin-bottom: 0;">
                                         <select id="newsCategory" class="form-select">
                                             <option value="">Selecione uma categoria...</option>
-                                            <option value="mirador">Mirador</option>
-                                            <option value="regiao">Regiao</option>
-                                            <option value="brasil">Brasil</option>
-                                            <option value="policia">Policia</option>
-                                            <option value="esportes">Esportes</option>
-                                            <option value="politica">Politica</option>
-                                            <option value="geral">Geral</option>
                                         </select>
                                     </div>
                                 </div>
@@ -6284,6 +6215,15 @@
             initR2Client();
             setupSidebarScrollLock();
             lockAdminZoomGestures();
+            const categoryNameInput = document.getElementById('categoryNameInput');
+            if (categoryNameInput) {
+                categoryNameInput.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        saveCategoryForm();
+                    }
+                });
+            }
         });
 
         let settingsPanelsInitialized = false;
@@ -6453,6 +6393,9 @@
             document.body.classList.remove('login-mode');
             updateUserInfo();
             loadDashboard();
+            loadCategories().catch(error => {
+                console.warn('[Categorias] Nao foi possivel carregar categorias na inicializacao:', error);
+            });
 
             // Se houver rascunho local nao publicado, abrir direto no editor.
             const recoveredDraft = openRecoveredNewsEditorDraftIfExists();
@@ -6681,6 +6624,15 @@
                 switchImportNewsTab('publicacoes');
             }
 
+            if (pageName === 'categories') {
+                setTimeout(() => {
+                    resetCategoryForm();
+                    loadCategoriesPage().catch(error => {
+                        console.error('[Categorias] Erro ao abrir pagina de categorias:', error);
+                    });
+                }, 60);
+            }
+
             if (pageName === 'storage') {
                 // Pequeno delay para garantir que o DOM esta pronto
                 setTimeout(() => loadStorageInfo(), 100);
@@ -6723,6 +6675,10 @@
                 loadFooterLinks();
                 loadLayout();
                 loadTopBannersSettings();
+            } else if (pageName === 'news' || pageName === 'importNews' || pageName === 'instagram') {
+                loadCategories().catch(error => {
+                    console.warn('[Categorias] Falha ao sincronizar selects de categoria:', error);
+                });
             }
 
             resetAdminViewportPosition();
@@ -8120,6 +8076,542 @@
         let newsEditorSavedRange = null;
         let activeEditorImageFigure = null;
         let newsEditorImageInsertMode = 'cursor';
+        const CATEGORY_COLLECTION_NAME = 'categories';
+        const DEFAULT_NEWS_CATEGORIES = [
+            { id: 'mirador', name: 'Mirador', color: '#1e40af', sortOrder: 10 },
+            { id: 'regiao', name: 'Regiao', color: '#10b981', sortOrder: 20 },
+            { id: 'brasil', name: 'Brasil', color: '#ef4444', sortOrder: 30 },
+            { id: 'policia', name: 'Policia', color: '#f59e0b', sortOrder: 40 },
+            { id: 'esportes', name: 'Esportes', color: '#3b82f6', sortOrder: 50 },
+            { id: 'politica', name: 'Politica', color: '#8b5cf6', sortOrder: 60 },
+            { id: 'geral', name: 'Geral', color: '#64748b', sortOrder: 70 }
+        ];
+        const DEFAULT_NEWS_CATEGORIES_MAP = new Map(DEFAULT_NEWS_CATEGORIES.map(cat => [cat.id, cat]));
+        let categoriesData = [];
+        let categoriesByIdMap = new Map();
+        let categoriesLoaded = false;
+        let categoriesLoadPromise = null;
+        let categoryPublishedCountMap = {};
+        let categoryTotalCountMap = {};
+        let currentEditingCategoryId = null;
+
+        function sanitizeCategoryColor(value, fallback = '#2563eb') {
+            const raw = String(value || '').trim();
+            if (/^#[0-9a-f]{6}$/i.test(raw)) return raw.toLowerCase();
+            return fallback;
+        }
+
+        function normalizeCategoryName(value) {
+            return String(value || '')
+                .trim()
+                .replace(/\s+/g, ' ')
+                .slice(0, 60);
+        }
+
+        function slugifyCategoryId(value) {
+            const normalized = String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s-]/g, '')
+                .trim()
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-+|-+$/g, '');
+
+            if (!normalized) {
+                return `categoria-${Date.now().toString(36)}`;
+            }
+
+            return normalized.slice(0, 50);
+        }
+
+        function prettifyCategorySlug(value) {
+            const clean = String(value || '').trim();
+            if (!clean) return 'Geral';
+            return clean
+                .split(/[-_\s]+/)
+                .filter(Boolean)
+                .map(chunk => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+                .join(' ');
+        }
+
+        function normalizeCategoryItem(id, data = {}, index = 0) {
+            const fallbackDefault = DEFAULT_NEWS_CATEGORIES_MAP.get(id) || null;
+            const safeId = slugifyCategoryId(id || data.id || data.slug || data.name || `categoria-${index + 1}`);
+            const safeName = normalizeCategoryName(data.name || data.categoryName || fallbackDefault?.name || safeId);
+            const safeColor = sanitizeCategoryColor(
+                data.color,
+                fallbackDefault?.color || '#2563eb'
+            );
+            const sortOrder = Number.isFinite(Number(data.sortOrder))
+                ? Number(data.sortOrder)
+                : (fallbackDefault?.sortOrder ?? (1000 + index));
+
+            return {
+                id: safeId,
+                name: safeName || prettifyCategorySlug(safeId),
+                color: safeColor,
+                sortOrder
+            };
+        }
+
+        function sortCategoriesList(list = []) {
+            return [...list].sort((a, b) => {
+                const orderA = Number.isFinite(Number(a.sortOrder)) ? Number(a.sortOrder) : 9999;
+                const orderB = Number.isFinite(Number(b.sortOrder)) ? Number(b.sortOrder) : 9999;
+                if (orderA !== orderB) return orderA - orderB;
+                return String(a.name || '').localeCompare(String(b.name || ''), 'pt-BR');
+            });
+        }
+
+        async function ensureDefaultCategoriesInFirestore() {
+            const categoryRef = db.collection(CATEGORY_COLLECTION_NAME);
+            const existingSnapshot = await categoryRef.limit(1).get();
+            if (!existingSnapshot.empty) return;
+
+            const batch = db.batch();
+            DEFAULT_NEWS_CATEGORIES.forEach((category) => {
+                batch.set(categoryRef.doc(category.id), {
+                    id: category.id,
+                    name: category.name,
+                    color: category.color,
+                    sortOrder: category.sortOrder,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+            });
+            await batch.commit();
+        }
+
+        function applyCategoriesToSelect(selectId, options = {}) {
+            const {
+                includePlaceholder = true,
+                placeholderText = 'Selecione uma categoria...',
+                includeInstagram = false,
+                fallbackValue = ''
+            } = options;
+
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+
+            const previousValue = String(selectEl.value || '').trim().toLowerCase();
+            let optionsHtml = '';
+
+            if (includePlaceholder) {
+                optionsHtml += `<option value="">${escapeHtml(placeholderText)}</option>`;
+            }
+
+            if (includeInstagram) {
+                optionsHtml += '<option value="instagram">Instagram</option>';
+            }
+
+            categoriesData.forEach(category => {
+                optionsHtml += `<option value="${escapeHtml(category.id)}">${escapeHtml(category.name)}</option>`;
+            });
+
+            selectEl.innerHTML = optionsHtml;
+
+            const availableValues = new Set(Array.from(selectEl.options).map(opt => String(opt.value || '').toLowerCase()));
+            const normalizedFallback = String(fallbackValue || '').trim().toLowerCase();
+
+            if (previousValue && availableValues.has(previousValue)) {
+                selectEl.value = previousValue;
+                return;
+            }
+
+            if (normalizedFallback && availableValues.has(normalizedFallback)) {
+                selectEl.value = normalizedFallback;
+                return;
+            }
+
+            if (includeInstagram && availableValues.has('instagram')) {
+                selectEl.value = 'instagram';
+                return;
+            }
+
+            if (includePlaceholder) {
+                selectEl.value = '';
+            }
+        }
+
+        function syncCategorySelectOptions() {
+            applyCategoriesToSelect('newsCategory', {
+                includePlaceholder: true,
+                placeholderText: 'Selecione uma categoria...'
+            });
+
+            applyCategoriesToSelect('importNewsCategory', {
+                includePlaceholder: true,
+                placeholderText: 'Selecione uma categoria...'
+            });
+
+            applyCategoriesToSelect('instagramNewsCategory', {
+                includePlaceholder: false,
+                includeInstagram: true,
+                fallbackValue: 'instagram'
+            });
+        }
+
+        function ensureCategorySelectHasValue(selectId, value, label) {
+            const selectEl = document.getElementById(selectId);
+            if (!selectEl) return;
+
+            const normalizedValue = String(value || '').trim().toLowerCase();
+            if (!normalizedValue) return;
+
+            const optionExists = Array.from(selectEl.options).some(opt => String(opt.value || '').toLowerCase() === normalizedValue);
+            if (optionExists) return;
+
+            const option = document.createElement('option');
+            option.value = normalizedValue;
+            option.textContent = String(label || prettifyCategorySlug(normalizedValue));
+            selectEl.appendChild(option);
+        }
+
+        async function loadCategories(forceReload = false) {
+            if (!forceReload && categoriesLoaded) {
+                return categoriesData;
+            }
+
+            if (!forceReload && categoriesLoadPromise) {
+                return categoriesLoadPromise;
+            }
+
+            categoriesLoadPromise = (async () => {
+                try {
+                    await ensureDefaultCategoriesInFirestore();
+                } catch (seedError) {
+                    console.warn('[Categorias] Nao foi possivel validar categorias padrao no Firestore:', seedError);
+                }
+
+                let loadedCategories = [];
+                try {
+                    let snapshot = null;
+                    try {
+                        snapshot = await db.collection(CATEGORY_COLLECTION_NAME).orderBy('sortOrder', 'asc').get();
+                    } catch (orderError) {
+                        console.warn('[Categorias] Falha no orderBy(sortOrder), usando consulta simples:', orderError);
+                        snapshot = await db.collection(CATEGORY_COLLECTION_NAME).get();
+                    }
+
+                    snapshot.forEach((doc, index) => {
+                        loadedCategories.push(normalizeCategoryItem(doc.id, doc.data(), index));
+                    });
+                } catch (loadError) {
+                    console.error('[Categorias] Erro ao carregar categorias do Firestore:', loadError);
+                }
+
+                if (!loadedCategories.length) {
+                    loadedCategories = DEFAULT_NEWS_CATEGORIES.map((cat, index) => normalizeCategoryItem(cat.id, cat, index));
+                }
+
+                categoriesData = sortCategoriesList(loadedCategories);
+                categoriesByIdMap = new Map(categoriesData.map(cat => [cat.id, cat]));
+                categoriesLoaded = true;
+                syncCategorySelectOptions();
+                return categoriesData;
+            })();
+
+            try {
+                return await categoriesLoadPromise;
+            } finally {
+                categoriesLoadPromise = null;
+            }
+        }
+
+        function formatNewsCountLabel(value) {
+            const count = Number.isFinite(Number(value)) ? Number(value) : 0;
+            return `${count} ${count === 1 ? 'noticia' : 'noticias'}`;
+        }
+
+        function renderCategoriesManagementList() {
+            const listEl = document.getElementById('categoriesList');
+            if (!listEl) return;
+
+            if (!categoriesData.length) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        <p>Nenhuma categoria cadastrada.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = categoriesData.map(category => {
+                const publishedCount = categoryPublishedCountMap[category.id] || 0;
+                const totalCount = categoryTotalCountMap[category.id] || 0;
+                const deleteDisabled = totalCount > 0;
+                const deleteBtnStyle = deleteDisabled
+                    ? 'opacity: 0.6; cursor: not-allowed;'
+                    : 'border-color: #fecaca; color: #dc2626; background: #fff5f5;';
+                const categoryName = escapeHtml(category.name);
+
+                return `
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 1rem; background: var(--bg-primary); border-radius: var(--radius); border: 1px solid var(--border); flex-wrap: wrap;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0;">
+                            <span style="width: 12px; height: 12px; background: ${escapeHtml(category.color)}; border-radius: 50%; flex-shrink: 0;"></span>
+                            <div style="min-width: 0;">
+                                <div style="font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${categoryName}</div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(category.id)}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; margin-left: auto;">
+                            <span style="font-size: 0.8125rem; color: var(--text-muted);">${formatNewsCountLabel(publishedCount)}</span>
+                            <button class="btn btn-secondary btn-sm" type="button" onclick="startEditCategory('${escapeHtml(category.id)}')">Editar</button>
+                            <button class="btn btn-secondary btn-sm" type="button" style="${deleteBtnStyle}" onclick="deleteCategory('${escapeHtml(category.id)}')" ${deleteDisabled ? 'disabled title=\"Remova ou recategorize as noticias antes de excluir\"' : ''}>Excluir</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadCategoriesPage(forceReload = false) {
+            const listEl = document.getElementById('categoriesList');
+            if (listEl) {
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <p>Carregando categorias...</p>
+                    </div>
+                `;
+            }
+
+            try {
+                await loadCategories(forceReload);
+
+                const publishedCountMap = {};
+                const totalCountMap = {};
+                categoriesData.forEach(category => {
+                    publishedCountMap[category.id] = 0;
+                    totalCountMap[category.id] = 0;
+                });
+
+                const newsSnapshot = await db.collection('news').get();
+                newsSnapshot.forEach((doc) => {
+                    const item = doc.data() || {};
+                    if (isInstagramNewsItem(item)) return;
+
+                    const categoryId = String(item.category || '').trim().toLowerCase();
+                    if (!categoryId) return;
+
+                    if (!Object.prototype.hasOwnProperty.call(totalCountMap, categoryId)) {
+                        totalCountMap[categoryId] = 0;
+                    }
+                    totalCountMap[categoryId] += 1;
+
+                    if (isPublishedNews(item)) {
+                        if (!Object.prototype.hasOwnProperty.call(publishedCountMap, categoryId)) {
+                            publishedCountMap[categoryId] = 0;
+                        }
+                        publishedCountMap[categoryId] += 1;
+                    }
+                });
+
+                categoryPublishedCountMap = publishedCountMap;
+                categoryTotalCountMap = totalCountMap;
+                renderCategoriesManagementList();
+            } catch (error) {
+                console.error('[Categorias] Erro ao carregar pagina de categorias:', error);
+                if (listEl) {
+                    listEl.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                            <p>Erro ao carregar categorias.</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        function refreshCategoriesPageIfVisible(forceReload = false) {
+            const categoriesPage = document.getElementById('categoriesPage');
+            if (!categoriesPage || categoriesPage.style.display === 'none') return;
+            loadCategoriesPage(forceReload).catch(error => {
+                console.warn('[Categorias] Falha ao atualizar contagem da pagina:', error);
+            });
+        }
+
+        function resetCategoryForm() {
+            currentEditingCategoryId = null;
+            const nameInput = document.getElementById('categoryNameInput');
+            const colorInput = document.getElementById('categoryColorInput');
+            const titleEl = document.getElementById('categoryFormTitle');
+            const cancelBtn = document.getElementById('cancelCategoryEditBtn');
+
+            if (nameInput) nameInput.value = '';
+            if (colorInput) colorInput.value = '#2563eb';
+            if (titleEl) titleEl.textContent = 'Adicionar Categoria';
+            if (cancelBtn) cancelBtn.style.display = 'none';
+        }
+
+        function startEditCategory(categoryId) {
+            const key = String(categoryId || '').trim().toLowerCase();
+            if (!key) return;
+            const category = categoriesByIdMap.get(key);
+            if (!category) {
+                showModal('Erro', 'Categoria nao encontrada.', 'error');
+                return;
+            }
+
+            currentEditingCategoryId = key;
+            const nameInput = document.getElementById('categoryNameInput');
+            const colorInput = document.getElementById('categoryColorInput');
+            const titleEl = document.getElementById('categoryFormTitle');
+            const cancelBtn = document.getElementById('cancelCategoryEditBtn');
+
+            if (nameInput) nameInput.value = category.name;
+            if (colorInput) colorInput.value = sanitizeCategoryColor(category.color, '#2563eb');
+            if (titleEl) titleEl.textContent = `Editar Categoria: ${category.name}`;
+            if (cancelBtn) cancelBtn.style.display = 'inline-flex';
+            if (nameInput) nameInput.focus();
+        }
+
+        async function updateCategoryNameInNews(categoryId, categoryName) {
+            try {
+                const snapshot = await db.collection('news').where('category', '==', categoryId).get();
+                if (snapshot.empty) return 0;
+
+                const docsToUpdate = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data() || {};
+                    if (String(data.categoryName || '').trim() !== categoryName) {
+                        docsToUpdate.push(doc.ref);
+                    }
+                });
+                if (!docsToUpdate.length) return 0;
+
+                const chunkSize = 400;
+                let updated = 0;
+                for (let i = 0; i < docsToUpdate.length; i += chunkSize) {
+                    const chunk = docsToUpdate.slice(i, i + chunkSize);
+                    const batch = db.batch();
+                    chunk.forEach(ref => {
+                        batch.update(ref, {
+                            categoryName,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    });
+                    await batch.commit();
+                    updated += chunk.length;
+                }
+                return updated;
+            } catch (error) {
+                console.error('[Categorias] Erro ao atualizar categoryName nas noticias:', error);
+                return 0;
+            }
+        }
+
+        async function saveCategoryForm() {
+            const nameInput = document.getElementById('categoryNameInput');
+            const colorInput = document.getElementById('categoryColorInput');
+            const rawName = normalizeCategoryName(nameInput?.value || '');
+            const color = sanitizeCategoryColor(colorInput?.value || '#2563eb', '#2563eb');
+
+            if (!rawName) {
+                showModal('Campo obrigatorio', 'Informe o nome da categoria.', 'warning');
+                return;
+            }
+
+            const isEdit = Boolean(currentEditingCategoryId);
+            const categoryId = isEdit ? currentEditingCategoryId : slugifyCategoryId(rawName);
+            const categoryRef = db.collection(CATEGORY_COLLECTION_NAME).doc(categoryId);
+
+            if (categoryId === 'instagram') {
+                showModal('Nome reservado', 'A categoria "Instagram" e reservada para posts do feed.', 'warning');
+                return;
+            }
+
+            try {
+                if (!isEdit) {
+                    const existingDoc = await categoryRef.get();
+                    if (existingDoc.exists) {
+                        showModal('Categoria existente', 'Ja existe uma categoria com esse nome. Edite a existente ou use outro nome.', 'warning');
+                        return;
+                    }
+
+                    await categoryRef.set({
+                        id: categoryId,
+                        name: rawName,
+                        color,
+                        sortOrder: categoriesData.length ? (Math.max(...categoriesData.map(c => Number(c.sortOrder) || 0)) + 10) : 100,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    showModal('Sucesso', 'Categoria adicionada com sucesso.', 'success');
+                } else {
+                    await categoryRef.set({
+                        id: categoryId,
+                        name: rawName,
+                        color,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+
+                    await updateCategoryNameInNews(categoryId, rawName);
+                    showModal('Sucesso', 'Categoria atualizada com sucesso.', 'success');
+                }
+
+                resetCategoryForm();
+                await loadCategoriesPage(true);
+                loadNewsPage();
+                loadImportedNewsPage();
+                loadInstagramPostsPage();
+                loadDashboard();
+            } catch (error) {
+                console.error('[Categorias] Erro ao salvar categoria:', error);
+                showModal('Erro', 'Nao foi possivel salvar a categoria.', 'error');
+            }
+        }
+
+        async function deleteCategory(categoryId) {
+            const key = String(categoryId || '').trim().toLowerCase();
+            if (!key) return;
+
+            const category = categoriesByIdMap.get(key);
+            if (!category) {
+                showModal('Erro', 'Categoria nao encontrada.', 'error');
+                return;
+            }
+
+            const totalLinked = categoryTotalCountMap[key] || 0;
+            if (totalLinked > 0) {
+                showModal(
+                    'Exclusao bloqueada',
+                    `A categoria "${category.name}" possui ${formatNewsCountLabel(totalLinked)} vinculadas. Reclassifique essas noticias antes de excluir.`,
+                    'warning'
+                );
+                return;
+            }
+
+            const confirmed = await showConfirmModal({
+                title: 'Excluir categoria',
+                message: `Deseja excluir a categoria "${category.name}"?`,
+                confirmText: 'Excluir',
+                cancelText: 'Cancelar'
+            });
+            if (!confirmed) return;
+
+            try {
+                await db.collection(CATEGORY_COLLECTION_NAME).doc(key).delete();
+                if (currentEditingCategoryId === key) {
+                    resetCategoryForm();
+                }
+                showModal('Sucesso', 'Categoria excluida com sucesso.', 'success');
+                await loadCategoriesPage(true);
+                loadDashboard();
+            } catch (error) {
+                console.error('[Categorias] Erro ao excluir categoria:', error);
+                showModal('Erro', 'Nao foi possivel excluir a categoria.', 'error');
+            }
+        }
 
         // Carregar pagina de Noticias com paginacao
         async function loadNewsPage() {
@@ -8565,6 +9057,7 @@
                 loadNewsPage();
                 loadInstagramPostsPage();
                 loadImportedNewsPage();
+                refreshCategoriesPageIfVisible();
             } catch (error) {
                 console.error('Erro ao excluir noticia:', error);
                 showModal('Erro!', 'Nao foi possivel excluir a noticia.', 'error');
@@ -10886,7 +11379,7 @@
                 const newsData = {
                     ...importedNewsData,
                     category: category,
-                    categoryName: document.querySelector(`#importNewsCategory option[value="${category}"]`).textContent,
+                    categoryName: getCategoryName(category),
                     source: importedNewsData.source || 'Importacao URL',
                     importMethod: 'url',
                     views: 0,
@@ -10903,6 +11396,7 @@
                     loadImportedNewsPage();
                     loadNewsPage();
                     loadDashboard();
+                    refreshCategoriesPageIfVisible();
                 }, 1500);
             } catch (error) {
                 console.error('Erro ao salvar noticia importada:', error);
@@ -11163,6 +11657,9 @@
 
         function showCreateNewsPage(newsId = null, options = {}) {
             const skipDraftRestore = Boolean(options && options.skipDraftRestore);
+            loadCategories().catch(error => {
+                console.warn('[Categorias] Falha ao carregar categorias para o editor:', error);
+            });
 
             // Esconder todas as paginas
             document.querySelectorAll('.page-content').forEach(page => {
@@ -11923,6 +12420,7 @@
                 loadNewsPage();
                 loadImportedNewsPage();
                 loadDashboard();
+                refreshCategoriesPageIfVisible();
             } catch (error) {
                 console.error('Erro ao salvar noticia:', error);
                 showModal('Erro!', 'Nao foi possivel salvar a noticia.', 'error');
@@ -11960,16 +12458,21 @@
 
         // Obter nome da categoria
         function getCategoryName(value) {
-            const categories = {
-                'mirador': 'Mirador',
-                'regiao': 'Regiao',
-                'brasil': 'Brasil',
-                'policia': 'Policia',
-                'esportes': 'Esportes',
-                'politica': 'Politica',
-                'geral': 'Geral'
-            };
-            return categories[value] || value;
+            const key = String(value || '').trim().toLowerCase();
+            if (!key) return '';
+            if (key === 'instagram') return 'Instagram';
+
+            const dynamicCategory = categoriesByIdMap.get(key);
+            if (dynamicCategory && dynamicCategory.name) {
+                return dynamicCategory.name;
+            }
+
+            const fallbackCategory = DEFAULT_NEWS_CATEGORIES_MAP.get(key);
+            if (fallbackCategory && fallbackCategory.name) {
+                return fallbackCategory.name;
+            }
+
+            return prettifyCategorySlug(key);
         }
 
         // Carregar noticia para edicao
@@ -11984,7 +12487,9 @@
                     clearActiveEditorImageFigure();
                     document.getElementById('newsExcerpt').value = news.excerpt || '';
                     document.getElementById('excerptCount').textContent = (news.excerpt || '').length;
-                    document.getElementById('newsCategory').value = news.category || '';
+                    const currentCategoryValue = String(news.category || '').trim().toLowerCase();
+                    ensureCategorySelectHasValue('newsCategory', currentCategoryValue, news.categoryName || getCategoryName(currentCategoryValue));
+                    document.getElementById('newsCategory').value = currentCategoryValue;
                     document.getElementById('newsAuthor').value = news.author || 'Redacao';
                     document.getElementById('newsTags').value = (news.tags || []).join(', ');
                     document.getElementById('newsDate').value = news.date ? news.date.slice(0, 16) : '';
@@ -13354,7 +13859,7 @@
                 return;
             }
 
-            let categoryName = document.querySelector(`#instagramNewsCategory option[value="${category}"]`).textContent;
+            let categoryName = getCategoryName(category);
             categoryName = categoryName.replace(/[^\w\s]/g, '').trim();
 
             if (mediaType === 'video' && !videoUrl) {
