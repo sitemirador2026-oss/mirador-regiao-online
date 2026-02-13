@@ -2673,9 +2673,10 @@ async function loadInstagramNews() {
             return;
         }
 
-        // Mostrar quantidade configurada no painel (desktop fallback: 4 | celular fallback: 2)
+        // Desktop: renderiza apenas a quantidade configurada.
+        // Celular: renderiza todos para permitir deslizar ate o ultimo post.
         const instagramVisiblePosts = getInstagramVisiblePostsCount();
-        const newsToShow = news.slice(0, instagramVisiblePosts);
+        const newsToShow = isMobileViewport() ? news : news.slice(0, instagramVisiblePosts);
 
         container.innerHTML = newsToShow.map(createInstagramCard).join('');
         primeInstagramCardVideos(container);
@@ -2683,7 +2684,11 @@ async function loadInstagramNews() {
         updateInstagramMobileCarousels();
 
         // Atualizar contagens reais de curtidas/comentÃ¡rios
-        queueInstagramStatsRefresh(newsToShow, { force: true, forceFresh: false });
+        queueInstagramStatsRefresh(newsToShow, {
+            force: true,
+            forceFresh: false,
+            limit: INSTAGRAM_STATS_MAX_BACKGROUND_ITEMS
+        });
         scheduleInstagramStatsAutoRefresh();
 
     } catch (error) {
@@ -3597,6 +3602,7 @@ function createInstagramCard(news) {
 
 // Expandir card no grid
 let expandedCardId = null;
+let instagramExpandedViewportState = null;
 
 function openInstagramModal(newsId, cardElement = null) {
     const post = instagramPostsData[newsId];
@@ -3609,7 +3615,7 @@ function openInstagramModal(newsId, cardElement = null) {
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
         if (currentExpanded) {
-            closeInstagramCard(currentExpanded);
+            closeInstagramCard(currentExpanded, { restoreViewport: false });
         }
     }
 
@@ -3619,6 +3625,15 @@ function openInstagramModal(newsId, cardElement = null) {
         : document.querySelector(`.instagram-card[data-instagram-id="${newsId}"]`);
     if (!card) return;
     if (card.classList.contains('expanded')) return;
+
+    const parentCarousel = card.closest('.instagram-news-grid');
+    const currentScrollY = window.scrollY || window.pageYOffset || 0;
+    instagramExpandedViewportState = {
+        newsId,
+        scrollY: currentScrollY,
+        containerId: parentCarousel?.id || '',
+        containerScrollLeft: parentCarousel ? parentCarousel.scrollLeft : 0
+    };
 
     // Em desktop, escondemos o último card para preservar a grade quando o card expande.
     if (!isMobileViewport()) {
@@ -3699,10 +3714,13 @@ function openInstagramModal(newsId, cardElement = null) {
     // CONFIGURAR GALERIA se houver mÃºltiplas mÃ­dias
     setupInstagramGallery(card, post);
 
-    // Scroll suave para o card
-    setTimeout(() => {
-        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+    // Desktop: manter foco visual no card expandido.
+    // Mobile: nao forcar scroll para preservar a mesma posicao da tela.
+    if (!isMobileViewport()) {
+        setTimeout(() => {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+    }
 }
 
 // Configurar galeria de imagens/vÃ­deos no card expandido
@@ -3888,8 +3906,10 @@ function showGalleryMedia(card, allMedia, index) {
     });
 }
 
-function closeInstagramCard(card) {
+function closeInstagramCard(card, options = {}) {
     if (!card) return;
+    const restoreViewport = options.restoreViewport !== false;
+    const savedViewportState = instagramExpandedViewportState;
 
     const inlineVideo = card.querySelector('video[data-inline-playing="1"]');
     if (inlineVideo) {
@@ -3999,6 +4019,37 @@ function closeInstagramCard(card) {
     if (mobileCarousel) {
         updateInstagramSwipeHintState(mobileCarousel);
     }
+
+    if (
+        restoreViewport &&
+        savedViewportState &&
+        savedViewportState.newsId &&
+        savedViewportState.newsId === (card.dataset.instagramId || '')
+    ) {
+        const restoreScroll = () => {
+            const targetContainer = savedViewportState.containerId
+                ? document.getElementById(savedViewportState.containerId)
+                : card.closest('.instagram-news-grid');
+
+            if (targetContainer && Number.isFinite(savedViewportState.containerScrollLeft)) {
+                targetContainer.scrollLeft = savedViewportState.containerScrollLeft;
+            }
+
+            if (Number.isFinite(savedViewportState.scrollY)) {
+                window.scrollTo({
+                    top: savedViewportState.scrollY,
+                    left: 0,
+                    behavior: 'auto'
+                });
+            }
+        };
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(restoreScroll);
+        });
+    }
+
+    instagramExpandedViewportState = null;
 }
 
 function hideLastCard(newsIdToKeep, expandedCard = null) {
