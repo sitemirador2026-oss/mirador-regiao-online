@@ -3603,6 +3603,47 @@ function createInstagramCard(news) {
 // Expandir card no grid
 let expandedCardId = null;
 let instagramExpandedViewportState = null;
+let instagramLockedScrollY = 0;
+
+function lockInstagramExpandedPageScroll(targetY = null) {
+    if (!isMobileViewport()) return;
+    if (document.body.dataset.instagramScrollLocked === '1') return;
+
+    const currentY = Number.isFinite(targetY) ? targetY : (window.scrollY || window.pageYOffset || 0);
+    instagramLockedScrollY = currentY;
+
+    document.body.dataset.instagramScrollLocked = '1';
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${currentY}px`;
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+    document.body.style.width = '100%';
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+}
+
+function unlockInstagramExpandedPageScroll(targetY = null) {
+    if (document.body.dataset.instagramScrollLocked !== '1') return;
+
+    const topValue = parseFloat(document.body.style.top || '0');
+    const lockedY = Number.isFinite(topValue) ? Math.abs(topValue) : instagramLockedScrollY;
+    const nextY = Number.isFinite(targetY) ? targetY : lockedY;
+
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    document.body.style.width = '';
+    document.body.style.overflow = '';
+    document.body.style.overscrollBehavior = '';
+    delete document.body.dataset.instagramScrollLocked;
+
+    window.scrollTo({
+        top: Math.max(0, nextY || 0),
+        left: 0,
+        behavior: 'auto'
+    });
+}
 
 function openInstagramModal(newsId, cardElement = null) {
     const post = instagramPostsData[newsId];
@@ -3615,7 +3656,7 @@ function openInstagramModal(newsId, cardElement = null) {
     if (expandedCardId && expandedCardId !== newsId) {
         const currentExpanded = document.querySelector('.instagram-card.expanded');
         if (currentExpanded) {
-            closeInstagramCard(currentExpanded, { restoreViewport: false });
+            closeInstagramCard(currentExpanded, { restoreViewport: false, keepScrollLock: true });
         }
     }
 
@@ -3634,6 +3675,10 @@ function openInstagramModal(newsId, cardElement = null) {
         containerId: parentCarousel?.id || '',
         containerScrollLeft: parentCarousel ? parentCarousel.scrollLeft : 0
     };
+
+    if (isMobileViewport()) {
+        lockInstagramExpandedPageScroll(currentScrollY);
+    }
 
     // Em desktop, escondemos o último card para preservar a grade quando o card expande.
     if (!isMobileViewport()) {
@@ -3909,6 +3954,7 @@ function showGalleryMedia(card, allMedia, index) {
 function closeInstagramCard(card, options = {}) {
     if (!card) return;
     const restoreViewport = options.restoreViewport !== false;
+    const keepScrollLock = options.keepScrollLock === true;
     const savedViewportState = instagramExpandedViewportState;
 
     const inlineVideo = card.querySelector('video[data-inline-playing="1"]');
@@ -4035,7 +4081,11 @@ function closeInstagramCard(card, options = {}) {
                 targetContainer.scrollLeft = savedViewportState.containerScrollLeft;
             }
 
-            if (Number.isFinite(savedViewportState.scrollY)) {
+            if (isMobileViewport()) {
+                if (!keepScrollLock) {
+                    unlockInstagramExpandedPageScroll(savedViewportState.scrollY);
+                }
+            } else if (Number.isFinite(savedViewportState.scrollY)) {
                 window.scrollTo({
                     top: savedViewportState.scrollY,
                     left: 0,
@@ -4047,6 +4097,8 @@ function closeInstagramCard(card, options = {}) {
         requestAnimationFrame(() => {
             requestAnimationFrame(restoreScroll);
         });
+    } else if (isMobileViewport() && !keepScrollLock) {
+        unlockInstagramExpandedPageScroll();
     }
 
     instagramExpandedViewportState = null;
@@ -4095,6 +4147,11 @@ function closeInstagramModal() {
             closeInstagramCard(card);
         }
         expandedCardId = null;
+        return;
+    }
+
+    if (isMobileViewport()) {
+        unlockInstagramExpandedPageScroll();
     }
 }
 
