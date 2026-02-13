@@ -2391,29 +2391,45 @@
                 padding: 0.875rem;
             }
 
-            #createNewsPage .editor-toolbar {
-                display: grid;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
-                gap: 0.35rem;
+            #createNewsPage .editor-toolbar-wrap {
                 padding: 0.5rem;
             }
 
-            #createNewsPage .editor-toolbar button {
-                width: 100%;
-                min-height: 34px;
-                padding: 0.45rem 0.35rem;
-                font-size: 0.8rem;
-                white-space: nowrap;
+            #createNewsPage .editor-toolbar-label {
+                margin-bottom: 0.4rem;
             }
 
-            #createNewsPage .editor-toolbar span[style*="width: 1px"] {
-                display: none !important;
+            #createNewsPage .editor-toolbar {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.4rem;
+            }
+
+            #createNewsPage .editor-toolbar-group {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            #createNewsPage .editor-toolbar button {
+                width: auto;
+                min-height: 34px;
+                padding: 0.42rem 0.5rem;
+                font-size: 0.78rem;
+                white-space: nowrap;
             }
 
             #createNewsPage .editor-content {
                 min-height: 260px;
                 padding: 0.75rem;
                 line-height: 1.6;
+            }
+
+            #createNewsPage .editor-content .editor-image-actions {
+                right: 0.4rem;
+                left: 0.4rem;
+                top: auto;
+                bottom: 0.4rem;
+                justify-content: flex-end;
             }
 
             #createNewsPage .status-radio {
@@ -2602,11 +2618,22 @@
             }
 
             #createNewsPage .editor-toolbar {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.35rem;
+            }
+
+            #createNewsPage .editor-toolbar-group {
+                padding: 0.24rem;
             }
 
             #createNewsPage .editor-toolbar button {
-                font-size: 0.75rem;
+                font-size: 0.74rem;
+                min-height: 32px;
+                padding: 0.36rem 0.45rem;
+            }
+
+            #createNewsPage .editor-image-action-btn {
+                font-size: 0.66rem;
+                padding: 0.3rem 0.45rem;
             }
 
             body.login-mode .login-box {
@@ -5662,39 +5689,81 @@
                             border: 1px solid var(--border);
                             border-radius: var(--radius);
                             overflow: hidden;
+                            background: var(--bg-card);
+                            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+                        }
+
+                        .editor-toolbar-wrap {
+                            padding: 0.625rem;
+                            background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(241, 245, 249, 0.35) 100%);
+                            border-bottom: 1px solid var(--border);
+                        }
+
+                        .editor-toolbar-label {
+                            font-size: 0.72rem;
+                            color: var(--text-muted);
+                            text-transform: uppercase;
+                            letter-spacing: 0.04em;
+                            font-weight: 600;
+                            margin-bottom: 0.45rem;
                         }
 
                         .editor-toolbar {
                             display: flex;
                             flex-wrap: wrap;
+                            gap: 0.45rem;
+                            align-items: center;
+                        }
+
+                        .editor-toolbar-group {
+                            display: inline-flex;
+                            align-items: center;
                             gap: 0.25rem;
-                            padding: 0.5rem;
-                            background: var(--bg-primary);
-                            border-bottom: 1px solid var(--border);
+                            flex-wrap: wrap;
+                            padding: 0.28rem;
+                            border: 1px solid var(--border);
+                            border-radius: 10px;
+                            background: var(--bg-card);
                         }
 
                         .editor-toolbar button {
-                            padding: 0.375rem 0.625rem;
+                            min-height: 34px;
+                            min-width: 34px;
+                            padding: 0.4rem 0.55rem;
                             background: transparent;
-                            border: 1px solid transparent;
-                            border-radius: var(--radius-sm);
+                            border: 1px solid rgba(148, 163, 184, 0.3);
+                            border-radius: 8px;
                             cursor: pointer;
-                            font-size: 0.875rem;
-                            color: var(--text-secondary);
+                            font-size: 0.8rem;
+                            font-weight: 600;
+                            color: var(--text-primary);
                             transition: all 0.2s;
+                            white-space: nowrap;
+                        }
+
+                        .editor-toolbar button.is-accent {
+                            border-color: rgba(37, 99, 235, 0.35);
+                            background: rgba(37, 99, 235, 0.08);
+                            color: var(--primary);
                         }
 
                         .editor-toolbar button:hover {
-                            background: var(--bg-secondary);
-                            border-color: var(--border);
+                            background: rgba(37, 99, 235, 0.08);
+                            border-color: rgba(37, 99, 235, 0.35);
                             color: var(--text-primary);
+                        }
+
+                        .editor-toolbar button:active {
+                            transform: translateY(1px);
                         }
 
                         .editor-content {
                             min-height: 400px;
-                            padding: 1rem;
+                            padding: 1.1rem;
                             outline: none;
                             line-height: 1.8;
+                            background: var(--bg-card);
+                            font-size: 1rem;
                         }
 
                         .editor-content:focus {
@@ -5738,6 +5807,13 @@
                         .editor-content figure.editor-image-figure {
                             margin: 1rem 0;
                             max-width: 100%;
+                            position: relative;
+                            border-radius: var(--radius-sm);
+                        }
+
+                        .editor-content figure.editor-image-figure.is-selected {
+                            outline: 2px solid rgba(37, 99, 235, 0.55);
+                            outline-offset: 2px;
                         }
 
                         .editor-content img.editor-inline-image {
@@ -5753,6 +5829,46 @@
                             color: var(--text-muted);
                             margin-top: 0.35rem;
                             text-align: center;
+                        }
+
+                        .editor-content .editor-image-actions {
+                            position: absolute;
+                            right: 0.5rem;
+                            top: 0.5rem;
+                            display: none;
+                            gap: 0.35rem;
+                            z-index: 3;
+                        }
+
+                        .editor-content figure.editor-image-figure.is-selected .editor-image-actions {
+                            display: flex;
+                        }
+
+                        .editor-image-action-btn {
+                            border: 1px solid rgba(148, 163, 184, 0.4);
+                            background: rgba(15, 23, 42, 0.82);
+                            color: #fff;
+                            border-radius: 8px;
+                            padding: 0.35rem 0.55rem;
+                            font-size: 0.7rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                            line-height: 1;
+                            backdrop-filter: blur(2px);
+                        }
+
+                        .editor-image-action-btn.add {
+                            background: rgba(37, 99, 235, 0.9);
+                            border-color: rgba(59, 130, 246, 0.4);
+                        }
+
+                        .editor-image-action-btn.remove {
+                            background: rgba(220, 38, 38, 0.9);
+                            border-color: rgba(248, 113, 113, 0.4);
+                        }
+
+                        .editor-image-action-btn:hover {
+                            filter: brightness(1.05);
                         }
 
                         .editor-inline-upload-hint {
@@ -5884,52 +6000,53 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label class="form-label">URL Amigavel (Slug)</label>
-                                    <input type="text" id="newsSlug" class="form-input" placeholder="url-da-noticia"
-                                        style="font-family: monospace; font-size: 0.875rem;">
-                                </div>
-
-                                <div class="form-group">
                                     <label class="form-label">Conteudo *</label>
                                     <div class="rich-text-editor">
-                                        <div class="editor-toolbar">
-                                            <button type="button" onclick="formatText('bold')"
-                                                title="Negrito"><b>B</b></button>
-                                            <button type="button" onclick="formatText('italic')"
-                                                title="Italico"><i>I</i></button>
-                                            <button type="button" onclick="formatText('underline')"
-                                                title="Sublinhado"><u>U</u></button>
-                                            <span
-                                                style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('justifyLeft')"
-                                                title="Alinhar Esquerda">Esq</button>
-                                            <button type="button" onclick="formatText('justifyCenter')"
-                                                title="Centralizar">Centro</button>
-                                            <button type="button" onclick="formatText('justifyRight')"
-                                                title="Alinhar Direita">Dir</button>
-                                            <span
-                                                style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('insertUnorderedList')"
-                                                title="Lista">* Lista</button>
-                                            <button type="button" onclick="formatText('insertOrderedList')"
-                                                title="Lista Numerada">1. Lista</button>
-                                            <span
-                                                style="width: 1px; height: 20px; background: var(--border); margin: 0 0.25rem;"></span>
-                                            <button type="button" onclick="formatText('formatBlock', 'H2')"
-                                                title="Titulo">Titulo</button>
-                                            <button type="button" onclick="formatText('formatBlock', 'H3')"
-                                                title="Subtitulo">Sub</button>
-                                            <button type="button" onclick="formatText('removeFormat')"
-                                                title="Limpar Formatacao">x</button>
-                                            <button type="button" onclick="triggerEditorImageUpload()"
-                                                title="Inserir Imagem">Img</button>
+                                        <div class="editor-toolbar-wrap">
+                                            <div class="editor-toolbar-label">Formatacao de texto</div>
+                                            <div class="editor-toolbar">
+                                                <div class="editor-toolbar-group">
+                                                    <button type="button" onclick="formatText('bold')"
+                                                        title="Negrito"><b>B</b></button>
+                                                    <button type="button" onclick="formatText('italic')"
+                                                        title="Italico"><i>I</i></button>
+                                                    <button type="button" onclick="formatText('underline')"
+                                                        title="Sublinhado"><u>U</u></button>
+                                                </div>
+                                                <div class="editor-toolbar-group">
+                                                    <button type="button" onclick="formatText('justifyLeft')"
+                                                        title="Alinhar Esquerda">Esq</button>
+                                                    <button type="button" onclick="formatText('justifyCenter')"
+                                                        title="Centralizar">Centro</button>
+                                                    <button type="button" onclick="formatText('justifyRight')"
+                                                        title="Alinhar Direita">Dir</button>
+                                                </div>
+                                                <div class="editor-toolbar-group">
+                                                    <button type="button" onclick="formatText('insertUnorderedList')"
+                                                        title="Lista">* Lista</button>
+                                                    <button type="button" onclick="formatText('insertOrderedList')"
+                                                        title="Lista Numerada">1. Lista</button>
+                                                </div>
+                                                <div class="editor-toolbar-group">
+                                                    <button type="button" onclick="formatText('formatBlock', 'H2')"
+                                                        title="Titulo">Titulo</button>
+                                                    <button type="button" onclick="formatText('formatBlock', 'H3')"
+                                                        title="Subtitulo">Sub</button>
+                                                    <button type="button" onclick="formatText('removeFormat')"
+                                                        title="Limpar Formatacao">Limpar</button>
+                                                </div>
+                                                <div class="editor-toolbar-group">
+                                                    <button type="button" class="is-accent" onclick="newsEditorImageInsertMode='cursor'; triggerEditorImageUpload()"
+                                                        title="Inserir Imagem">+ Imagem</button>
+                                                </div>
+                                            </div>
                                         </div>
                                         <input type="file" id="editorInlineImageInput" accept="image/*" multiple
                                             style="display: none;" onchange="handleEditorInlineImageSelect(event)">
                                         <div id="editorContent" class="editor-content" contenteditable="true"
                                             placeholder="Comece a escrever sua noticia aqui..."></div>
                                         <div id="editorInlineUploadHint" class="editor-inline-upload-hint">
-                                            Dica: voce pode colar (Ctrl+V) ou arrastar fotos direto no texto.
+                                            Dica: cole/arraste fotos no texto e toque na imagem para excluir ou adicionar outra.
                                         </div>
                                     </div>
                                 </div>
@@ -7947,6 +8064,8 @@
         const importedNewsPerPage = 10;
         let newsEditorInteractionsReady = false;
         let newsEditorSavedRange = null;
+        let activeEditorImageFigure = null;
+        let newsEditorImageInsertMode = 'cursor';
 
         // Carregar pagina de Noticias com paginacao
         async function loadNewsPage() {
@@ -10770,7 +10889,6 @@
         // Resetar formulario
         function resetNewsForm() {
             document.getElementById('newsTitle').value = '';
-            document.getElementById('newsSlug').value = '';
             document.getElementById('editorContent').innerHTML = '';
             document.getElementById('newsExcerpt').value = '';
             document.getElementById('excerptCount').textContent = '0';
@@ -10784,20 +10902,14 @@
             if (externalHint) externalHint.textContent = '';
             document.querySelector('input[name="newsStatus"][value="published"]').checked = true;
             removeNewsImage();
+            clearActiveEditorImageFigure();
             editingNewsId = null;
         }
 
         // Gerar slug do titulo
         function generateSlug() {
             const title = document.getElementById('newsTitle').value;
-            const slug = title
-                .toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^\w\s-]/g, '')
-                .replace(/\s+/g, '-')
-                .substring(0, 100);
-            document.getElementById('newsSlug').value = slug;
+            return generateSlugFromTitle(title);
         }
 
         // Formatar texto no editor
@@ -10807,25 +10919,123 @@
         }
 
         function setupNewsEditorInteractions() {
-            if (newsEditorInteractionsReady) return;
-
             const editor = document.getElementById('editorContent');
             if (!editor) return;
 
             const hint = document.getElementById('editorInlineUploadHint');
             if (hint) hint.style.display = 'block';
 
+            hydrateEditorImages();
+
+            if (newsEditorInteractionsReady) return;
+
             ['keyup', 'mouseup', 'touchend', 'focus'].forEach(eventName => {
                 editor.addEventListener(eventName, saveNewsEditorSelectionRange);
             });
 
+            editor.addEventListener('click', handleEditorClick);
             editor.addEventListener('paste', handleEditorImagePaste);
             editor.addEventListener('drop', handleEditorImageDrop);
             editor.addEventListener('dragover', function (event) {
                 event.preventDefault();
             });
+            document.addEventListener('click', handleDocumentClickOutsideEditor);
 
             newsEditorInteractionsReady = true;
+        }
+
+        function hydrateEditorImages() {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+
+            const orphanImages = Array.from(editor.querySelectorAll('img')).filter(img => !img.closest('figure.editor-image-figure'));
+            orphanImages.forEach(img => {
+                const figure = document.createElement('figure');
+                figure.className = 'editor-image-figure';
+                img.parentNode?.insertBefore(figure, img);
+                figure.appendChild(img);
+                if (!img.classList.contains('editor-inline-image')) {
+                    img.classList.add('editor-inline-image');
+                }
+                ensureEditorImageActions(figure);
+            });
+
+            editor.querySelectorAll('figure.editor-image-figure').forEach(figure => {
+                ensureEditorImageActions(figure);
+            });
+        }
+
+        function ensureEditorImageActions(figure) {
+            if (!figure) return;
+            if (figure.querySelector('.editor-image-actions')) return;
+
+            const actions = document.createElement('div');
+            actions.className = 'editor-image-actions';
+
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.className = 'editor-image-action-btn add';
+            addBtn.textContent = '+ Foto';
+            addBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                setActiveEditorImageFigure(figure);
+                newsEditorImageInsertMode = 'after-selected-image';
+                triggerEditorImageUpload();
+            });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'editor-image-action-btn remove';
+            removeBtn.textContent = 'Excluir';
+            removeBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                event.stopPropagation();
+                setActiveEditorImageFigure(figure);
+                removeSelectedEditorInlineImage();
+            });
+
+            actions.appendChild(addBtn);
+            actions.appendChild(removeBtn);
+            figure.appendChild(actions);
+        }
+
+        function setActiveEditorImageFigure(figure) {
+            if (activeEditorImageFigure && activeEditorImageFigure !== figure) {
+                activeEditorImageFigure.classList.remove('is-selected');
+            }
+            activeEditorImageFigure = figure || null;
+            if (activeEditorImageFigure) {
+                activeEditorImageFigure.classList.add('is-selected');
+            }
+        }
+
+        function clearActiveEditorImageFigure() {
+            if (activeEditorImageFigure) {
+                activeEditorImageFigure.classList.remove('is-selected');
+            }
+            activeEditorImageFigure = null;
+        }
+
+        function handleEditorClick(event) {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+
+            const figure = event.target.closest('figure.editor-image-figure');
+            if (figure && editor.contains(figure)) {
+                setActiveEditorImageFigure(figure);
+                return;
+            }
+
+            clearActiveEditorImageFigure();
+        }
+
+        function handleDocumentClickOutsideEditor(event) {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+            if (!editor.contains(event.target)) {
+                clearActiveEditorImageFigure();
+            }
         }
 
         function saveNewsEditorSelectionRange() {
@@ -10889,6 +11099,22 @@
             return true;
         }
 
+        function setNewsEditorCaretAfterNode(node) {
+            const editor = document.getElementById('editorContent');
+            if (!editor || !node || !editor.contains(node)) return false;
+
+            const selection = window.getSelection();
+            if (!selection) return false;
+
+            const range = document.createRange();
+            range.setStartAfter(node);
+            range.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            newsEditorSavedRange = range.cloneRange();
+            return true;
+        }
+
         function triggerEditorImageUpload() {
             saveNewsEditorSelectionRange();
             const input = document.getElementById('editorInlineImageInput');
@@ -10897,9 +11123,17 @@
 
         async function handleEditorInlineImageSelect(event) {
             const files = Array.from(event?.target?.files || []).filter(file => file?.type?.startsWith('image/'));
-            if (files.length === 0) return;
+            if (files.length === 0) {
+                newsEditorImageInsertMode = 'cursor';
+                return;
+            }
+
+            if (newsEditorImageInsertMode === 'after-selected-image' && activeEditorImageFigure) {
+                setNewsEditorCaretAfterNode(activeEditorImageFigure);
+            }
 
             await insertInlineImagesInEditor(files);
+            newsEditorImageInsertMode = 'cursor';
             if (event?.target) event.target.value = '';
         }
 
@@ -10912,6 +11146,7 @@
 
             if (imageFiles.length > 0) {
                 event.preventDefault();
+                newsEditorImageInsertMode = 'cursor';
                 saveNewsEditorSelectionRange();
                 await insertInlineImagesInEditor(imageFiles);
                 return;
@@ -10922,6 +11157,7 @@
             if (imageSources.length === 0) return;
 
             event.preventDefault();
+            newsEditorImageInsertMode = 'cursor';
             saveNewsEditorSelectionRange();
             await insertInlineImageSourcesInEditor(imageSources);
         }
@@ -10931,6 +11167,7 @@
             if (files.length === 0) return;
 
             event.preventDefault();
+            newsEditorImageInsertMode = 'cursor';
             setNewsEditorCaretFromPoint(event.clientX, event.clientY);
             saveNewsEditorSelectionRange();
             await insertInlineImagesInEditor(files);
@@ -10998,7 +11235,9 @@
             img.loading = 'lazy';
 
             figure.appendChild(img);
+            ensureEditorImageActions(figure);
             placeholder.replaceWith(figure);
+            setActiveEditorImageFigure(figure);
 
             const editor = document.getElementById('editorContent');
             if (editor) {
@@ -11009,6 +11248,19 @@
                 selection.removeAllRanges();
                 selection.addRange(afterRange);
                 newsEditorSavedRange = afterRange.cloneRange();
+            }
+        }
+
+        function removeSelectedEditorInlineImage() {
+            if (!activeEditorImageFigure) return;
+
+            const figureToRemove = activeEditorImageFigure;
+            const removed = setNewsEditorCaretAfterNode(figureToRemove);
+            figureToRemove.remove();
+            clearActiveEditorImageFigure();
+
+            if (!removed) {
+                saveNewsEditorSelectionRange();
             }
         }
 
@@ -11242,10 +11494,23 @@
             await saveNews('published');
         }
 
+        function getEditorContentHtmlForSave() {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return '';
+
+            const cleanEditorClone = editor.cloneNode(true);
+            cleanEditorClone.querySelectorAll('.editor-image-actions').forEach(el => el.remove());
+            cleanEditorClone.querySelectorAll('figure.editor-image-figure').forEach(fig => {
+                fig.classList.remove('is-selected');
+            });
+
+            return cleanEditorClone.innerHTML.trim();
+        }
+
         // Salvar noticia
         async function saveNews(status) {
             const title = document.getElementById('newsTitle').value.trim();
-            let content = document.getElementById('editorContent').innerHTML.trim();
+            let content = getEditorContentHtmlForSave();
             const category = document.getElementById('newsCategory').value;
             const externalUrl = document.getElementById('newsExternalUrl')?.value.trim() || '';
             const sourceDomain = normalizeDomainFromUrl(externalUrl);
@@ -11273,6 +11538,8 @@
             try {
                 content = await normalizeInlineNewsContentImages(content);
                 document.getElementById('editorContent').innerHTML = content;
+                hydrateEditorImages();
+                clearActiveEditorImageFigure();
             } catch (inlineError) {
                 console.error('[Editor] Erro ao preparar imagens inline para salvar noticia:', inlineError);
                 showModal('Erro!', 'Nao foi possivel enviar uma das imagens do conteudo para o R2.', 'error');
@@ -11296,7 +11563,7 @@
 
             const newsData = {
                 title: title,
-                slug: document.getElementById('newsSlug').value || generateSlugFromTitle(title),
+                slug: generateSlugFromTitle(title),
                 content: content,
                 excerpt: document.getElementById('newsExcerpt').value.trim(),
                 category: category,
@@ -11384,8 +11651,9 @@
                 if (doc.exists) {
                     const news = doc.data();
                     document.getElementById('newsTitle').value = news.title || '';
-                    document.getElementById('newsSlug').value = news.slug || '';
                     document.getElementById('editorContent').innerHTML = news.content || '';
+                    hydrateEditorImages();
+                    clearActiveEditorImageFigure();
                     document.getElementById('newsExcerpt').value = news.excerpt || '';
                     document.getElementById('excerptCount').textContent = (news.excerpt || '').length;
                     document.getElementById('newsCategory').value = news.category || '';
@@ -11403,6 +11671,8 @@
                         document.getElementById('newsImagePreview').style.display = 'block';
                         document.getElementById('removeImageBtn').style.display = 'block';
                         document.querySelector('.featured-image-upload').style.display = 'none';
+                    } else {
+                        removeNewsImage();
                     }
 
                     const status = news.status || 'published';
