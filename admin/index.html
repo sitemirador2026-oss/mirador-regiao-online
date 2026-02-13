@@ -559,6 +559,21 @@
             height: 20px;
         }
 
+        .header-logout-mobile {
+            display: none;
+            align-items: center;
+            gap: 0.4rem;
+            min-height: 40px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.95rem;
+            white-space: nowrap;
+        }
+
+        .header-logout-mobile svg {
+            width: 17px;
+            height: 17px;
+        }
+
         .notification-dot {
             position: absolute;
             top: 8px;
@@ -1271,13 +1286,6 @@
             color: var(--danger);
             border-color: var(--danger);
             background: var(--danger-light);
-        }
-
-        /* Swipe elements hidden by default (desktop) */
-        .swipe-container,
-        .swipe-content,
-        .swipe-actions {
-            display: contents;
         }
 
         .action-btn svg {
@@ -2003,59 +2011,6 @@
         }
 
         @media (max-width: 768px) {
-            /* ===== SWIPE ACTIONS - Mobile ===== */
-            .desktop-row-content {
-                display: none !important;
-            }
-
-            .swipe-container {
-                display: flex !important;
-                position: relative;
-                overflow: hidden;
-                touch-action: pan-y;
-            }
-
-            .swipe-content {
-                display: flex !important;
-                flex: 1;
-                min-width: 0;
-                padding: 0.75rem 0.5rem;
-                background: var(--bg-card);
-                transition: transform 0.25s ease-out;
-                position: relative;
-                z-index: 2;
-                align-items: center;
-            }
-
-            .swipe-content.swiped-left {
-                transform: translateX(-130px) !important;
-            }
-
-            .swipe-actions {
-                display: flex !important;
-                align-items: center;
-                gap: 0.75rem;
-                padding: 0 1rem;
-                background: var(--bg-secondary);
-                position: absolute;
-                right: 0;
-                top: 0;
-                bottom: 0;
-                z-index: 1;
-                width: 130px;
-                justify-content: center;
-            }
-
-            /* Usa os botões action-btn originais, apenas maiores */
-            .swipe-actions .action-btn {
-                width: 48px;
-                height: 48px;
-            }
-
-            .swipe-actions .action-btn svg {
-                width: 20px;
-                height: 20px;
-            }
 
             .admin-layout {
                 padding-left: 0;
@@ -2116,6 +2071,14 @@
                 height: 36px;
             }
 
+            .header-logout-mobile {
+                display: inline-flex;
+                min-height: 36px;
+                padding: 0.45rem 0.7rem;
+                border-radius: var(--radius);
+                font-size: 0.9rem;
+            }
+
             .header-help-btn {
                 display: none;
             }
@@ -2133,6 +2096,11 @@
             }
 
             .page-content > * {
+                max-width: 100%;
+            }
+
+            .content-section {
+                width: 100%;
                 max-width: 100%;
             }
 
@@ -2217,67 +2185,71 @@
             }
 
             .table-container {
-                overflow-x: hidden;
+                overflow-x: auto;
+                overflow-y: hidden;
                 -webkit-overflow-scrolling: touch;
+                overscroll-behavior-x: contain;
+                touch-action: pan-x pan-y;
+                width: 100%;
+                max-width: 100%;
             }
 
             .data-table {
-                min-width: 0;
+                min-width: 100%;
                 width: 100%;
-                table-layout: auto;
+                table-layout: fixed;
                 font-size: 0.8125rem;
             }
 
             .data-table th,
             .data-table td {
-                padding: 0.65rem 0.4rem;
+                padding: 0.7rem 0.55rem;
             }
 
             .news-table {
                 width: 100% !important;
-                table-layout: auto !important;
-            }
-
-            .news-table colgroup {
-                display: none !important;
-            }
-
-            .news-table th:nth-child(3),
-            .news-table th:nth-child(4),
-            .news-table td:nth-child(3),
-            .news-table td:nth-child(4) {
-                display: none !important;
+                table-layout: fixed !important;
+                min-width: 470px !important;
             }
 
             .news-table th:first-child,
             .news-table td:first-child {
-                width: 60px !important;
-                min-width: 60px !important;
-                max-width: 60px !important;
+                width: 70px !important;
+            }
+
+            .news-table th:nth-child(2),
+            .news-table td:nth-child(2) {
+                width: auto !important;
+                min-width: 220px !important;
+            }
+
+            .news-table th:nth-child(3),
+            .news-table td:nth-child(3) {
+                display: none;
+            }
+
+            .news-table th:nth-child(4),
+            .news-table td:nth-child(4) {
+                display: none;
             }
 
             .news-table th:nth-child(5),
             .news-table td:nth-child(5) {
-                width: 76px !important;
-                min-width: 76px !important;
-                max-width: 76px !important;
+                width: 108px !important;
                 text-align: right;
                 vertical-align: middle;
-            }
-
-            .news-table td:nth-child(2) {
-                width: auto !important;
-                min-width: 0 !important;
             }
 
             .news-title {
                 max-width: 100%;
                 white-space: normal !important;
                 overflow: hidden !important;
+                text-overflow: ellipsis;
+                line-height: 1.35;
                 display: -webkit-box;
-                -webkit-line-clamp: 3;
+                -webkit-line-clamp: 2;
+                line-clamp: 2;
                 -webkit-box-orient: vertical;
-                line-height: 1.3;
                 word-break: break-word;
             }
 
@@ -2296,17 +2268,17 @@
             .actions-cell {
                 justify-content: flex-end;
                 flex-wrap: nowrap;
-                gap: 0.2rem;
+                gap: 0.3rem;
             }
 
             .action-btn {
-                width: 26px;
-                height: 26px;
+                width: 32px;
+                height: 32px;
             }
 
             .action-btn svg {
-                width: 12px;
-                height: 12px;
+                width: 14px;
+                height: 14px;
             }
 
             .media-toolbar-controls {
@@ -2533,15 +2505,19 @@
             }
 
             body.login-mode {
+                position: fixed;
+                inset: 0;
+                width: 100%;
                 overflow: hidden;
                 height: 100dvh;
+                overscroll-behavior: none;
             }
 
             body.login-mode .login-container {
                 position: fixed;
                 inset: 0;
-                min-height: 100dvh;
-                height: 100dvh;
+                min-height: 100svh;
+                height: 100svh;
                 padding-top: max(0.75rem, env(safe-area-inset-top));
                 padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
                 padding-left: max(0.875rem, env(safe-area-inset-left));
@@ -2555,7 +2531,7 @@
                 max-width: 400px;
                 width: min(100%, 400px);
                 min-height: auto;
-                max-height: calc(100dvh - 1.75rem);
+                max-height: calc(100svh - 1.5rem);
                 border-radius: var(--radius-lg);
                 border: 1px solid var(--border);
                 box-shadow: var(--shadow);
@@ -3022,6 +2998,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
+                        </button>
+                        <button class="btn btn-secondary header-logout-mobile" onclick="logout()">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            Sair
                         </button>
 
                     </div>
@@ -5746,6 +5729,57 @@
                             margin-bottom: 0.5rem;
                         }
 
+                        .editor-content figure.editor-image-figure {
+                            margin: 1rem 0;
+                            max-width: 100%;
+                        }
+
+                        .editor-content img.editor-inline-image {
+                            display: block;
+                            max-width: 100%;
+                            height: auto;
+                            border-radius: var(--radius-sm);
+                            border: 1px solid var(--border);
+                        }
+
+                        .editor-content figcaption.editor-image-caption {
+                            font-size: 0.75rem;
+                            color: var(--text-muted);
+                            margin-top: 0.35rem;
+                            text-align: center;
+                        }
+
+                        .editor-inline-upload-hint {
+                            display: none;
+                            padding: 0.5rem 0.75rem;
+                            border-top: 1px solid var(--border);
+                            font-size: 0.75rem;
+                            color: var(--text-muted);
+                            background: var(--bg-primary);
+                        }
+
+                        .editor-image-placeholder {
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            padding: 0.35rem 0.55rem;
+                            border-radius: var(--radius-sm);
+                            border: 1px dashed var(--primary-light);
+                            color: var(--primary);
+                            font-size: 0.75rem;
+                            background: rgba(59, 130, 246, 0.08);
+                        }
+
+                        .editor-image-placeholder::before {
+                            content: '';
+                            width: 12px;
+                            height: 12px;
+                            border: 2px solid rgba(59, 130, 246, 0.25);
+                            border-top-color: var(--primary);
+                            border-radius: 50%;
+                            animation: spin 1s linear infinite;
+                        }
+
                         .featured-image-upload {
                             border: 2px dashed var(--border);
                             border-radius: var(--radius);
@@ -5870,9 +5904,16 @@
                                                 title="Subtitulo">Sub</button>
                                             <button type="button" onclick="formatText('removeFormat')"
                                                 title="Limpar Formatacao">x</button>
+                                            <button type="button" onclick="triggerEditorImageUpload()"
+                                                title="Inserir Imagem">Img</button>
                                         </div>
+                                        <input type="file" id="editorInlineImageInput" accept="image/*" multiple
+                                            style="display: none;" onchange="handleEditorInlineImageSelect(event)">
                                         <div id="editorContent" class="editor-content" contenteditable="true"
                                             placeholder="Comece a escrever sua noticia aqui..."></div>
+                                        <div id="editorInlineUploadHint" class="editor-inline-upload-hint">
+                                            Dica: voce pode colar (Ctrl+V) ou arrastar fotos direto no texto.
+                                        </div>
                                     </div>
                                 </div>
 
@@ -6092,8 +6133,18 @@
             return errorMap[code] || 'Nao foi possivel fazer login agora. Tente novamente.';
         }
 
+        function normalizeEmailForAuth(emailValue) {
+            let normalized = String(emailValue || '').trim().toLowerCase();
+            if (!normalized) return '';
+
+            // Correcao automatica de erros comuns no mobile.
+            normalized = normalized.replace(/@gmai\.com$/i, '@gmail.com');
+            normalized = normalized.replace(/\.con$/i, '.com');
+            return normalized;
+        }
+
         function getEmailInputHint(emailValue) {
-            const normalized = String(emailValue || '').trim().toLowerCase();
+            const normalized = normalizeEmailForAuth(emailValue);
             if (!normalized) return '';
 
             if (!normalized.includes('@')) {
@@ -6120,7 +6171,7 @@
             const errorElement = document.getElementById('loginError');
             const submitButton = e.currentTarget?.querySelector('button[type="submit"]');
 
-            const normalizedEmail = String(emailInput?.value || '').trim().toLowerCase();
+            const normalizedEmail = normalizeEmailForAuth(emailInput?.value || '');
             const rawPassword = String(passwordInput?.value || '');
 
             if (emailInput) emailInput.value = normalizedEmail;
@@ -6253,7 +6304,12 @@
 
         // Restaurar ultima pagina visitada
         function restoreLastPage() {
-            const savedPage = localStorage.getItem('adminCurrentPage');
+            let savedPage = '';
+            try {
+                savedPage = localStorage.getItem('adminCurrentPage');
+            } catch (error) {
+                console.warn('[Admin] Nao foi possivel ler pagina atual do localStorage:', error);
+            }
             const pageMap = {
                 'dashboard': { id: 'dashboardPage', index: 0 },
                 'news': { id: 'newsPage', index: 1 },
@@ -6404,7 +6460,11 @@
         // Navegacao entre paginas
         function showPage(pageName, element) {
             // Salvar pagina atual no localStorage
-            localStorage.setItem('adminCurrentPage', pageName);
+            try {
+                localStorage.setItem('adminCurrentPage', pageName);
+            } catch (error) {
+                console.warn('[Admin] Nao foi possivel salvar pagina atual no localStorage:', error);
+            }
 
             // Esconder todas as paginas
             document.querySelectorAll('.page-content').forEach(page => {
@@ -7877,6 +7937,8 @@
         let allImportedNewsData = [];
         let currentImportedNewsPage = 1;
         const importedNewsPerPage = 10;
+        let newsEditorInteractionsReady = false;
+        let newsEditorSavedRange = null;
 
         // Carregar pagina de Noticias com paginacao
         async function loadNewsPage() {
@@ -7965,54 +8027,25 @@
 
                 const html = `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swipe-actions">
-                                    <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                            <div style="display: contents;" class="desktop-row-content">
-                                <table style="width: 100%; table-layout: fixed;"><tr>
-                                    <td style="width: 60px;">${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                                        <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
-                                    </td>
-                                    <td style="width: 100px;"><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
-                                    <td style="width: 90px;">${date}</td>
-                                    <td style="width: 80px;">
-                                        <div class="actions-cell">
-                                            <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${n.title}</div>
+                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
+                        </td>
+                        <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn" onclick="showCreateNewsPage('${n.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${n.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -8143,58 +8176,27 @@
 
                 importedList.innerHTML += `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
-                                            <div class="news-meta">
-                                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swipe-actions">
-                                    <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
+                            <div class="news-meta">
+                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
                             </div>
-                            <div style="display: contents;" class="desktop-row-content">
-                                <table style="width: 100%; table-layout: fixed;"><tr>
-                                    <td style="width: 60px;">${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
-                                        <div class="news-meta">
-                                            ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
-                                        </div>
-                                    </td>
-                                    <td style="width: 100px;"><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
-                                    <td style="width: 90px;">${date}</td>
-                                    <td style="width: 80px;">
-                                        <div class="actions-cell">
-                                            <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        </td>
+                        <td><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn" onclick="showCreateNewsPage('${newsItem.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${newsItem.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -8306,59 +8308,27 @@
 
                 const html = `
                     <tr>
-                        <td colspan="5">
-                            <div class="swipe-container">
-                                <div class="swipe-content">
-                                    <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 0;">
-                                        ${imageHtml}
-                                        <div class="news-title-cell" style="flex: 1; min-width: 0;">
-                                            <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
-                                            <div class="news-meta">
-                                                ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="swipe-actions">
-                                    <button class="action-btn" onclick="showCreateNewsPage('${post.id}')" title="Editar">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                    </button>
-                                    <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
-                                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                        </svg>
-                                    </button>
-                                </div>
+                        <td>${imageHtml}</td>
+                        <td class="news-title-cell">
+                            <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
+                            <div class="news-meta">
+                                ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
                             </div>
-                            <!-- Layout desktop/tablet original -->
-                            <div style="display: contents;" class="desktop-row-content">
-                                <table style="width: 100%; table-layout: fixed;"><tr>
-                                    <td style="width: 60px;">${imageHtml}</td>
-                                    <td class="news-title-cell">
-                                        <div class="news-title" title="${escapedTitle}">${post.title || 'Post do Instagram'}</div>
-                                        <div class="news-meta">
-                                            ${(post.instagramDisplayName || post.author || 'Instagram')} &bull; ${likes.toLocaleString('pt-BR')} curtidas &bull; ${comments.toLocaleString('pt-BR')} comentarios
-                                        </div>
-                                    </td>
-                                    <td style="width: 100px;"><span class="category-badge">Instagram</span></td>
-                                    <td style="width: 90px;">${date}</td>
-                                    <td style="width: 80px;">
-                                        <div class="actions-cell">
-                                            <button class="action-btn" onclick="showCreateNewsPage('${post.id}')" title="Editar">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                                </svg>
-                                            </button>
-                                            <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
-                                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                                </svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr></table>
+                        </td>
+                        <td><span class="category-badge">Instagram</span></td>
+                        <td>${date}</td>
+                        <td>
+                            <div class="actions-cell">
+                                <button class="action-btn" onclick="showCreateNewsPage('${post.id}')" title="Editar">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                    </svg>
+                                </button>
+                                <button class="action-btn delete" onclick="deleteNews('${post.id}')" title="Excluir">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -10781,11 +10751,12 @@
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             document.getElementById('newsDate').value = now.toISOString().slice(0, 16);
+            setupNewsEditorInteractions();
 
             // Contador de caracteres
-            document.getElementById('newsExcerpt').addEventListener('input', function () {
+            document.getElementById('newsExcerpt').oninput = function () {
                 document.getElementById('excerptCount').textContent = this.value.length;
-            });
+            };
         }
 
         // Resetar formulario
@@ -10825,6 +10796,359 @@
         function formatText(command, value = null) {
             document.execCommand(command, false, value);
             document.getElementById('editorContent').focus();
+        }
+
+        function setupNewsEditorInteractions() {
+            if (newsEditorInteractionsReady) return;
+
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+
+            const hint = document.getElementById('editorInlineUploadHint');
+            if (hint) hint.style.display = 'block';
+
+            ['keyup', 'mouseup', 'touchend', 'focus'].forEach(eventName => {
+                editor.addEventListener(eventName, saveNewsEditorSelectionRange);
+            });
+
+            editor.addEventListener('paste', handleEditorImagePaste);
+            editor.addEventListener('drop', handleEditorImageDrop);
+            editor.addEventListener('dragover', function (event) {
+                event.preventDefault();
+            });
+
+            newsEditorInteractionsReady = true;
+        }
+
+        function saveNewsEditorSelectionRange() {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0) return;
+
+            const range = selection.getRangeAt(0);
+            if (editor.contains(range.commonAncestorContainer)) {
+                newsEditorSavedRange = range.cloneRange();
+            }
+        }
+
+        function restoreNewsEditorSelectionRange() {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return false;
+
+            editor.focus();
+            const selection = window.getSelection();
+            if (!selection) return false;
+
+            selection.removeAllRanges();
+            if (newsEditorSavedRange) {
+                selection.addRange(newsEditorSavedRange);
+                return true;
+            }
+
+            const fallbackRange = document.createRange();
+            fallbackRange.selectNodeContents(editor);
+            fallbackRange.collapse(false);
+            selection.addRange(fallbackRange);
+            newsEditorSavedRange = fallbackRange.cloneRange();
+            return true;
+        }
+
+        function setNewsEditorCaretFromPoint(clientX, clientY) {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return false;
+
+            let range = null;
+            if (typeof document.caretRangeFromPoint === 'function') {
+                range = document.caretRangeFromPoint(clientX, clientY);
+            } else if (typeof document.caretPositionFromPoint === 'function') {
+                const position = document.caretPositionFromPoint(clientX, clientY);
+                if (position) {
+                    range = document.createRange();
+                    range.setStart(position.offsetNode, position.offset);
+                    range.collapse(true);
+                }
+            }
+
+            if (!range || !editor.contains(range.commonAncestorContainer)) return false;
+
+            const selection = window.getSelection();
+            if (!selection) return false;
+            selection.removeAllRanges();
+            selection.addRange(range);
+            newsEditorSavedRange = range.cloneRange();
+            return true;
+        }
+
+        function triggerEditorImageUpload() {
+            saveNewsEditorSelectionRange();
+            const input = document.getElementById('editorInlineImageInput');
+            if (input) input.click();
+        }
+
+        async function handleEditorInlineImageSelect(event) {
+            const files = Array.from(event?.target?.files || []).filter(file => file?.type?.startsWith('image/'));
+            if (files.length === 0) return;
+
+            await insertInlineImagesInEditor(files);
+            if (event?.target) event.target.value = '';
+        }
+
+        async function handleEditorImagePaste(event) {
+            const items = Array.from(event?.clipboardData?.items || []);
+            const imageFiles = items
+                .filter(item => item && item.kind === 'file' && item.type && item.type.startsWith('image/'))
+                .map(item => item.getAsFile())
+                .filter(Boolean);
+
+            if (imageFiles.length > 0) {
+                event.preventDefault();
+                saveNewsEditorSelectionRange();
+                await insertInlineImagesInEditor(imageFiles);
+                return;
+            }
+
+            const htmlPayload = event?.clipboardData?.getData('text/html') || '';
+            const imageSources = extractImageSourcesFromHtml(htmlPayload);
+            if (imageSources.length === 0) return;
+
+            event.preventDefault();
+            saveNewsEditorSelectionRange();
+            await insertInlineImageSourcesInEditor(imageSources);
+        }
+
+        async function handleEditorImageDrop(event) {
+            const files = Array.from(event?.dataTransfer?.files || []).filter(file => file?.type?.startsWith('image/'));
+            if (files.length === 0) return;
+
+            event.preventDefault();
+            setNewsEditorCaretFromPoint(event.clientX, event.clientY);
+            saveNewsEditorSelectionRange();
+            await insertInlineImagesInEditor(files);
+        }
+
+        function extractImageSourcesFromHtml(htmlContent = '') {
+            if (!htmlContent || typeof htmlContent !== 'string' || !/<img[\s>]/i.test(htmlContent)) {
+                return [];
+            }
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlContent, 'text/html');
+                const sources = Array.from(doc.querySelectorAll('img'))
+                    .map(img => (img.getAttribute('src') || '').trim())
+                    .filter(src => src && (src.startsWith('data:image/') || /^https?:\/\//i.test(src)));
+                return Array.from(new Set(sources));
+            } catch (_error) {
+                return [];
+            }
+        }
+
+        function insertEditorImagePlaceholder(label = 'Enviando imagem...') {
+            const editor = document.getElementById('editorContent');
+            if (!editor) return null;
+
+            restoreNewsEditorSelectionRange();
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0) return null;
+
+            const range = selection.getRangeAt(0);
+            const placeholder = document.createElement('span');
+            const placeholderId = `editor-image-placeholder-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+            placeholder.id = placeholderId;
+            placeholder.className = 'editor-image-placeholder';
+            placeholder.textContent = label;
+
+            range.deleteContents();
+            range.insertNode(placeholder);
+
+            const spacer = document.createTextNode('\n');
+            placeholder.parentNode?.insertBefore(spacer, placeholder.nextSibling);
+
+            const nextRange = document.createRange();
+            nextRange.setStartAfter(spacer);
+            nextRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(nextRange);
+            newsEditorSavedRange = nextRange.cloneRange();
+
+            return placeholderId;
+        }
+
+        function replaceEditorPlaceholderWithImage(placeholderId, imageUrl, filename = 'imagem') {
+            const placeholder = document.getElementById(placeholderId);
+            if (!placeholder) return;
+
+            const figure = document.createElement('figure');
+            figure.className = 'editor-image-figure';
+
+            const img = document.createElement('img');
+            img.className = 'editor-inline-image';
+            img.src = imageUrl;
+            img.alt = filename || 'imagem da noticia';
+            img.loading = 'lazy';
+
+            figure.appendChild(img);
+            placeholder.replaceWith(figure);
+
+            const editor = document.getElementById('editorContent');
+            if (editor) {
+                const selection = window.getSelection();
+                const afterRange = document.createRange();
+                afterRange.setStartAfter(figure);
+                afterRange.collapse(true);
+                selection.removeAllRanges();
+                selection.addRange(afterRange);
+                newsEditorSavedRange = afterRange.cloneRange();
+            }
+        }
+
+        async function uploadEditorInlineImageToR2(file) {
+            if (!file || !file.type || !file.type.startsWith('image/')) {
+                throw new Error('Arquivo de imagem invalido');
+            }
+
+            if (file.size > 12 * 1024 * 1024) {
+                throw new Error('Imagem muito grande (maximo 12MB)');
+            }
+
+            if (!r2Client) {
+                initR2Client();
+            }
+
+            const compressedDataUrl = await compressImage(file, 1800, 1800, 0.82);
+            const uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-inline-${(file.name || 'imagem').replace(/[^\w.-]+/g, '-')}.jpg`);
+            const result = await r2Client.uploadFile(uploadFile, 'noticias');
+            const imageUrl = (result?.url || '').trim();
+
+            if (!imageUrl) {
+                throw new Error('URL da imagem nao retornada pelo R2');
+            }
+
+            return imageUrl;
+        }
+
+        async function fetchEditorImageFileFromUrl(url, index = 1) {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error(`Falha ao baixar imagem externa (${response.status})`);
+            }
+
+            const blob = await response.blob();
+            if (!blob.type || !blob.type.startsWith('image/')) {
+                throw new Error('URL externa nao retornou imagem valida');
+            }
+
+            const extMap = {
+                'image/jpeg': 'jpg',
+                'image/png': 'png',
+                'image/webp': 'webp',
+                'image/gif': 'gif',
+                'image/avif': 'avif'
+            };
+            const ext = extMap[blob.type] || 'jpg';
+            return new File([blob], `editor-colada-${Date.now()}-${index}.${ext}`, {
+                type: blob.type,
+                lastModified: Date.now()
+            });
+        }
+
+        async function insertInlineImagesInEditor(files = []) {
+            if (!Array.isArray(files) || files.length === 0) return;
+
+            const imageFiles = files.filter(file => file?.type?.startsWith('image/'));
+            if (imageFiles.length === 0) return;
+
+            for (const file of imageFiles) {
+                const placeholderId = insertEditorImagePlaceholder(`Enviando ${file.name || 'imagem'}...`);
+                if (!placeholderId) continue;
+
+                try {
+                    const imageUrl = await uploadEditorInlineImageToR2(file);
+                    replaceEditorPlaceholderWithImage(placeholderId, imageUrl, file.name || 'imagem');
+                } catch (error) {
+                    console.error('[Editor] Erro ao inserir imagem inline:', error);
+                    const placeholder = document.getElementById(placeholderId);
+                    if (placeholder) {
+                        placeholder.textContent = 'Falha ao enviar imagem';
+                        placeholder.style.color = 'var(--danger)';
+                    }
+                    showModal('Erro', `Nao foi possivel enviar "${file.name || 'imagem'}".`, 'error');
+                }
+            }
+        }
+
+        async function insertInlineImageSourcesInEditor(imageSources = []) {
+            if (!Array.isArray(imageSources) || imageSources.length === 0) return;
+
+            for (let i = 0; i < imageSources.length; i++) {
+                const source = String(imageSources[i] || '').trim();
+                if (!source) continue;
+
+                const placeholderId = insertEditorImagePlaceholder('Enviando imagem colada...');
+                if (!placeholderId) continue;
+
+                try {
+                    let finalUrl = '';
+
+                    if (source.startsWith('data:image/')) {
+                        const dataFile = await dataUrlToFile(source, `editor-colada-${Date.now()}-${i + 1}.jpg`);
+                        finalUrl = await uploadEditorInlineImageToR2(dataFile);
+                    } else if (/^https?:\/\//i.test(source)) {
+                        try {
+                            const remoteFile = await fetchEditorImageFileFromUrl(source, i + 1);
+                            finalUrl = await uploadEditorInlineImageToR2(remoteFile);
+                        } catch (remoteError) {
+                            console.warn('[Editor] Falha ao copiar imagem externa para o R2. Mantendo URL original:', remoteError);
+                            finalUrl = source;
+                        }
+                    }
+
+                    if (!finalUrl) {
+                        throw new Error('Fonte de imagem invalida');
+                    }
+
+                    replaceEditorPlaceholderWithImage(placeholderId, finalUrl, `imagem-${i + 1}`);
+                } catch (error) {
+                    console.error('[Editor] Erro ao inserir imagem colada via HTML:', error);
+                    const placeholder = document.getElementById(placeholderId);
+                    if (placeholder) {
+                        placeholder.textContent = 'Falha ao enviar imagem';
+                        placeholder.style.color = 'var(--danger)';
+                    }
+                }
+            }
+        }
+
+        async function normalizeInlineNewsContentImages(contentHtml = '') {
+            if (typeof contentHtml !== 'string' || !contentHtml.includes('data:image/')) {
+                return contentHtml;
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(contentHtml, 'text/html');
+            const imageElements = Array.from(doc.querySelectorAll('img[src^="data:image/"]'));
+
+            if (imageElements.length === 0) return contentHtml;
+
+            for (let i = 0; i < imageElements.length; i++) {
+                const imgEl = imageElements[i];
+                const src = imgEl.getAttribute('src') || '';
+                if (!isInlineImageDataUrl(src)) continue;
+
+                try {
+                    const originalFile = await dataUrlToFile(src, `${Date.now()}-conteudo-${i + 1}.jpg`);
+                    const uploadedUrl = await uploadEditorInlineImageToR2(originalFile);
+                    imgEl.setAttribute('src', uploadedUrl);
+                    imgEl.classList.add('editor-inline-image');
+                } catch (error) {
+                    console.error('[Editor] Falha ao migrar imagem inline do conteudo para R2:', error);
+                    throw error;
+                }
+            }
+
+            return doc.body.innerHTML;
         }
 
         // Upload de imagem da noticia
@@ -10913,7 +11237,7 @@
         // Salvar noticia
         async function saveNews(status) {
             const title = document.getElementById('newsTitle').value.trim();
-            const content = document.getElementById('editorContent').innerHTML.trim();
+            let content = document.getElementById('editorContent').innerHTML.trim();
             const category = document.getElementById('newsCategory').value;
             const externalUrl = document.getElementById('newsExternalUrl')?.value.trim() || '';
             const sourceDomain = normalizeDomainFromUrl(externalUrl);
@@ -10935,6 +11259,15 @@
 
             if (!category) {
                 showModal('Erro!', 'Selecione uma categoria.', 'error');
+                return;
+            }
+
+            try {
+                content = await normalizeInlineNewsContentImages(content);
+                document.getElementById('editorContent').innerHTML = content;
+            } catch (inlineError) {
+                console.error('[Editor] Erro ao preparar imagens inline para salvar noticia:', inlineError);
+                showModal('Erro!', 'Nao foi possivel enviar uma das imagens do conteudo para o R2.', 'error');
                 return;
             }
 
@@ -11202,25 +11535,39 @@
         // Carregar configuracoes de marca na inicializacao
         // DOMContentLoaded da marca movido para o unificado acima
 
-        auth.onAuthStateChanged((user) => {
+        function applyAuthStateToUi(user) {
             if (user) {
                 showAdmin();
-            } else {
-                document.body.classList.add('login-mode');
-                document.getElementById('loginContainer').style.display = 'flex';
-                document.getElementById('adminContainer').style.display = 'none';
+                return;
             }
-        });
+
+            document.body.classList.add('login-mode');
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('adminContainer').style.display = 'none';
+        }
+
+        authPersistenceReady
+            .catch(() => null)
+            .finally(() => {
+                auth.onAuthStateChanged((user) => {
+                    applyAuthStateToUi(user);
+                });
+            });
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-13-009';
-            const lastVersion = localStorage.getItem('admin_css_version');
-            if (lastVersion !== cssVersion) {
-                localStorage.setItem('admin_css_version', cssVersion);
-                if (lastVersion) {
-                    window.location.reload(true);
+            const cssVersion = '2026-02-13-010';
+            let lastVersion = null;
+            try {
+                lastVersion = localStorage.getItem('admin_css_version');
+                if (lastVersion !== cssVersion) {
+                    localStorage.setItem('admin_css_version', cssVersion);
+                    if (lastVersion) {
+                        window.location.reload(true);
+                    }
                 }
+            } catch (storageError) {
+                console.warn('[Admin] Nao foi possivel usar localStorage para controle de cache:', storageError);
             }
         })();
 
@@ -14028,127 +14375,6 @@
                 console.error('[Admin] Erro ao excluir story:', error);
                 showModal('Erro!', 'Nao foi possivel excluir o story.', 'error');
             }
-        }
-
-        // ========================================
-        // SWIPE FUNCTIONALITY FOR MOBILE
-        // ========================================
-        let swipeStartX = 0;
-        let swipeStartY = 0;
-        let swipeCurrentX = 0;
-        let swipedElement = null;
-        let isSwiping = false;
-        let isHorizontalSwipe = false;
-
-        function initSwipeHandlers() {
-            document.addEventListener('touchstart', handleSwipeStart, { passive: true });
-            document.addEventListener('touchmove', handleSwipeMove, { passive: false });
-            document.addEventListener('touchend', handleSwipeEnd, { passive: true });
-            document.addEventListener('click', handleClickOutside);
-        }
-
-        function handleSwipeStart(e) {
-            const swipeContent = e.target.closest('.swipe-content');
-            if (!swipeContent) {
-                closeAllSwipes();
-                return;
-            }
-            swipeStartX = e.touches[0].clientX;
-            swipeStartY = e.touches[0].clientY;
-            swipedElement = swipeContent;
-            isSwiping = true;
-            isHorizontalSwipe = false;
-        }
-
-        function handleSwipeMove(e) {
-            if (!isSwiping || !swipedElement) return;
-            const touchX = e.touches[0].clientX;
-            const touchY = e.touches[0].clientY;
-            const diffX = swipeStartX - touchX;
-            const diffY = swipeStartY - touchY;
-            const isAlreadyOpen = swipedElement.classList.contains('swiped-left');
-            
-            if (!isHorizontalSwipe && Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 10) {
-                isHorizontalSwipe = true;
-            }
-            if (isHorizontalSwipe) {
-                e.preventDefault();
-                document.body.classList.add('swipe-active');
-            }
-            
-            // Se já está aberto, permite deslizar para direita (valores negativos)
-            if (isAlreadyOpen) {
-                const newOffset = Math.max(0, Math.min(130, 130 + diffX));
-                swipedElement.style.transform = `translateX(-${newOffset}px)`;
-            } else {
-                // Se está fechado, só permite abrir (diffX positivo)
-                if (diffX > 0 && diffX < 130) {
-                    swipedElement.style.transform = `translateX(-${diffX}px)`;
-                }
-            }
-            
-            swipeCurrentX = touchX;
-        }
-
-        function handleSwipeEnd(e) {
-            if (!isSwiping || !swipedElement) return;
-            const diffX = swipeStartX - swipeCurrentX;
-            const threshold = 50;
-            const isAlreadyOpen = swipedElement.classList.contains('swiped-left');
-            
-            // Fecha outros swipes abertos
-            document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
-                if (el !== swipedElement) {
-                    el.classList.remove('swiped-left');
-                    el.style.transform = '';
-                }
-            });
-            
-            if (isAlreadyOpen) {
-                // Se já está aberto, deslizar para direita (diffX negativo) fecha
-                if (diffX < -threshold) {
-                    swipedElement.classList.remove('swiped-left');
-                    swipedElement.style.transform = '';
-                } else {
-                    // Mantém aberto se não deslizou o suficiente
-                    swipedElement.style.transform = 'translateX(-130px)';
-                }
-            } else {
-                // Se está fechado, deslizar para esquerda abre
-                if (diffX > threshold) {
-                    swipedElement.classList.add('swiped-left');
-                    swipedElement.style.transform = 'translateX(-130px)';
-                } else {
-                    swipedElement.classList.remove('swiped-left');
-                    swipedElement.style.transform = '';
-                }
-            }
-            
-            isSwiping = false;
-            isHorizontalSwipe = false;
-            swipedElement = null;
-            document.body.classList.remove('swipe-active');
-        }
-
-        function closeAllSwipes() {
-            document.querySelectorAll('.swipe-content.swiped-left').forEach(el => {
-                el.classList.remove('swiped-left');
-                el.style.transform = '';
-            });
-        }
-
-        function handleClickOutside(e) {
-            const swipeContent = e.target.closest('.swipe-content');
-            const swipeAction = e.target.closest('.swipe-actions');
-            if (!swipeContent && !swipeAction) {
-                closeAllSwipes();
-            }
-        }
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initSwipeHandlers);
-        } else {
-            initSwipeHandlers();
         }
 
     </script>
