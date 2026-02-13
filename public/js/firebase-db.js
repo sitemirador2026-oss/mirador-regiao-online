@@ -474,6 +474,7 @@ function applyLayout(layout) {
     const cardsPerRow = Math.max(1, Math.min(8, Number(layout.cardsPerRow) || 3));
     const expandedCardsPerRow = Math.max(cardsPerRow, Math.min(9, cardsPerRow + 1));
     const instagramPostsVisible = Math.max(1, Math.min(12, Number(layout.instagramPostsVisible) || 4));
+    const instagramPostsVisibleMobile = Math.max(1, Math.min(3, Number(layout.instagramPostsVisibleMobile) || 2));
     const topBanners = layout.topBanners && typeof layout.topBanners === 'object'
         ? layout.topBanners
         : {};
@@ -489,13 +490,14 @@ function applyLayout(layout) {
         cardsPerRow,
         expandedCardsPerRow,
         instagramPostsVisible,
+        instagramPostsVisibleMobile,
         topBanners,
         sidebarBanners
     };
     window.dispatchEvent(new CustomEvent('public-layout-updated', {
         detail: window.publicSiteLayoutConfig
     }));
-    console.log('[Aplicar Layout] Cards por linha:', cardsPerRow, '| Instagram visiveis:', instagramPostsVisible);
+    console.log('[Aplicar Layout] Cards por linha:', cardsPerRow, '| Instagram desktop:', instagramPostsVisible, '| Instagram mobile:', instagramPostsVisibleMobile);
 }
 
 // Carregar layout do Firebase

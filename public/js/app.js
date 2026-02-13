@@ -566,10 +566,25 @@ function getInstagramVisiblePostsCount() {
     try {
         const runtimeLayout = window.publicSiteLayoutConfig || {};
         const savedLayout = JSON.parse(localStorage.getItem('publicSiteLayout') || '{}');
-        const configuredValue = Number(runtimeLayout.instagramPostsVisible || savedLayout.instagramPostsVisible || 4);
-        return Math.max(1, Math.min(12, configuredValue || 4));
+        const isMobile = isMobileViewport();
+
+        if (isMobile) {
+            const configuredMobile = Number(
+                runtimeLayout.instagramPostsVisibleMobile ??
+                savedLayout.instagramPostsVisibleMobile ??
+                2
+            );
+            return Math.max(1, Math.min(3, configuredMobile || 2));
+        }
+
+        const configuredDesktop = Number(
+            runtimeLayout.instagramPostsVisible ??
+            savedLayout.instagramPostsVisible ??
+            4
+        );
+        return Math.max(1, Math.min(12, configuredDesktop || 4));
     } catch (_error) {
-        return 4;
+        return isMobileViewport() ? 2 : 4;
     }
 }
 
@@ -2653,7 +2668,7 @@ async function loadInstagramNews() {
             return;
         }
 
-        // Mostrar quantidade configurada no painel (fallback: 4)
+        // Mostrar quantidade configurada no painel (desktop fallback: 4 | celular fallback: 2)
         const instagramVisiblePosts = getInstagramVisiblePostsCount();
         const newsToShow = news.slice(0, instagramVisiblePosts);
 

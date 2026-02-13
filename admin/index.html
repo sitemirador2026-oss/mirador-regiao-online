@@ -5160,6 +5160,15 @@
                                 </div>
                             </div>
 
+                            <div class="layout-input-group">
+                                <label for="instagramPostsVisibleMobile">Posts de Instagram visiveis no celular:</label>
+                                <div class="layout-input-wrapper">
+                                    <input type="number" id="instagramPostsVisibleMobile" class="layout-input" value="2"
+                                        min="1" max="3" onchange="updateLayoutPreview()">
+                                    <span class="layout-unit">posts</span>
+                                </div>
+                            </div>
+
                             <div id="layoutPreviewGrid" class="layout-preview-grid"
                                 style="grid-template-columns: repeat(3, 1fr);">
                                 <div class="layout-preview-card"></div>
@@ -9246,13 +9255,17 @@
         function updateLayoutPreview() {
             const cardsPerRow = parseInt(document.getElementById('cardsPerRow').value) || 3;
             const instagramPostsVisible = parseInt(document.getElementById('instagramPostsVisible')?.value) || 4;
+            const instagramPostsVisibleMobile = parseInt(document.getElementById('instagramPostsVisibleMobile')?.value) || 2;
             const previewGrid = document.getElementById('layoutPreviewGrid');
 
             // Limitar entre 1 e 6
             const validCards = Math.max(1, Math.min(6, cardsPerRow));
             const validInstagramPosts = Math.max(1, Math.min(12, instagramPostsVisible));
+            const validInstagramPostsMobile = Math.max(1, Math.min(3, instagramPostsVisibleMobile));
             const instagramInput = document.getElementById('instagramPostsVisible');
+            const instagramMobileInput = document.getElementById('instagramPostsVisibleMobile');
             if (instagramInput) instagramInput.value = validInstagramPosts;
+            if (instagramMobileInput) instagramMobileInput.value = validInstagramPostsMobile;
 
             // Atualizar grid do preview
             previewGrid.style.gridTemplateColumns = `repeat(${validCards}, 1fr)`;
@@ -9267,8 +9280,10 @@
         async function saveLayout() {
             const cardsPerRow = parseInt(document.getElementById('cardsPerRow').value) || 3;
             const instagramPostsVisible = parseInt(document.getElementById('instagramPostsVisible')?.value) || 4;
+            const instagramPostsVisibleMobile = parseInt(document.getElementById('instagramPostsVisibleMobile')?.value) || 2;
             const validCards = Math.max(1, Math.min(6, cardsPerRow));
             const validInstagramPosts = Math.max(1, Math.min(12, instagramPostsVisible));
+            const validInstagramPostsMobile = Math.max(1, Math.min(3, instagramPostsVisibleMobile));
             let savedLayout = {};
             try {
                 savedLayout = JSON.parse(localStorage.getItem('siteLayout') || '{}');
@@ -9280,6 +9295,7 @@
                 ...savedLayout,
                 cardsPerRow: validCards,
                 instagramPostsVisible: validInstagramPosts,
+                instagramPostsVisibleMobile: validInstagramPostsMobile,
                 updatedAt: new Date().toISOString()
             };
 
@@ -9287,6 +9303,7 @@
                 await db.collection('settings').doc('layout').set({
                     cardsPerRow: validCards,
                     instagramPostsVisible: validInstagramPosts,
+                    instagramPostsVisibleMobile: validInstagramPostsMobile,
                     updatedAt: layoutConfig.updatedAt
                 }, { merge: true });
                 localStorage.setItem('siteLayout', JSON.stringify(layoutConfig));
@@ -9306,13 +9323,18 @@
                     layoutData = doc.data() || {};
                     const cardsPerRow = layoutData.cardsPerRow || 3;
                     const instagramPostsVisible = layoutData.instagramPostsVisible || 4;
+                    const instagramPostsVisibleMobile = layoutData.instagramPostsVisibleMobile || 2;
                     document.getElementById('cardsPerRow').value = cardsPerRow;
                     const instagramInput = document.getElementById('instagramPostsVisible');
+                    const instagramMobileInput = document.getElementById('instagramPostsVisibleMobile');
                     if (instagramInput) instagramInput.value = instagramPostsVisible;
+                    if (instagramMobileInput) instagramMobileInput.value = instagramPostsVisibleMobile;
                     updateLayoutPreview();
                 } else {
                     const instagramInput = document.getElementById('instagramPostsVisible');
+                    const instagramMobileInput = document.getElementById('instagramPostsVisibleMobile');
                     if (instagramInput) instagramInput.value = 4;
+                    if (instagramMobileInput) instagramMobileInput.value = 2;
                 }
             } catch (error) {
                 console.log('[Admin] Erro ao carregar layout:', error);
