@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -89,6 +89,9 @@
             width: 100%;
             max-width: 100%;
             overflow-x: hidden;
+            touch-action: manipulation;
+            overscroll-behavior: none;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
@@ -102,6 +105,8 @@
             overflow-x: hidden;
             width: 100%;
             max-width: 100%;
+            touch-action: manipulation;
+            overscroll-behavior: none;
         }
 
         body.auth-loading {
@@ -6230,10 +6235,55 @@
             console.warn('[Auth] Nao foi possivel configurar persistencia LOCAL:', error);
         }
 
+        function lockAdminZoomGestures() {
+            const preventDefault = (event) => event.preventDefault();
+            let lastTouchEnd = 0;
+
+            document.addEventListener('gesturestart', preventDefault, { passive: false });
+            document.addEventListener('gesturechange', preventDefault, { passive: false });
+            document.addEventListener('gestureend', preventDefault, { passive: false });
+
+            document.addEventListener('touchstart', function (event) {
+                if (event.touches && event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchmove', function (event) {
+                if (event.touches && event.touches.length > 1) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', function (event) {
+                const now = Date.now();
+                if (now - lastTouchEnd <= 320) {
+                    event.preventDefault();
+                }
+                lastTouchEnd = now;
+            }, { passive: false });
+
+            document.addEventListener('dblclick', preventDefault, { passive: false });
+
+            window.addEventListener('wheel', function (event) {
+                if (event.ctrlKey) {
+                    event.preventDefault();
+                }
+            }, { passive: false });
+
+            document.addEventListener('keydown', function (event) {
+                const zoomKeys = ['+', '=', '-', '0'];
+                if ((event.ctrlKey || event.metaKey) && zoomKeys.includes(event.key)) {
+                    event.preventDefault();
+                }
+            });
+        }
+
         // Inicializar R2 Client
         document.addEventListener('DOMContentLoaded', function () {
             initR2Client();
             setupSidebarScrollLock();
+            lockAdminZoomGestures();
         });
 
         let settingsPanelsInitialized = false;
@@ -6404,8 +6454,12 @@
             updateUserInfo();
             loadDashboard();
 
-            // Restaurar pagina salva ou ir para dashboard
-            restoreLastPage();
+            // Se houver rascunho local nao publicado, abrir direto no editor.
+            const recoveredDraft = openRecoveredNewsEditorDraftIfExists();
+            if (!recoveredDraft) {
+                // Restaurar pagina salva ou ir para dashboard
+                restoreLastPage();
+            }
             resetAdminViewportPosition();
             requestAnimationFrame(ensureVisibleAdminPage);
         }
@@ -10539,6 +10593,11 @@
         // ========================================
         let currentNewsImage = null;
         let editingNewsId = null;
+        const NEWS_EDITOR_LOCAL_DRAFT_KEY = 'admin_news_editor_local_draft_v1';
+        const NEWS_EDITOR_LOCAL_DRAFT_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 7;
+        let newsEditorAutosaveReady = false;
+        let newsEditorAutosaveTimer = null;
+        let suppressNewsEditorAutosave = false;
 
         // Mostrar pagina de criar noticia
         // ========================================
@@ -10854,7 +10913,257 @@
         // ========================================
         // NEWS EDITOR FUNCTIONS
         // ========================================
-        function showCreateNewsPage(newsId = null) {
+        function isNewsEditorLocalDraftMeaningful(draft = {}) {
+            const title = String(draft.title || '').trim();
+            const excerpt = String(draft.excerpt || '').trim();
+            const content = String(draft.content || '').trim();
+            const category = String(draft.category || '').trim();
+            const externalUrl = String(draft.externalUrl || '').trim();
+            const tags = String(draft.tags || '').trim();
+            const image = String(draft.featuredImage || '').trim();
+            const contentText = content.replace(/<[^>]+>/g, '').trim();
+            const hasInlineImage = /<img[\s>]/i.test(content);
+
+            return Boolean(
+                title ||
+                excerpt ||
+                category ||
+                externalUrl ||
+                tags ||
+                image ||
+                contentText ||
+                hasInlineImage
+            );
+        }
+
+        function getNewsEditorLocalDraftSnapshot() {
+            const titleEl = document.getElementById('newsTitle');
+            const excerptEl = document.getElementById('newsExcerpt');
+            const categoryEl = document.getElementById('newsCategory');
+            const authorEl = document.getElementById('newsAuthor');
+            const tagsEl = document.getElementById('newsTags');
+            const externalUrlEl = document.getElementById('newsExternalUrl');
+            const dateEl = document.getElementById('newsDate');
+
+            if (!titleEl || !excerptEl || !categoryEl || !authorEl || !tagsEl || !dateEl) {
+                return null;
+            }
+
+            const statusValue = document.querySelector('input[name="newsStatus"]:checked')?.value || 'draft';
+            const snapshot = {
+                title: String(titleEl.value || '').trim(),
+                excerpt: String(excerptEl.value || '').trim(),
+                content: getEditorContentHtmlForSave(),
+                category: String(categoryEl.value || '').trim(),
+                author: String(authorEl.value || '').trim(),
+                tags: String(tagsEl.value || '').trim(),
+                externalUrl: String(externalUrlEl?.value || '').trim(),
+                date: String(dateEl.value || '').trim(),
+                status: editingNewsId ? statusValue : 'draft',
+                featuredImage: String(currentNewsImage || '').trim(),
+                editingNewsId: editingNewsId || null,
+                savedAt: Date.now()
+            };
+
+            if (!isNewsEditorLocalDraftMeaningful(snapshot)) {
+                return null;
+            }
+
+            return snapshot;
+        }
+
+        function persistNewsEditorLocalDraft(options = {}) {
+            const immediate = Boolean(options && options.immediate);
+
+            if (suppressNewsEditorAutosave) return;
+
+            const persist = () => {
+                if (suppressNewsEditorAutosave) return;
+
+                const snapshot = getNewsEditorLocalDraftSnapshot();
+                try {
+                    if (!snapshot) {
+                        localStorage.removeItem(NEWS_EDITOR_LOCAL_DRAFT_KEY);
+                        return;
+                    }
+                    localStorage.setItem(NEWS_EDITOR_LOCAL_DRAFT_KEY, JSON.stringify(snapshot));
+                } catch (error) {
+                    console.warn('[Editor] Nao foi possivel salvar rascunho local:', error);
+                }
+            };
+
+            if (immediate) {
+                if (newsEditorAutosaveTimer) {
+                    clearTimeout(newsEditorAutosaveTimer);
+                    newsEditorAutosaveTimer = null;
+                }
+                persist();
+                return;
+            }
+
+            if (newsEditorAutosaveTimer) {
+                clearTimeout(newsEditorAutosaveTimer);
+            }
+            newsEditorAutosaveTimer = setTimeout(() => {
+                newsEditorAutosaveTimer = null;
+                persist();
+            }, 650);
+        }
+
+        function clearNewsEditorLocalDraft() {
+            if (newsEditorAutosaveTimer) {
+                clearTimeout(newsEditorAutosaveTimer);
+                newsEditorAutosaveTimer = null;
+            }
+            try {
+                localStorage.removeItem(NEWS_EDITOR_LOCAL_DRAFT_KEY);
+            } catch (error) {
+                console.warn('[Editor] Nao foi possivel remover rascunho local:', error);
+            }
+        }
+
+        function readNewsEditorLocalDraft() {
+            try {
+                const raw = localStorage.getItem(NEWS_EDITOR_LOCAL_DRAFT_KEY);
+                if (!raw) return null;
+                const parsed = JSON.parse(raw);
+                if (!parsed || typeof parsed !== 'object') return null;
+
+                const savedAt = Number(parsed.savedAt || 0);
+                if (savedAt > 0 && Date.now() - savedAt > NEWS_EDITOR_LOCAL_DRAFT_MAX_AGE_MS) {
+                    localStorage.removeItem(NEWS_EDITOR_LOCAL_DRAFT_KEY);
+                    return null;
+                }
+
+                if (!isNewsEditorLocalDraftMeaningful(parsed)) return null;
+                return parsed;
+            } catch (error) {
+                console.warn('[Editor] Nao foi possivel ler rascunho local:', error);
+                return null;
+            }
+        }
+
+        function applyRecoveredNewsEditorDraft(draft) {
+            if (!draft || typeof draft !== 'object') return false;
+
+            suppressNewsEditorAutosave = true;
+
+            try {
+                document.getElementById('newsTitle').value = draft.title || '';
+                document.getElementById('newsExcerpt').value = draft.excerpt || '';
+                document.getElementById('excerptCount').textContent = String((draft.excerpt || '').length);
+                document.getElementById('editorContent').innerHTML = draft.content || '';
+                document.getElementById('newsCategory').value = draft.category || '';
+                document.getElementById('newsAuthor').value = draft.author || 'Redacao';
+                document.getElementById('newsTags').value = draft.tags || '';
+                if (document.getElementById('newsExternalUrl')) {
+                    document.getElementById('newsExternalUrl').value = draft.externalUrl || '';
+                    handleExternalUrlInput();
+                }
+
+                const savedDate = String(draft.date || '').trim();
+                if (savedDate) {
+                    document.getElementById('newsDate').value = savedDate;
+                }
+
+                const status = (draft.status === 'published' || draft.status === 'draft') ? draft.status : 'draft';
+                const statusInput = document.querySelector(`input[name="newsStatus"][value="${status}"]`);
+                if (statusInput) statusInput.checked = true;
+
+                editingNewsId = draft.editingNewsId || null;
+                document.getElementById('editorPageTitle').textContent = editingNewsId ? 'Editar Noticia (Rascunho)' : 'Rascunho Recuperado';
+
+                if (draft.featuredImage) {
+                    currentNewsImage = draft.featuredImage;
+                    document.getElementById('newsImagePreview').src = draft.featuredImage;
+                    document.getElementById('newsImagePreview').style.display = 'block';
+                    document.getElementById('removeImageBtn').style.display = 'block';
+                    document.querySelector('.featured-image-upload').style.display = 'none';
+                } else {
+                    removeNewsImage(true);
+                }
+
+                setupNewsEditorInteractions();
+                hydrateEditorImages();
+                clearActiveEditorImageFigure();
+                return true;
+            } catch (error) {
+                console.error('[Editor] Nao foi possivel restaurar rascunho local:', error);
+                return false;
+            } finally {
+                suppressNewsEditorAutosave = false;
+            }
+        }
+
+        function restoreNewsEditorDraftFromLocal() {
+            const draft = readNewsEditorLocalDraft();
+            if (!draft) return false;
+            return applyRecoveredNewsEditorDraft(draft);
+        }
+
+        function setupNewsEditorAutosave() {
+            if (newsEditorAutosaveReady) return;
+
+            const editor = document.getElementById('editorContent');
+            if (!editor) return;
+
+            const trackedInputIds = [
+                'newsTitle',
+                'newsExcerpt',
+                'newsCategory',
+                'newsAuthor',
+                'newsTags',
+                'newsExternalUrl',
+                'newsDate'
+            ];
+
+            trackedInputIds.forEach((id) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                ['input', 'change'].forEach((eventName) => {
+                    el.addEventListener(eventName, () => persistNewsEditorLocalDraft());
+                });
+            });
+
+            editor.addEventListener('input', () => persistNewsEditorLocalDraft());
+            document.querySelectorAll('input[name="newsStatus"]').forEach((input) => {
+                input.addEventListener('change', () => persistNewsEditorLocalDraft());
+            });
+
+            window.addEventListener('beforeunload', () => {
+                persistNewsEditorLocalDraft({ immediate: true });
+            });
+
+            window.addEventListener('pagehide', () => {
+                persistNewsEditorLocalDraft({ immediate: true });
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.visibilityState === 'hidden') {
+                    persistNewsEditorLocalDraft({ immediate: true });
+                }
+            });
+
+            newsEditorAutosaveReady = true;
+        }
+
+        function openRecoveredNewsEditorDraftIfExists() {
+            const draft = readNewsEditorLocalDraft();
+            if (!draft) return false;
+
+            showCreateNewsPage(null, { skipDraftRestore: true });
+            const restored = applyRecoveredNewsEditorDraft(draft);
+            if (restored) {
+                showModal('Rascunho recuperado', 'Encontramos um rascunho nao publicado e restauramos seu texto automaticamente.', 'info');
+                return true;
+            }
+
+            return false;
+        }
+
+        function showCreateNewsPage(newsId = null, options = {}) {
+            const skipDraftRestore = Boolean(options && options.skipDraftRestore);
+
             // Esconder todas as paginas
             document.querySelectorAll('.page-content').forEach(page => {
                 page.style.display = 'none';
@@ -10868,6 +11177,9 @@
             if (!newsId) {
                 resetNewsForm();
                 document.getElementById('editorPageTitle').textContent = 'Nova Noticia';
+                if (!skipDraftRestore) {
+                    restoreNewsEditorDraftFromLocal();
+                }
             } else {
                 editingNewsId = newsId;
                 document.getElementById('editorPageTitle').textContent = 'Editar Noticia';
@@ -10875,19 +11187,25 @@
             }
 
             // Definir data atual
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            document.getElementById('newsDate').value = now.toISOString().slice(0, 16);
+            if (!document.getElementById('newsDate').value) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('newsDate').value = now.toISOString().slice(0, 16);
+            }
+
             setupNewsEditorInteractions();
+            setupNewsEditorAutosave();
 
             // Contador de caracteres
             document.getElementById('newsExcerpt').oninput = function () {
                 document.getElementById('excerptCount').textContent = this.value.length;
+                persistNewsEditorLocalDraft();
             };
         }
 
         // Resetar formulario
         function resetNewsForm() {
+            suppressNewsEditorAutosave = true;
             document.getElementById('newsTitle').value = '';
             document.getElementById('editorContent').innerHTML = '';
             document.getElementById('newsExcerpt').value = '';
@@ -10901,9 +11219,10 @@
             const externalHint = document.getElementById('newsExternalDomainHint');
             if (externalHint) externalHint.textContent = '';
             document.querySelector('input[name="newsStatus"][value="published"]').checked = true;
-            removeNewsImage();
+            removeNewsImage(true);
             clearActiveEditorImageFigure();
             editingNewsId = null;
+            suppressNewsEditorAutosave = false;
         }
 
         // Gerar slug do titulo
@@ -11249,6 +11568,8 @@
                 selection.addRange(afterRange);
                 newsEditorSavedRange = afterRange.cloneRange();
             }
+
+            persistNewsEditorLocalDraft({ immediate: true });
         }
 
         function removeSelectedEditorInlineImage() {
@@ -11262,6 +11583,8 @@
             if (!removed) {
                 saveNewsEditorSelectionRange();
             }
+
+            persistNewsEditorLocalDraft({ immediate: true });
         }
 
         async function uploadEditorInlineImageToR2(file) {
@@ -11463,6 +11786,7 @@
                 }
                 if (removeBtn) removeBtn.style.display = 'block';
                 if (uploadArea) uploadArea.style.display = 'none';
+                persistNewsEditorLocalDraft({ immediate: true });
             } catch (error) {
                 console.error('[Admin] Erro ao enviar imagem da noticia para o R2:', error);
                 showModal('Erro!', 'Nao foi possivel enviar a imagem para o R2.', 'error');
@@ -11476,12 +11800,15 @@
         }
 
         // Remover imagem
-        function removeNewsImage() {
+        function removeNewsImage(skipDraftUpdate = false) {
             currentNewsImage = null;
             document.getElementById('newsImagePreview').style.display = 'none';
             document.getElementById('removeImageBtn').style.display = 'none';
             document.querySelector('.featured-image-upload').style.display = 'block';
             document.getElementById('newsImageInput').value = '';
+            if (!skipDraftUpdate) {
+                persistNewsEditorLocalDraft({ immediate: true });
+            }
         }
 
         // Salvar rascunho
@@ -11590,6 +11917,7 @@
                     showModal('Sucesso!', `Noticia ${status === 'published' ? 'Publicada' : 'Salva como Rascunho'}!`, 'success');
                 }
 
+                clearNewsEditorLocalDraft();
                 resetNewsForm();
                 showPage('news', document.querySelectorAll('.nav-item')[1]);
                 loadNewsPage();
@@ -11831,7 +12159,7 @@
 
         // Force reload if cache is old
         (function () {
-            const cssVersion = '2026-02-13-011';
+            const cssVersion = '2026-02-13-012';
             let lastVersion = null;
             try {
                 lastVersion = localStorage.getItem('admin_css_version');
