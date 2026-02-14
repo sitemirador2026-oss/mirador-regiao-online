@@ -1477,6 +1477,48 @@
             right: 0.28rem;
         }
 
+        .instagram-main-media-remove-btn {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.42rem 0.68rem;
+            border: 1px solid rgba(239, 68, 68, 0.45);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.94);
+            color: #dc2626;
+            font-size: 0.75rem;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            box-shadow: 0 5px 16px rgba(15, 23, 42, 0.18);
+            backdrop-filter: blur(2px);
+            transition: transform 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .instagram-main-media-remove-btn:hover {
+            background: rgba(254, 242, 242, 0.98);
+            color: #b91c1c;
+            box-shadow: 0 7px 18px rgba(239, 68, 68, 0.24);
+            transform: translateY(-1px);
+        }
+
+        .instagram-main-media-remove-btn:active {
+            transform: translateY(0);
+        }
+
+        .instagram-main-media-remove-btn:focus-visible {
+            outline: 2px solid rgba(239, 68, 68, 0.55);
+            outline-offset: 2px;
+        }
+
+        .instagram-main-media-remove-btn svg {
+            display: block;
+            flex-shrink: 0;
+        }
+
         .media-card-body {
             padding: 0.45rem;
             display: flex;
@@ -3653,13 +3695,15 @@
                                         <video id="instagramNewsVideo"
                                             style="display: none; width: 100%; max-height: 400px; object-fit: contain; background: #000; border-radius: var(--radius); border: 1px solid var(--border);"
                                             controls playsinline muted></video>
-                                        <button type="button" onclick="removeInstagramImage()"
-                                            style="position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">
-                                            <svg width="16" height="16" fill="none" stroke="currentColor"
+                                        <button type="button" class="instagram-main-media-remove-btn"
+                                            onclick="removeInstagramImage()" title="Remover midia atual"
+                                            aria-label="Remover midia atual">
+                                            <svg width="14" height="14" fill="none" stroke="currentColor"
                                                 viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M6 18L18 6M6 6l12 12" />
                                             </svg>
+                                            <span>Remover midia</span>
                                         </button>
                                     </div>
                                     <div id="instagramVideoManualNotice"
@@ -12991,6 +13035,8 @@
         };
         let instagramProfileSettingsAdmin = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN };
         let instagramNewsData = {};
+        let instagramExtractRequestToken = 0;
+        let instagramManualMediaRemovalToken = 0;
         let instagramProfileSettingsPanelExpandedAdmin = false;
         let instagramProfileSettingsLockedAdmin = true;
 
@@ -14114,7 +14160,9 @@
         }
 
         async function extractInstagramNewsData(e) {
+            const requestToken = ++instagramExtractRequestToken;
             setTimeout(async () => {
+                if (requestToken !== instagramExtractRequestToken) return;
                 const target = e.target || document.getElementById('instagramNewsUrl');
                 const url = target?.value?.trim() || '';
 
@@ -14122,6 +14170,8 @@
 
                 const loading = document.getElementById('instagramNewsLoading');
                 const preview = document.getElementById('instagramNewsPreview');
+                if (!loading || !preview) return;
+                const manualRemovalTokenAtStart = instagramManualMediaRemovalToken;
 
                 loading.style.display = 'block';
                 preview.style.display = 'none';
@@ -14133,6 +14183,7 @@
 
                 try {
                     const extracted = await fetchInstagramMetaForAdmin(url);
+                    if (requestToken !== instagramExtractRequestToken) return;
                     imageUrl = extracted.image || '';
                     videoUrl = extracted.video || '';
                     title = extracted.title || '';
@@ -14177,6 +14228,7 @@
 
                         try {
                             const embedEngagement = await extractInstagramEngagementViaEmbed(url);
+                            if (requestToken !== instagramExtractRequestToken) return;
                             if (embedEngagement) {
                                 if (embedEngagement.likes > 0 && likesInput) {
                                     likesInput.value = embedEngagement.likes.toString();
@@ -14196,22 +14248,28 @@
                     document.getElementById('instagramNewsCaption').value = cleanedContent;
 
                     // Mostrar midia extraida (video ou imagem)
-                    if (videoUrl || imageUrl || isVideoPost) {
-                        setInstagramMainMediaPreview({
-                            mediaType: isVideoPost ? 'video' : 'image',
-                            imageUrl: imageUrl,
-                            videoUrl: videoUrl,
-                            showManualVideoNotice: isVideoPost && !videoUrl
-                        });
-                    } else {
-                        // Se nao conseguiu midia, mostrar area de upload
-                        setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
+                    const canApplyAutoMedia =
+                        requestToken === instagramExtractRequestToken &&
+                        manualRemovalTokenAtStart === instagramManualMediaRemovalToken;
+                    if (canApplyAutoMedia) {
+                        if (videoUrl || imageUrl || isVideoPost) {
+                            setInstagramMainMediaPreview({
+                                mediaType: isVideoPost ? 'video' : 'image',
+                                imageUrl: imageUrl,
+                                videoUrl: videoUrl,
+                                showManualVideoNotice: isVideoPost && !videoUrl
+                            });
+                        } else {
+                            // Se nao conseguiu midia, mostrar area de upload
+                            setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
+                        }
                     }
 
                     loading.style.display = 'none';
                     preview.style.display = 'block';
 
                 } catch (error) {
+                    if (requestToken !== instagramExtractRequestToken) return;
                     console.error('[Admin] Erro ao extrair noticia do Instagram:', error);
                     setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
                     // Mesmo com erro, mostrar o formulario para preenchimento manual
@@ -14562,6 +14620,7 @@
         }
 
         function removeInstagramImage() {
+            instagramManualMediaRemovalToken += 1;
             setInstagramMainMediaPreview({ mediaType: 'image', imageUrl: '', videoUrl: '' });
             const fileInput = document.getElementById('instagramImageUpload');
             if (fileInput) fileInput.value = '';
@@ -15232,6 +15291,7 @@
         async function handleInstagramImageUpload(event) {
             const file = event?.target?.files?.[0];
             if (!file) return;
+            instagramManualMediaRemovalToken += 1;
 
             const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
             const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-m4v'];
@@ -15598,6 +15658,9 @@
 
         function clearInstagramNewsForm() {
             try {
+                instagramExtractRequestToken += 1;
+                instagramManualMediaRemovalToken += 1;
+
                 const urlInput = document.getElementById('instagramNewsUrl');
                 if (urlInput) urlInput.value = '';
 
