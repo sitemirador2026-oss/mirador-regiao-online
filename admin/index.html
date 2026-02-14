@@ -3495,80 +3495,101 @@
                             <h2 class="section-title" style="margin-bottom: 1.5rem;"> Feed do Instagram</h2>
                             <div
                                 style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem;">
-                                <!-- Perfil oficial do Instagram (configuração fixa) -->
-                                <div
+                                <!-- Perfil oficial do Instagram (configuração protegida) -->
+                                <div id="instagramProfileSettingsPanel"
                                     style="margin-bottom: 1.5rem; padding: 1rem; background: linear-gradient(135deg, #fff5f8 0%, #fff 100%); border-radius: var(--radius); border: 1px solid #f5d3df;">
                                     <div
-                                        style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
-                                        <label
-                                            style="display: block; font-size: 0.9375rem; font-weight: 600; color: #E4405F; margin: 0;">
-                                            Perfil oficial exibido no site
-                                        </label>
-                                        <button class="btn btn-secondary" type="button"
-                                            onclick="saveInstagramProfileSettingsAdmin()"
-                                            style="white-space: nowrap;">Salvar perfil</button>
-                                    </div>
-                                    <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
-                                        Configure uma vez o nome e a foto do perfil oficial. Todos os cards do Instagram
-                                        no site usarão esse mesmo perfil.
-                                    </p>
-                                    <div
-                                        style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                        style="display: flex; justify-content: space-between; align-items: center; gap: 0.75rem;">
                                         <div>
                                             <label
-                                                style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Nome
-                                                exibido</label>
-                                            <input type="text" id="instagramDefaultProfileName"
-                                                oninput="updateInstagramProfilePreviewAdmin()"
-                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);"
-                                                placeholder="Mirador e Região Online">
+                                                style="display: block; font-size: 0.9375rem; font-weight: 600; color: #E4405F; margin: 0;">
+                                                Perfil oficial exibido no site
+                                            </label>
+                                            <p
+                                                style="font-size: 0.8125rem; color: var(--text-muted); margin: 0.35rem 0 0 0;">
+                                                Campos protegidos para evitar edições acidentais.
+                                            </p>
+                                        </div>
+                                        <button id="instagramProfileSettingsTogglePanelBtn" class="btn btn-secondary btn-sm"
+                                            type="button" onclick="toggleInstagramProfileSettingsPanelAdmin()"
+                                            style="white-space: nowrap;">Mostrar campos</button>
+                                    </div>
+                                    <div id="instagramProfileSettingsPanelContent"
+                                        style="display: none; margin-top: 0.9rem; border-top: 1px dashed #f5d3df; padding-top: 0.9rem;">
+                                        <div
+                                            style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                            <span id="instagramProfileSettingsLockHint"
+                                                style="font-size: 0.8125rem; color: var(--text-muted);">Edição bloqueada.</span>
+                                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                                <button id="instagramProfileSettingsToggleEditBtn" class="btn btn-secondary btn-sm"
+                                                    type="button" onclick="toggleInstagramProfileSettingsLockAdmin()">Habilitar edição</button>
+                                                <button id="instagramProfileSaveBtn" class="btn btn-secondary btn-sm"
+                                                    type="button" onclick="saveInstagramProfileSettingsAdmin()"
+                                                    style="white-space: nowrap;">Salvar perfil</button>
+                                            </div>
+                                        </div>
+                                        <p style="font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                                            Configure uma vez o nome e a foto do perfil oficial. Todos os cards do Instagram
+                                            no site usarão esse mesmo perfil.
+                                        </p>
+                                        <div
+                                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                            <div>
+                                                <label
+                                                    style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Nome
+                                                    exibido</label>
+                                                <input type="text" id="instagramDefaultProfileName"
+                                                    oninput="updateInstagramProfilePreviewAdmin()"
+                                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);"
+                                                    placeholder="Mirador e Região Online">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">@usuario
+                                                    (sem @)</label>
+                                                <input type="text" id="instagramDefaultProfileUsername"
+                                                    oninput="updateInstagramProfilePreviewAdmin()"
+                                                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);"
+                                                    placeholder="mirador_e_regiao_online">
+                                            </div>
                                         </div>
                                         <div>
                                             <label
-                                                style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">@usuario
-                                                (sem @)</label>
-                                            <input type="text" id="instagramDefaultProfileUsername"
-                                                oninput="updateInstagramProfilePreviewAdmin()"
-                                                style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-primary);"
-                                                placeholder="mirador_e_regiao_online">
+                                                style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Foto
+                                                do perfil</label>
+                                            <div id="instagramDefaultProfileUploadArea"
+                                                style="width: 100%; background: var(--bg-primary); border: 2px dashed var(--border); border-radius: var(--radius); padding: 0.9rem; text-align: center; cursor: pointer; transition: all 0.2s;"
+                                                onclick="document.getElementById('instagramDefaultProfileUpload').click()"
+                                                ondragover="event.preventDefault(); this.style.borderColor='#E4405F'; this.style.background='#fff5f5';"
+                                                ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg-primary)';"
+                                                ondrop="handleInstagramDefaultProfileImageDrop(event)">
+                                                <input type="file" id="instagramDefaultProfileUpload" accept="image/*"
+                                                    style="display: none;"
+                                                    onchange="handleInstagramDefaultProfileImageUpload(event)">
+                                                <div
+                                                    style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">
+                                                    Clique ou arraste a foto aqui</div>
+                                                <div
+                                                    style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                                                    JPG, PNG, WebP (max. 10MB)</div>
+                                            </div>
+                                            <input type="hidden" id="instagramDefaultProfileImage">
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label
-                                            style="display: block; font-size: 0.8125rem; font-weight: 500; margin-bottom: 0.35rem;">Foto
-                                            do perfil</label>
-                                        <div id="instagramDefaultProfileUploadArea"
-                                            style="width: 100%; background: var(--bg-primary); border: 2px dashed var(--border); border-radius: var(--radius); padding: 0.9rem; text-align: center; cursor: pointer; transition: all 0.2s;"
-                                            onclick="document.getElementById('instagramDefaultProfileUpload').click()"
-                                            ondragover="event.preventDefault(); this.style.borderColor='#E4405F'; this.style.background='#fff5f5';"
-                                            ondragleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg-primary)';"
-                                            ondrop="handleInstagramDefaultProfileImageDrop(event)">
-                                            <input type="file" id="instagramDefaultProfileUpload" accept="image/*"
-                                                style="display: none;"
-                                                onchange="handleInstagramDefaultProfileImageUpload(event)">
-                                            <div
-                                                style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">
-                                                Clique ou arraste a foto aqui</div>
-                                            <div
-                                                style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
-                                                JPG, PNG, WebP (max. 10MB)</div>
+                                        <div
+                                            style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.625rem;">
+                                            <div id="instagramDefaultProfilePreviewWrap"
+                                                style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); overflow: hidden; background: var(--bg-secondary); display: none;">
+                                                <img id="instagramDefaultProfilePreview" src=""
+                                                    alt="Preview perfil Instagram"
+                                                    style="width: 100%; height: 100%; object-fit: cover;">
+                                            </div>
+                                            <span id="instagramDefaultProfilePreviewName"
+                                                style="font-size: 0.8125rem; color: var(--text-muted);">Sem foto
+                                                configurada</span>
+                                            <button id="instagramDefaultProfileRemoveBtn" type="button"
+                                                class="btn btn-secondary btn-sm" style="display: none;"
+                                                onclick="removeInstagramDefaultProfileImage()">Remover foto</button>
                                         </div>
-                                        <input type="hidden" id="instagramDefaultProfileImage">
-                                    </div>
-                                    <div
-                                        style="margin-top: 0.75rem; display: flex; align-items: center; gap: 0.625rem;">
-                                        <div id="instagramDefaultProfilePreviewWrap"
-                                            style="width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); overflow: hidden; background: var(--bg-secondary); display: none;">
-                                            <img id="instagramDefaultProfilePreview" src=""
-                                                alt="Preview perfil Instagram"
-                                                style="width: 100%; height: 100%; object-fit: cover;">
-                                        </div>
-                                        <span id="instagramDefaultProfilePreviewName"
-                                            style="font-size: 0.8125rem; color: var(--text-muted);">Sem foto
-                                            configurada</span>
-                                        <button id="instagramDefaultProfileRemoveBtn" type="button"
-                                            class="btn btn-secondary btn-sm" style="display: none;"
-                                            onclick="removeInstagramDefaultProfileImage()">Remover foto</button>
                                     </div>
                                 </div>
 
@@ -12970,6 +12991,8 @@
         };
         let instagramProfileSettingsAdmin = { ...DEFAULT_INSTAGRAM_PROFILE_SETTINGS_ADMIN };
         let instagramNewsData = {};
+        let instagramProfileSettingsPanelExpandedAdmin = false;
+        let instagramProfileSettingsLockedAdmin = true;
 
         function normalizeInstagramProfileSettingsAdmin(settings = {}) {
             const profileImageCandidates = [
@@ -13091,6 +13114,73 @@
             updateInstagramProfilePreviewAdmin();
         }
 
+        function syncInstagramProfileSettingsProtectionAdmin() {
+            const panelContent = document.getElementById('instagramProfileSettingsPanelContent');
+            const togglePanelBtn = document.getElementById('instagramProfileSettingsTogglePanelBtn');
+            const toggleEditBtn = document.getElementById('instagramProfileSettingsToggleEditBtn');
+            const saveBtn = document.getElementById('instagramProfileSaveBtn');
+            const lockHint = document.getElementById('instagramProfileSettingsLockHint');
+            const uploadArea = document.getElementById('instagramDefaultProfileUploadArea');
+            const removeBtn = document.getElementById('instagramDefaultProfileRemoveBtn');
+            const profileNameInput = document.getElementById('instagramDefaultProfileName');
+            const profileUsernameInput = document.getElementById('instagramDefaultProfileUsername');
+
+            if (panelContent) {
+                panelContent.style.display = instagramProfileSettingsPanelExpandedAdmin ? 'block' : 'none';
+            }
+
+            if (togglePanelBtn) {
+                togglePanelBtn.textContent = instagramProfileSettingsPanelExpandedAdmin ? 'Ocultar campos' : 'Mostrar campos';
+            }
+
+            if (toggleEditBtn) {
+                toggleEditBtn.textContent = instagramProfileSettingsLockedAdmin ? 'Habilitar edição' : 'Bloquear edição';
+            }
+
+            if (lockHint) {
+                lockHint.textContent = instagramProfileSettingsLockedAdmin
+                    ? 'Edição bloqueada.'
+                    : 'Edição liberada. Salve ao finalizar.';
+                lockHint.style.color = instagramProfileSettingsLockedAdmin ? 'var(--text-muted)' : '#E4405F';
+            }
+
+            if (profileNameInput) profileNameInput.readOnly = instagramProfileSettingsLockedAdmin;
+            if (profileUsernameInput) profileUsernameInput.readOnly = instagramProfileSettingsLockedAdmin;
+
+            if (uploadArea) {
+                uploadArea.style.pointerEvents = instagramProfileSettingsLockedAdmin ? 'none' : 'auto';
+                uploadArea.style.opacity = instagramProfileSettingsLockedAdmin ? '0.6' : '1';
+            }
+
+            if (removeBtn) {
+                removeBtn.disabled = instagramProfileSettingsLockedAdmin;
+                removeBtn.style.opacity = instagramProfileSettingsLockedAdmin ? '0.6' : '1';
+                removeBtn.style.cursor = instagramProfileSettingsLockedAdmin ? 'not-allowed' : 'pointer';
+            }
+
+            if (saveBtn) {
+                saveBtn.disabled = instagramProfileSettingsLockedAdmin;
+                saveBtn.style.opacity = instagramProfileSettingsLockedAdmin ? '0.6' : '1';
+                saveBtn.style.cursor = instagramProfileSettingsLockedAdmin ? 'not-allowed' : 'pointer';
+            }
+        }
+
+        function toggleInstagramProfileSettingsPanelAdmin() {
+            instagramProfileSettingsPanelExpandedAdmin = !instagramProfileSettingsPanelExpandedAdmin;
+            if (!instagramProfileSettingsPanelExpandedAdmin) {
+                instagramProfileSettingsLockedAdmin = true;
+            }
+            syncInstagramProfileSettingsProtectionAdmin();
+        }
+
+        function toggleInstagramProfileSettingsLockAdmin() {
+            if (!instagramProfileSettingsPanelExpandedAdmin) {
+                instagramProfileSettingsPanelExpandedAdmin = true;
+            }
+            instagramProfileSettingsLockedAdmin = !instagramProfileSettingsLockedAdmin;
+            syncInstagramProfileSettingsProtectionAdmin();
+        }
+
         function updateInstagramProfilePreviewAdmin() {
             const image = sanitizeInstagramProfileImageAdmin(document.getElementById('instagramDefaultProfileImage')?.value || '');
             const name = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
@@ -13113,9 +13203,14 @@
                     if (removeBtn) removeBtn.style.display = 'none';
                 }
             }
+            syncInstagramProfileSettingsProtectionAdmin();
         }
 
         function removeInstagramDefaultProfileImage() {
+            if (instagramProfileSettingsLockedAdmin) {
+                showModal('Campos protegidos', 'Clique em "Habilitar edição" para alterar o perfil oficial.', 'info');
+                return;
+            }
             const imageInput = document.getElementById('instagramDefaultProfileImage');
             const fileInput = document.getElementById('instagramDefaultProfileUpload');
             if (imageInput) imageInput.value = '';
@@ -13126,6 +13221,10 @@
         function handleInstagramDefaultProfileImageDrop(e) {
             e.preventDefault();
             e.stopPropagation();
+            if (instagramProfileSettingsLockedAdmin) {
+                showModal('Campos protegidos', 'Clique em "Habilitar edição" para alterar o perfil oficial.', 'info');
+                return;
+            }
             const files = e.dataTransfer?.files || [];
             if (files.length > 0) {
                 handleInstagramDefaultProfileImageUpload({ target: { files } });
@@ -13137,6 +13236,10 @@
         }
 
         async function handleInstagramDefaultProfileImageUpload(event) {
+            if (instagramProfileSettingsLockedAdmin) {
+                showModal('Campos protegidos', 'Clique em "Habilitar edição" para alterar o perfil oficial.', 'info');
+                return;
+            }
             const file = event?.target?.files?.[0];
             if (!file) return;
 
@@ -13256,6 +13359,12 @@
 
         async function saveInstagramProfileSettingsAdmin(options = {}) {
             const silent = Boolean(options && options.silent);
+            if (instagramProfileSettingsLockedAdmin) {
+                if (!silent) {
+                    showModal('Campos protegidos', 'Clique em "Habilitar edição" para salvar alterações no perfil oficial.', 'info');
+                }
+                return instagramProfileSettingsAdmin;
+            }
             try {
                 const displayName = (document.getElementById('instagramDefaultProfileName')?.value || '').trim();
                 const username = sanitizeInstagramHandleAdmin(document.getElementById('instagramDefaultProfileUsername')?.value || '');
@@ -13441,6 +13550,11 @@
 
             if (tab === 'posts') {
                 loadInstagramPostsPage();
+            }
+            if (tab === 'import') {
+                instagramProfileSettingsPanelExpandedAdmin = false;
+                instagramProfileSettingsLockedAdmin = true;
+                syncInstagramProfileSettingsProtectionAdmin();
             }
 
             resetAdminViewportPosition();
