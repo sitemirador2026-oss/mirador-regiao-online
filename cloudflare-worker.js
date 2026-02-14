@@ -171,6 +171,34 @@ function decodeEscapedText(text = '') {
     .trim();
 }
 
+function sanitizeInstagramMediaUrl(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  if (!/^https?:\/\//i.test(raw)) return '';
+  return raw;
+}
+
+function normalizeInstagramVideoCandidates(...sources) {
+  const normalized = [];
+  const addCandidate = (value) => {
+    const safe = sanitizeInstagramMediaUrl(value);
+    if (!safe) return;
+    if (normalized.includes(safe)) return;
+    normalized.push(safe);
+  };
+
+  for (const source of sources) {
+    if (!source) continue;
+    if (Array.isArray(source)) {
+      source.forEach(addCandidate);
+      continue;
+    }
+    addCandidate(source);
+  }
+
+  return normalized;
+}
+
 function extractMetaTagContent(html = '', key = '', type = 'property') {
   if (!html || !key) return '';
   const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -1104,12 +1132,13 @@ async function fetchInstagramProfileImage(username = '') {
   return imageUrl;
 }
 
-async function scrapeInstagramMeta(instagramUrl = '') {
+async function scrapeInstagramMeta(instagramUrl = '', options = {}) {
   const cleanUrl = String(instagramUrl || '').trim();
   if (!cleanUrl) throw new Error('URL do Instagram ausente');
+  const forceFresh = Boolean(options && options.forceFresh);
 
   const cachedMeta = instagramMetaCache.get(cleanUrl);
-  if (cachedMeta && cachedMeta.expiresAt > Date.now()) {
+  if (!forceFresh && cachedMeta && cachedMeta.expiresAt > Date.now()) {
     return cachedMeta.data;
   }
 
@@ -1213,23 +1242,29 @@ async function scrapeInstagramMeta(instagramUrl = '') {
 
   const inlineVideoCandidates = [];
   const inlinePatterns = [
-    /"video_url"\s*:\s*"([^"]+)"/i,
-    /\\"video_url\\"\s*:\s*\\"([^"]+)\\"/i,
-    /"contentUrl"\s*:\s*"([^"]+)"/i,
-    /\\"contentUrl\\"\s*:\s*\\"([^"]+)\\"/i,
-    /"video_versions"\s*:\s*\[\s*\{[^}]*"url"\s*:\s*"([^"]+)"/i,
-    /\\"video_versions\\"\s*:\s*\[\s*\{[^}]*\\"url\\"\s*:\s*\\"([^"]+)\\"/i
+    /"video_url"\s*:\s*"([^"]+)"/gi,
+    /\\"video_url\\"\s*:\s*\\"([^"]+)\\"/gi,
+    /"contentUrl"\s*:\s*"([^"]+)"/gi,
+    /\\"contentUrl\\"\s*:\s*\\"([^"]+)\\"/gi,
+    /"video_versions"\s*:\s*\[[\s\S]{0,2500}?"url"\s*:\s*"([^"]+)"/gi,
+    /\\"video_versions\\"\s*:\s*\[[\s\S]{0,3500}?\\"url\\"\s*:\s*\\"([^"]+)\\"/gi
   ];
   const htmlForVideoScan = [html, embedHtml].filter(Boolean).join('\n');
   for (const pattern of inlinePatterns) {
-    const match = htmlForVideoScan.match(pattern);
-    if (match && match[1]) {
-      inlineVideoCandidates.push(decodeEscapedUrl(match[1]));
+    let match;
+    let guard = 0;
+    while ((match = pattern.exec(htmlForVideoScan)) !== null) {
+      if (match && match[1]) {
+        inlineVideoCandidates.push(decodeEscapedUrl(match[1]));
+      }
+      guard += 1;
+      if (guard >= 18) break;
     }
+    pattern.lastIndex = 0;
   }
 
-  const inlineVideoUrl = inlineVideoCandidates.find(value => typeof value === 'string' && /^https?:\/\//i.test(value)) || '';
-  const resolvedVideo = ogVideo || inlineVideoUrl || '';
+  const normalizedVideoCandidates = normalizeInstagramVideoCandidates(ogVideo, inlineVideoCandidates);
+  const resolvedVideo = normalizedVideoCandidates[0] || '';
   const urlLooksVideo = /\/(?:reel|reels|tv)\//i.test(parsedUrl.pathname || '');
   const htmlMarksVideo =
     /"is_video"\s*:\s*true/i.test(htmlForVideoScan) ||
@@ -1278,6 +1313,7 @@ async function scrapeInstagramMeta(instagramUrl = '') {
     description: ogDescription || '',
     image: ogImage || '',
     video: resolvedVideo,
+    videoCandidates: normalizedVideoCandidates,
     mediaType: isVideoPost ? 'video' : 'image',
     isVideoPost,
     collaborators,
@@ -1340,7 +1376,9 @@ export default {
           );
         }
 
-        const data = await scrapeInstagramMeta(instagramUrl);
+        const freshParam = String(url.searchParams.get('fresh') || '').trim().toLowerCase();
+        const forceFresh = freshParam === '1' || freshParam === 'true' || freshParam === 'yes';
+        const data = await scrapeInstagramMeta(instagramUrl, { forceFresh });
         return new Response(
           JSON.stringify({ success: true, ...data }),
           { headers: instagramMetaHeaders }

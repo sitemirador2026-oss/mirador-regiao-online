@@ -1111,6 +1111,10 @@ body {
     opacity: 1;
 }
 
+.instagram-video-modal.is-error .instagram-video-loader {
+    opacity: 0;
+}
+
 .instagram-video-loader-ring {
     width: 52px;
     height: 52px;
@@ -1144,6 +1148,50 @@ body {
 .instagram-video-feedback.show {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
+}
+
+.instagram-video-error {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 5;
+    padding: 0.95rem 0.9rem calc(0.9rem + env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(2, 6, 23, 0.96) 0%, rgba(2, 6, 23, 0.86) 60%, rgba(2, 6, 23, 0.1) 100%);
+    display: none;
+    flex-direction: column;
+    gap: 0.55rem;
+    align-items: stretch;
+}
+
+.instagram-video-modal.is-error .instagram-video-error {
+    display: flex;
+}
+
+.instagram-video-error-text {
+    margin: 0;
+    color: #f8fafc;
+    font-size: 0.84rem;
+    line-height: 1.35;
+    text-align: center;
+}
+
+.instagram-video-error-action {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: color-mix(in srgb, var(--header-top-strip-bg, #2e0f49) 70%, #ffffff 12%);
+    color: #fff;
+    border-radius: 999px;
+    min-height: 36px;
+    padding: 0.5rem 0.85rem;
+    font-family: var(--font-uol, 'Arial', sans-serif);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.instagram-video-error-action:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
 }
 
 @keyframes instagramVideoLoaderSpin {

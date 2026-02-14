@@ -466,7 +466,7 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
     let noembedData = null;
 
     const encodedUrl = encodeURIComponent(instagramUrl);
-    const requestSuffix = forceFresh ? `&_t=${Date.now()}` : '';
+    const requestSuffix = forceFresh ? `&fresh=1&_t=${Date.now()}` : '';
     const workerEndpoint = `https://mirador-r2.sitemirador2026.workers.dev/api/instagram/meta?url=${encodedUrl}${requestSuffix}`;
     const localEndpoint = `/api/instagram/meta?url=${encodedUrl}${requestSuffix}`;
     const metaEndpoints = (typeof window !== 'undefined' && window.location && window.location.protocol === 'file:')
@@ -538,6 +538,8 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
         authorUrl: microlinkData?.author?.url || '',
         username: internalMeta?.username || microlinkData?.author?.username || '',
         profileImage: internalMeta?.profileImage || microlinkData?.author?.image?.url || microlinkData?.author?.avatar || '',
+        video: internalMeta?.video || '',
+        videoCandidates: Array.isArray(internalMeta?.videoCandidates) ? internalMeta.videoCandidates : [],
         collaborators: internalMeta?.collaborators || [],
         hasAdditionalCollaborator: Boolean(internalMeta?.hasAdditionalCollaborator)
     };
@@ -556,6 +558,10 @@ async function fetchInstagramMeta(instagramUrl, options = {}) {
     const normalized = normalizeInstagramMeta(merged, instagramUrl);
     return {
         ...normalized,
+        video: sanitizeMediaUrl(merged.video || ''),
+        videoCandidates: Array.isArray(merged.videoCandidates)
+            ? merged.videoCandidates.map(item => sanitizeMediaUrl(item)).filter(Boolean)
+            : [],
         likesSource: merged.likes > 0 ? (internalLikes > 0 ? 'instagram' : (microlinkLikes > 0 ? 'microlink' : 'embed')) : 'none',
         commentsSource: merged.comments > 0 ? (internalComments > 0 ? 'instagram' : (microlinkComments > 0 ? 'microlink' : 'embed')) : 'none',
         source: internalMeta ? 'instagram' : (microlinkData ? 'microlink' : (noembedData ? 'noembed' : 'unknown'))
@@ -2872,6 +2878,46 @@ function isLikelyVideoUrl(url) {
     return /\.(mp4|webm|mov|m4v|ogv|ogg)(\?|#|$)/i.test(clean) || /\/video\//i.test(clean);
 }
 
+function inferVideoMimeTypeFromUrl(url = '') {
+    const clean = sanitizeMediaUrl(url).split(/[?#]/)[0].toLowerCase();
+    if (!clean) return '';
+    if (/\.(mp4|m4v)$/i.test(clean)) return 'video/mp4';
+    if (/\.(mov|qt)$/i.test(clean)) return 'video/quicktime';
+    if (/\.webm$/i.test(clean)) return 'video/webm';
+    if (/\.(ogv|ogg)$/i.test(clean)) return 'video/ogg';
+    return '';
+}
+
+function canPlayVideoMimeOnCurrentDevice(mimeType = '') {
+    const mime = String(mimeType || '').trim().toLowerCase();
+    if (!mime) return true;
+    try {
+        const probe = document.createElement('video');
+        const support = String(probe.canPlayType(mime) || '').toLowerCase();
+        return support === 'probably' || support === 'maybe';
+    } catch (_error) {
+        return true;
+    }
+}
+
+function scoreInstagramVideoSource(url = '') {
+    const clean = sanitizeMediaUrl(url);
+    if (!clean) return -9999;
+
+    const lower = clean.toLowerCase();
+    const mime = inferVideoMimeTypeFromUrl(clean);
+    let score = 0;
+
+    if (mime === 'video/mp4') score += 120;
+    if (mime === 'video/quicktime') score += 90;
+    if (mime === 'video/webm') score -= 60;
+    if (mime && !canPlayVideoMimeOnCurrentDevice(mime)) score -= 900;
+    if (/r2\.dev/i.test(lower)) score += 12;
+    if (/instagram\.com/i.test(lower)) score += 6;
+
+    return score;
+}
+
 function sanitizeMediaUrl(url) {
     if (!url || typeof url !== 'string') return '';
     const clean = url.trim();
@@ -3310,7 +3356,9 @@ function getInstagramVideoPlaybackSources(post = {}, preferredIndex = null) {
         pushSource(candidateUrl, explicitPoster, { loose: !strictSet.has(candidateUrl) });
     });
 
-    return [...strictSources, ...looseSources];
+    const combined = [...strictSources, ...looseSources];
+    combined.sort((a, b) => scoreInstagramVideoSource(b.url) - scoreInstagramVideoSource(a.url));
+    return combined;
 }
 
 function getInstagramVideoMediaForPlayer(post = {}, preferredIndex = null) {
@@ -3465,7 +3513,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const media = getInstagramVideoMediaForPlayer(post, preferredIndex);
     if (!media || !media.url) return;
-    const sourcePool = Array.isArray(media.sources) && media.sources.length > 0
+    let sourcePool = Array.isArray(media.sources) && media.sources.length > 0
         ? media.sources
         : [{ type: 'video', url: media.url, poster: media.poster || '' }];
 
@@ -3474,6 +3522,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     const stage = document.getElementById('instagramVideoStage');
     const progressBar = document.getElementById('instagramVideoProgressBar');
     const bufferedBar = document.getElementById('instagramVideoBufferedBar');
+    const errorPanel = document.getElementById('instagramVideoError');
+    const errorText = document.getElementById('instagramVideoErrorText');
+    const errorAction = document.getElementById('instagramVideoErrorAction');
     if (!modal || !player || !stage) return;
 
     cleanupInstagramVideoModalSession();
@@ -3484,6 +3535,15 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     }
     if (bufferedBar) {
         bufferedBar.style.width = '0%';
+    }
+    if (errorPanel) {
+        errorPanel.style.display = 'none';
+    }
+    if (errorText) {
+        errorText.textContent = 'Nao foi possivel reproduzir este video.';
+    }
+    if (errorAction) {
+        errorAction.style.display = post.instagramUrl ? 'inline-flex' : 'none';
     }
 
     player.pause();
@@ -3503,10 +3563,12 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     let sourceStartupTimer = null;
     let waitingRecoveryTimer = null;
     let playbackHealthTimer = null;
+    let autoplayNudgeTimer = null;
     let lastCurrentTime = 0;
     let lastPlaybackAdvanceAt = Date.now();
     let recoveryAttempts = 0;
     let metadataReady = false;
+    let hasPlaybackStarted = false;
     const SOURCE_STARTUP_TIMEOUT_MS = 9000;
     const WAITING_RECOVERY_DELAY_MS = 1300;
     const HEALTH_CHECK_INTERVAL_MS = 1100;
@@ -3530,8 +3592,115 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         playbackHealthTimer = null;
     };
 
+    const clearAutoplayNudgeTimer = () => {
+        if (!autoplayNudgeTimer) return;
+        clearTimeout(autoplayNudgeTimer);
+        autoplayNudgeTimer = null;
+    };
+
     const hideLoaderSoon = () => {
         setInstagramVideoModalState('ready');
+    };
+
+    const setPlayerErrorState = (reason = 'generic') => {
+        const activeSource = sourcePool[activeSourceIndex] || {};
+        const sourceUrl = String(activeSource.url || '').toLowerCase();
+        const mimeType = inferVideoMimeTypeFromUrl(sourceUrl);
+        const isWebm = mimeType === 'video/webm' || /\.webm(\?|#|$)/i.test(sourceUrl);
+        const isUnsupported = mimeType && !canPlayVideoMimeOnCurrentDevice(mimeType);
+
+        let message = 'Nao foi possivel reproduzir este video no celular.';
+        if (isWebm || isUnsupported) {
+            message = 'Este video foi publicado em formato nao compativel com este iPhone. Reenvie em MP4.';
+        } else if (reason === 'empty-source') {
+            message = 'Este video foi salvo com arquivo invalido (0 bytes). Reenvie o video no admin.';
+        } else if (reason === 'autoplay-blocked') {
+            message = 'Nao foi possivel iniciar automaticamente no celular. Toque para reproduzir ou abra no Instagram.';
+        } else if (reason === 'startup-timeout') {
+            message = 'O video nao iniciou a reproducao a tempo. Tente novamente.';
+        }
+
+        if (errorPanel) {
+            errorPanel.style.display = 'flex';
+        }
+        if (errorText) {
+            errorText.textContent = message;
+        }
+        if (errorAction) {
+            errorAction.style.display = post.instagramUrl ? 'inline-flex' : 'none';
+        }
+        setInstagramVideoModalState('error');
+    };
+
+    const isSourceLikelyValidAsync = async (url = '') => {
+        const clean = sanitizeMediaUrl(url);
+        if (!clean || !/^https?:\/\//i.test(clean)) return true;
+
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 3200);
+        try {
+            const response = await fetch(clean, {
+                method: 'HEAD',
+                mode: 'cors',
+                cache: 'no-store',
+                signal: controller.signal
+            });
+            const lengthHeader = response.headers.get('content-length');
+            const contentLength = Number(lengthHeader || 0);
+            if (Number.isFinite(contentLength) && contentLength === 0) {
+                return false;
+            }
+            return true;
+        } catch (_error) {
+            return true;
+        } finally {
+            clearTimeout(timer);
+        }
+    };
+
+    let instagramMetaVideoFallbackTried = false;
+    const tryInstagramMetaVideoFallback = async () => {
+        if (instagramMetaVideoFallbackTried) return false;
+        instagramMetaVideoFallbackTried = true;
+        if (!post.instagramUrl) return false;
+
+        try {
+            const meta = await fetchInstagramMeta(post.instagramUrl, { forceFresh: true });
+            if (!meta) return false;
+
+            const candidateUrls = [];
+            const addCandidate = (value) => {
+                const clean = sanitizeMediaUrl(value);
+                if (!clean) return;
+                if (candidateUrls.includes(clean)) return;
+                candidateUrls.push(clean);
+            };
+
+            addCandidate(meta.video);
+            if (Array.isArray(meta.videoCandidates)) {
+                meta.videoCandidates.forEach(addCandidate);
+            }
+
+            if (candidateUrls.length === 0) return false;
+
+            const existing = new Set(sourcePool.map(item => sanitizeMediaUrl(item?.url || '')));
+            const fallbackPoster = sanitizeMediaUrl(post.image);
+            const fallbackSources = candidateUrls
+                .filter(url => !existing.has(url))
+                .map(url => ({
+                    type: 'video',
+                    url,
+                    poster: fallbackPoster || ''
+                }));
+
+            if (fallbackSources.length === 0) return false;
+            sourcePool = [...sourcePool, ...fallbackSources]
+                .sort((a, b) => scoreInstagramVideoSource(b.url) - scoreInstagramVideoSource(a.url));
+
+            return true;
+        } catch (_error) {
+            return false;
+        }
     };
 
     const getBufferedAheadSeconds = () => {
@@ -3579,25 +3748,57 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     const markPlaybackAdvanced = () => {
         lastPlaybackAdvanceAt = Date.now();
         recoveryAttempts = 0;
+        const current = Number(player.currentTime);
+        if (Number.isFinite(current) && current > 0.02) {
+            hasPlaybackStarted = true;
+        }
     };
 
-    const startPlayback = (preferMuted = false) => {
+    const startPlayback = (preferMuted = false, options = {}) => {
+        const allowSourceSwitch = options.allowSourceSwitch !== false;
+        const sourceIndexAtStart = activeSourceIndex;
         if (preferMuted) {
             player.muted = true;
         }
 
+        const attemptMutedRecovery = async () => {
+            if (activeSourceIndex !== sourceIndexAtStart) return false;
+            if (!player.paused) return true;
+            try {
+                player.muted = true;
+                await player.play();
+                showInstagramVideoFeedback('▶');
+                return true;
+            } catch (_error) {
+                if (!allowSourceSwitch || activeSourceIndex !== sourceIndexAtStart) return false;
+                if (!tryNextSource('autoplay-blocked')) {
+                    setPlayerErrorState('autoplay-blocked');
+                }
+                return false;
+            }
+        };
+
+        clearAutoplayNudgeTimer();
         const playPromise = player.play();
         if (playPromise && typeof playPromise.catch === 'function') {
             playPromise.catch(async () => {
-                if (preferMuted) return;
-                try {
-                    player.muted = true;
-                    await player.play();
-                    showInstagramVideoFeedback('▶');
-                    hideLoaderSoon();
-                } catch (_error) { }
+                if (preferMuted) {
+                    if (!allowSourceSwitch || activeSourceIndex !== sourceIndexAtStart) return;
+                    if (!tryNextSource('autoplay-blocked')) {
+                        setPlayerErrorState('autoplay-blocked');
+                    }
+                    return;
+                }
+                await attemptMutedRecovery();
             });
         }
+
+        autoplayNudgeTimer = setTimeout(() => {
+            if (activeSourceIndex !== sourceIndexAtStart) return;
+            if (!player.paused) return;
+            if (player.readyState < 2) return;
+            void attemptMutedRecovery();
+        }, 1500);
     };
 
     const runPlaybackRecovery = () => {
@@ -3660,25 +3861,54 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const setSourceStartupWatchdog = () => {
         clearSourceStartupTimer();
+        const watchedSourceIndex = activeSourceIndex;
         sourceStartupTimer = setTimeout(() => {
-            const started = !player.paused && Number(player.currentTime) > 0.02;
-            if (started || metadataReady || player.readyState >= 2) return;
-            tryNextSource('startup-timeout');
+            if (activeSourceIndex !== watchedSourceIndex) return;
+            const current = Number(player.currentTime);
+            const started = hasPlaybackStarted || (!player.paused && Number.isFinite(current) && current > 0.02);
+            if (started) return;
+            if (player.readyState >= 2) {
+                startPlayback(true, { allowSourceSwitch: false });
+                sourceStartupTimer = setTimeout(() => {
+                    if (activeSourceIndex !== watchedSourceIndex) return;
+                    const retriedCurrent = Number(player.currentTime);
+                    const recovered = hasPlaybackStarted || (!player.paused && Number.isFinite(retriedCurrent) && retriedCurrent > 0.02);
+                    if (recovered) return;
+                    if (!tryNextSource('startup-timeout')) {
+                        setPlayerErrorState('startup-timeout');
+                    }
+                }, 1500);
+                return;
+            }
+            if (!tryNextSource('startup-timeout')) {
+                setPlayerErrorState('startup-timeout');
+            }
         }, SOURCE_STARTUP_TIMEOUT_MS);
     };
 
     const applySource = (sourceIndex, options = {}) => {
-        const source = sourcePool[sourceIndex];
+        let nextIndex = Number.isInteger(sourceIndex) ? sourceIndex : 0;
+        while (nextIndex < sourcePool.length) {
+            const candidate = sourcePool[nextIndex];
+            const candidateUrl = sanitizeMediaUrl(candidate?.url || '');
+            const mime = inferVideoMimeTypeFromUrl(candidateUrl);
+            if (!mime || canPlayVideoMimeOnCurrentDevice(mime)) break;
+            nextIndex += 1;
+        }
+
+        const source = sourcePool[nextIndex];
         if (!source || !source.url) return false;
 
         const autoplay = options.autoplay !== false;
         const preferMuted = options.preferMuted === true;
 
-        activeSourceIndex = sourceIndex;
+        activeSourceIndex = nextIndex;
         metadataReady = false;
+        hasPlaybackStarted = false;
         recoveryAttempts = 0;
         clearSourceStartupTimer();
         clearWaitingRecoveryTimer();
+        clearAutoplayNudgeTimer();
 
         setInstagramVideoModalState('loading');
 
@@ -3705,6 +3935,17 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         lastCurrentTime = 0;
         lastPlaybackAdvanceAt = Date.now();
 
+        void (async () => {
+            const stillActive = activeSourceIndex === nextIndex;
+            if (!stillActive) return;
+            const valid = await isSourceLikelyValidAsync(source.url);
+            if (activeSourceIndex !== nextIndex) return;
+            if (valid) return;
+            if (!tryNextSource('empty-source')) {
+                setPlayerErrorState('empty-source');
+            }
+        })();
+
         if (autoplay) {
             startPlayback(preferMuted);
         }
@@ -3714,7 +3955,6 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const tryNextSource = (_reason = 'error') => {
         if ((activeSourceIndex + 1) >= sourcePool.length) {
-            setInstagramVideoModalState('error');
             return false;
         }
 
@@ -3726,7 +3966,6 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const handleLoadedMetadata = () => {
         metadataReady = true;
-        clearSourceStartupTimer();
         if (player.videoWidth > 0 && player.videoHeight > 0) {
             stage.style.setProperty('--instagram-video-aspect', `${player.videoWidth} / ${player.videoHeight}`);
         }
@@ -3735,10 +3974,11 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     };
 
     const handleCanPlay = () => {
-        clearSourceStartupTimer();
         clearWaitingRecoveryTimer();
         updateBufferedProgress();
-        hideLoaderSoon();
+        if (player.paused && !hasPlaybackStarted) {
+            startPlayback(true, { allowSourceSwitch: false });
+        }
     };
 
     const handleWaiting = () => {
@@ -3750,7 +3990,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         setInstagramVideoModalState('loading');
         const networkNoSource = player.networkState === HTMLMediaElement.NETWORK_NO_SOURCE;
         if (networkNoSource) {
-            tryNextSource('network-no-source');
+            if (!tryNextSource('network-no-source')) {
+                setPlayerErrorState('network-no-source');
+            }
             return;
         }
         schedulePlaybackRecovery();
@@ -3758,7 +4000,12 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const handleError = () => {
         if (tryNextSource('error')) return;
-        setInstagramVideoModalState('error');
+        setInstagramVideoModalState('loading');
+        void (async () => {
+            const hasFallback = await tryInstagramMetaVideoFallback();
+            if (hasFallback && tryNextSource('meta-video-fallback')) return;
+            setPlayerErrorState('error');
+        })();
     };
 
     const handleEnded = () => {
@@ -3783,6 +4030,8 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     const handlePlaying = () => {
         clearWaitingRecoveryTimer();
         clearSourceStartupTimer();
+        clearAutoplayNudgeTimer();
+        hasPlaybackStarted = true;
         markPlaybackAdvanced();
         hideLoaderSoon();
     };
@@ -3818,6 +4067,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         clearSourceStartupTimer();
         clearWaitingRecoveryTimer();
         clearPlaybackHealthTimer();
+        clearAutoplayNudgeTimer();
         player.removeEventListener('loadedmetadata', handleLoadedMetadata);
         player.removeEventListener('canplay', handleCanPlay);
         player.removeEventListener('playing', handlePlaying);
@@ -3837,13 +4087,22 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
 
+    if (errorAction) {
+        errorAction.onclick = () => {
+            if (!post.instagramUrl) return;
+            try {
+                window.open(post.instagramUrl, '_blank', 'noopener,noreferrer');
+            } catch (_error) { }
+        };
+    }
+
     sourcePool.slice(0, 2).forEach((source) => {
         warmInstagramVideoOrigin(source?.url || '');
     });
 
     const sourceApplied = applySource(0, { autoplay: false, preferMuted: false });
     if (!sourceApplied) {
-        setInstagramVideoModalState('error');
+        setPlayerErrorState('source-not-found');
         return;
     }
 
@@ -3879,6 +4138,9 @@ function closeInstagramVideoModal() {
     const stage = document.getElementById('instagramVideoStage');
     const progressBar = document.getElementById('instagramVideoProgressBar');
     const bufferedBar = document.getElementById('instagramVideoBufferedBar');
+    const errorPanel = document.getElementById('instagramVideoError');
+    const errorText = document.getElementById('instagramVideoErrorText');
+    const errorAction = document.getElementById('instagramVideoErrorAction');
     if (!modal || !player) return;
 
     cleanupInstagramVideoModalSession();
@@ -3903,6 +4165,16 @@ function closeInstagramVideoModal() {
     }
     if (bufferedBar) {
         bufferedBar.style.width = '0%';
+    }
+    if (errorPanel) {
+        errorPanel.style.display = 'none';
+    }
+    if (errorText) {
+        errorText.textContent = 'Nao foi possivel reproduzir este video.';
+    }
+    if (errorAction) {
+        errorAction.onclick = null;
+        errorAction.style.display = 'none';
     }
 
     document.body.style.overflow = '';

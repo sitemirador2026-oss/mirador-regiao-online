@@ -14470,11 +14470,16 @@
         function getSupportedVideoMimeType() {
             if (typeof MediaRecorder === 'undefined') return '';
             const candidates = [
-                'video/webm;codecs=vp9,opus',
-                'video/webm;codecs=vp8,opus',
-                'video/webm'
+                'video/mp4;codecs="avc1.42E01E,mp4a.40.2"',
+                'video/mp4'
             ];
             return candidates.find(type => MediaRecorder.isTypeSupported(type)) || '';
+        }
+
+        function canSafelyCompressInstagramVideoInBrowser() {
+            const supported = getSupportedVideoMimeType();
+            if (!supported) return false;
+            return /^video\/mp4/i.test(supported);
         }
 
         async function getVideoMetadataForCompression(file) {
@@ -14701,6 +14706,12 @@
                         recorder.onstop = () => {
                             if (finished) return;
                             const compressedBlob = new Blob(chunks, { type: mimeType });
+                            if (!compressedBlob || compressedBlob.size < (32 * 1024)) {
+                                const emptyResultError = new Error('Compressao retornou arquivo de video invalido');
+                                emptyResultError.code = 'VIDEO_COMPRESSION_EMPTY_OUTPUT';
+                                fail(emptyResultError);
+                                return;
+                            }
                             const ext = mimeType.includes('webm') ? 'webm' : 'mp4';
                             const compressedFile = new File(
                                 [compressedBlob],
@@ -14851,7 +14862,7 @@
             if (!file) return;
 
             const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            const validVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo', 'video/ogg'];
+            const validVideoTypes = ['video/mp4', 'video/quicktime', 'video/x-m4v'];
             const isImage = file.type.startsWith('image/');
             const isVideo = file.type.startsWith('video/');
 
@@ -14866,7 +14877,7 @@
             }
 
             if (isVideo && !validVideoTypes.includes(file.type)) {
-                showModal('Erro', 'Video invalido. Use MP4, WEBM, MOV, AVI ou OGG.', 'error');
+                showModal('Erro', 'Video invalido. Use MP4, MOV ou M4V.', 'error');
                 return;
             }
 
@@ -14914,7 +14925,8 @@
 
                     let uploadVideoFile = file;
                     const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
-                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
+                    const canCompressSafely = canSafelyCompressInstagramVideoInBrowser();
+                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && canCompressSafely) {
                         renderUploadProgressState(uploadArea, {
                             title: `Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}%`,
                             detail: `${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
@@ -14937,10 +14949,20 @@
                             console.warn('[Admin] Falha na compressao automatica do video:', compressError?.message || compressError);
                             throw new Error(`Nao foi possivel comprimir o video. ${compressError?.message || 'Tente novamente com outro arquivo.'}`);
                         }
+                    } else if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && !canCompressSafely) {
+                        console.warn('[Admin] Compressao segura em MP4 indisponivel neste navegador; upload sem compressao.');
+                        renderUploadProgressState(uploadArea, {
+                            title: 'Enviando video sem compressao',
+                            detail: 'Este navegador nao suporta compressao segura em MP4.',
+                            percent: 45
+                        });
                     }
 
-                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && uploadVideoFile.size > compressionTargetBytes) {
+                    if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && canCompressSafely && uploadVideoFile.size > compressionTargetBytes) {
                         throw new Error(`Video ainda nao atingiu a compressao esperada (${formatBytesAdmin(uploadVideoFile.size)} > ${formatBytesAdmin(compressionTargetBytes)}).`);
+                    }
+                    if (!uploadVideoFile || uploadVideoFile.size <= 0) {
+                        throw new Error('O video processado ficou invalido (0 bytes). Selecione o arquivo novamente.');
                     }
 
                     renderUploadProgressState(uploadArea, {
@@ -15007,9 +15029,9 @@
 
                 for (const file of filesToProcess) {
                     // Validar tipo de arquivo
-                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/quicktime'];
+                    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime', 'video/x-m4v'];
                     if (!validTypes.includes(file.type)) {
-                        showModal('Erro', `Tipo de arquivo nao suportado: "${file.name}". Use JPG, PNG, GIF, WebP, MP4, WebM ou MOV.`, 'error');
+                        showModal('Erro', `Tipo de arquivo nao suportado: "${file.name}". Use JPG, PNG, GIF, WebP, MP4, MOV ou M4V.`, 'error');
                         continue;
                     }
 
@@ -15034,7 +15056,8 @@
                         let uploadFile = file;
                         if (isVideo) {
                             const compressionTargetBytes = getInstagramVideoCompressionTargetBytes(file.size);
-                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES) {
+                            const canCompressSafely = canSafelyCompressInstagramVideoInBrowser();
+                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && canCompressSafely) {
                                 renderUploadProgressState(uploadArea, {
                                     title: `Comprimindo ${file.name}`,
                                     detail: `${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(compressionTargetBytes)}`,
@@ -15060,9 +15083,15 @@
                                     showModal('Erro', `Nao foi possivel comprimir "${file.name}".`, 'error');
                                     continue;
                                 }
+                            } else if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && !canCompressSafely) {
+                                console.warn(`[Admin] Compressao segura indisponivel para "${file.name}"; upload sem compressao.`);
                             }
-                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && uploadFile.size > compressionTargetBytes) {
+                            if (file.size > INSTAGRAM_VIDEO_COMPRESSION_SKIP_BYTES && canCompressSafely && uploadFile.size > compressionTargetBytes) {
                                 showModal('Erro', `Video "${file.name}" nao atingiu a compressao esperada.`, 'error');
+                                continue;
+                            }
+                            if (!uploadFile || uploadFile.size <= 0) {
+                                showModal('Erro', `Video "${file.name}" ficou invalido apos processamento (0 bytes).`, 'error');
                                 continue;
                             }
                         } else {
