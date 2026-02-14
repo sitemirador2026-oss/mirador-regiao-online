@@ -380,7 +380,12 @@
                     </div>
                     <div class="instagram-video-error" id="instagramVideoError" aria-live="polite" role="status">
                         <p class="instagram-video-error-text" id="instagramVideoErrorText">Nao foi possivel reproduzir este video.</p>
-                        <button type="button" class="instagram-video-error-action" id="instagramVideoErrorAction">Abrir no Instagram</button>
+                        <pre class="instagram-video-error-debug" id="instagramVideoErrorDebug" hidden></pre>
+                        <div class="instagram-video-error-actions">
+                            <button type="button" class="instagram-video-error-action is-secondary" id="instagramVideoRetryNative">Tentar no celular</button>
+                            <button type="button" class="instagram-video-error-action is-secondary" id="instagramVideoCopyDebug" style="display:none;">Copiar diagnostico</button>
+                            <button type="button" class="instagram-video-error-action" id="instagramVideoErrorAction">Abrir no Instagram</button>
+                        </div>
                     </div>
                     <div class="instagram-video-feedback" id="instagramVideoFeedback" aria-hidden="true"></div>
                 </div>

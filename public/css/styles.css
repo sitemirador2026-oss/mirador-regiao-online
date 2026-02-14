@@ -1174,6 +1174,29 @@ body {
     text-align: center;
 }
 
+.instagram-video-error-debug {
+    margin: 0;
+    padding: 0.5rem 0.56rem;
+    border-radius: 8px;
+    border: 1px solid rgba(248, 250, 252, 0.18);
+    background: rgba(15, 23, 42, 0.72);
+    color: rgba(241, 245, 249, 0.94);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    font-size: 0.66rem;
+    line-height: 1.35;
+    max-height: 128px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    text-align: left;
+}
+
+.instagram-video-error-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+}
+
 .instagram-video-error-action {
     border: 1px solid rgba(255, 255, 255, 0.28);
     background: color-mix(in srgb, var(--header-top-strip-bg, #2e0f49) 70%, #ffffff 12%);
@@ -1189,9 +1212,18 @@ body {
     transition: filter 0.2s ease, transform 0.2s ease;
 }
 
+.instagram-video-error-action.is-secondary {
+    background: rgba(15, 23, 42, 0.45);
+    border-color: rgba(248, 250, 252, 0.24);
+}
+
 .instagram-video-error-action:hover {
     filter: brightness(1.06);
     transform: translateY(-1px);
+}
+
+.instagram-video-error-action#instagramVideoErrorAction {
+    grid-column: 1 / -1;
 }
 
 @keyframes instagramVideoLoaderSpin {
