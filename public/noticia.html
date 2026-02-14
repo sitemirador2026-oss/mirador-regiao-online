@@ -9,9 +9,13 @@
     <link rel="stylesheet" href="css/styles.css?v=163">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&family=Roboto+Condensed:wght@400;500;700;800&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
+        :root {
+            --article-fixed-header-offset: 116px;
+        }
+
         /* Logo styles for public site */
         .site-logo {
             max-height: 55px;
@@ -57,6 +61,20 @@
         }
 
         @media (min-width: 1024px) {
+            body {
+                padding-top: var(--article-fixed-header-offset, 116px);
+            }
+
+            .header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                z-index: 1200;
+                box-shadow: 0 2px 10px rgba(15, 23, 42, 0.14);
+            }
+
             .header-content {
                 justify-content: center;
                 gap: 1rem;
@@ -231,15 +249,34 @@
         }
 
         .article-content {
-            font-size: 1.125rem;
-            line-height: 1.8;
-            color: var(--foreground);
+            font-family: 'Open Sans', 'Source Sans 3', 'Segoe UI', Tahoma, sans-serif;
+            font-size: clamp(1.18rem, 1.04rem + 0.24vw, 1.4rem);
+            line-height: 1.72;
+            font-weight: 400;
+            letter-spacing: 0.002em;
+            color: #1f2937;
             word-break: break-word;
             overflow-wrap: anywhere;
+            text-wrap: pretty;
         }
 
         .article-content p {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.55rem;
+        }
+
+        .article-content strong,
+        .article-content b {
+            font-weight: 700;
+        }
+
+        .article-content a {
+            color: #c4170c;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .article-content a:hover {
+            text-decoration: underline;
         }
 
         .article-content * {
@@ -641,8 +678,8 @@
             }
 
             .article-content {
-                font-size: 1rem;
-                line-height: 1.65;
+                font-size: 1.05rem;
+                line-height: 1.68;
             }
 
             .article-actions {
@@ -1047,6 +1084,16 @@
             return template.innerHTML;
         }
 
+        function syncArticleHeaderOffset() {
+            const header = document.querySelector('.header');
+            if (!header) return;
+
+            const headerHeight = Math.max(0, Math.ceil(header.getBoundingClientRect().height || 0));
+            if (headerHeight > 0) {
+                document.documentElement.style.setProperty('--article-fixed-header-offset', `${headerHeight}px`);
+            }
+        }
+
         function cleanupExternalImportedContentHtml(rawHtml) {
             const html = String(rawHtml || '').trim();
             if (!html) return '';
@@ -1131,6 +1178,9 @@
 
         let currentArticleContext = null;
         let articleActionFeedbackTimer = null;
+
+        window.addEventListener('load', syncArticleHeaderOffset);
+        window.addEventListener('resize', syncArticleHeaderOffset, { passive: true });
 
         function formatArticleLikeCount(value) {
             const safeValue = Math.max(0, Number(value) || 0);
@@ -1737,9 +1787,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
+            syncArticleHeaderOffset();
             // Carregar configurações do Firebase
             const siteName = await loadAndApplySettings();
             await loadAndApplyFooterSettings(siteName);
+            syncArticleHeaderOffset();
             
             // Pegar ID da notícia da URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -1918,6 +1970,7 @@
             `;
             
             container.innerHTML = html;
+            syncArticleHeaderOffset();
             currentArticleContext = {
                 id: newsId,
                 title: article.title || 'Notícia',
