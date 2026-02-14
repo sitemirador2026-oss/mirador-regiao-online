@@ -1163,54 +1163,61 @@ body {
     z-index: 4;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    padding: calc(max(0.6rem, env(safe-area-inset-top))) 0.75rem 0.65rem;
+    gap: 0.36rem;
+    padding: calc(max(0.42rem, env(safe-area-inset-top))) 0.52rem 0.48rem;
     pointer-events: none;
-    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.78) 0%, rgba(2, 6, 23, 0.42) 55%, rgba(2, 6, 23, 0) 100%);
+    background: linear-gradient(to bottom, rgba(2, 6, 23, 0.72) 0%, rgba(2, 6, 23, 0.3) 48%, rgba(2, 6, 23, 0) 100%);
 }
 
 .instagram-video-modal-close {
     align-self: flex-end;
     border-radius: 999px;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(10, 14, 26, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(13, 19, 34, 0.66);
     color: #fff;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.4rem;
-    min-height: 36px;
-    padding: 0.45rem 0.75rem;
+    gap: 0.34rem;
+    min-height: 32px;
+    min-width: 32px;
+    padding: 0.34rem 0.56rem;
     font-family: var(--font-uol, 'Arial', sans-serif);
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.01em;
     cursor: pointer;
     pointer-events: auto;
     transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 7px 18px rgba(3, 7, 18, 0.24);
 }
 
 .instagram-video-modal-close:hover {
-    background: rgba(14, 22, 39, 0.9);
-    border-color: rgba(255, 255, 255, 0.65);
+    background: rgba(15, 24, 43, 0.84);
+    border-color: rgba(255, 255, 255, 0.44);
     transform: translateY(-1px);
 }
 
 .instagram-video-progress-track {
     width: 100%;
-    height: 5px;
+    height: 4px;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.24);
+    background: rgba(255, 255, 255, 0.18);
     overflow: hidden;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
 .instagram-video-progress-fill {
     width: 0%;
     height: 100%;
     border-radius: inherit;
-    background: linear-gradient(90deg, var(--header-bg, #2563eb) 0%, #60a5fa 45%, #f8fafc 100%);
+    background: linear-gradient(90deg, var(--header-top-strip-bg, #2e0f49) 0%, var(--primary, #2563eb) 100%);
+    background: linear-gradient(
+        90deg,
+        var(--header-top-strip-bg, #2e0f49) 0%,
+        color-mix(in srgb, var(--header-top-strip-bg, #2e0f49) 72%, #ffffff 28%) 100%
+    );
     transition: width 0.12s linear;
 }
 
@@ -1227,18 +1234,23 @@ body {
     }
 
     .instagram-video-modal-chrome {
-        padding: calc(max(0.52rem, env(safe-area-inset-top))) 0.58rem 0.55rem;
-        gap: 0.42rem;
+        padding: calc(max(0.4rem, env(safe-area-inset-top))) 0.46rem 0.42rem;
+        gap: 0.34rem;
     }
 
     .instagram-video-modal-close {
-        min-height: 33px;
-        padding: 0.38rem 0.64rem;
-        font-size: 0.74rem;
+        min-height: 30px;
+        min-width: 30px;
+        padding: 0.32rem 0.4rem;
+        font-size: 0.68rem;
     }
 
     .instagram-video-progress-track {
-        height: 4px;
+        height: 3px;
+    }
+
+    .instagram-video-modal-close span {
+        display: none;
     }
 }
 
@@ -1516,24 +1528,26 @@ body {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    gap: 0.35rem;
+    gap: 0.3rem;
     min-height: 30px;
-    padding: 0.36rem 0.72rem;
-    background: #f8fafc;
-    border: 1px solid #dbe2ea;
+    min-width: 30px;
+    padding: 0.34rem 0.58rem;
+    background: rgba(248, 250, 252, 0.92);
+    border: 1px solid #d1d9e3;
     border-radius: 999px;
     cursor: pointer;
     margin-left: auto;
     flex-shrink: 0;
-    color: #334155;
-    font-size: 0.76rem;
+    color: #2f3d52;
+    font-size: 0.72rem;
     font-weight: 700;
-    letter-spacing: 0.01em;
+    letter-spacing: 0.03em;
+    box-shadow: 0 6px 14px rgba(15, 23, 42, 0.12);
 }
 
 .instagram-card.expanded .instagram-card-close:hover {
-    background: #eef2f7;
-    border-color: #cbd5e1;
+    background: #f1f5f9;
+    border-color: #c5d0df;
 }
 
 .instagram-card.expanded .instagram-card-close svg {
@@ -1544,6 +1558,19 @@ body {
 .instagram-card.expanded .instagram-card-close span {
     line-height: 1;
     white-space: nowrap;
+    text-transform: uppercase;
+}
+
+@media (max-width: 640px) {
+    .instagram-card.expanded .instagram-card-close {
+        width: 30px;
+        padding: 0;
+        border-radius: 999px;
+    }
+
+    .instagram-card.expanded .instagram-card-close span {
+        display: none;
+    }
 }
 
 .instagram-card.expanded .instagram-card-title-preview,
