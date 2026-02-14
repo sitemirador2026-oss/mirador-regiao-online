@@ -1234,6 +1234,27 @@ export default {
     const url = new URL(request.url);
     const path = url.pathname;
 
+    if (path === '/' || path === '') {
+      return new Response(
+        JSON.stringify({
+          status: 'ok',
+          service: 'mirador-r2-worker',
+          message: 'Worker online',
+          endpoints: [
+            '/api/status',
+            '/api/article/extract?url=...',
+            '/api/instagram/meta?url=...',
+            '/api/news/:id/likes',
+            '/api/news/:id/like',
+            '/api/upload',
+            '/api/files'
+          ],
+          timestamp: new Date().toISOString()
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     if (path === '/api/instagram/meta') {
       const instagramMetaHeaders = {
         ...corsHeaders,
