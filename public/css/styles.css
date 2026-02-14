@@ -1200,6 +1200,7 @@ body {
 }
 
 .instagram-video-progress-track {
+    position: relative;
     width: 100%;
     height: 4px;
     border-radius: 999px;
@@ -1208,7 +1209,19 @@ body {
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
+.instagram-video-progress-buffer {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 0%;
+    height: 100%;
+    border-radius: inherit;
+    background: rgba(255, 255, 255, 0.34);
+    transition: width 0.18s linear;
+}
+
 .instagram-video-progress-fill {
+    position: absolute;
+    inset: 0 auto 0 0;
     width: 0%;
     height: 100%;
     border-radius: inherit;
