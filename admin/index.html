@@ -14830,6 +14830,25 @@
             }
         }
 
+        function formatIosCompatibilityEntries(entries = []) {
+            if (!Array.isArray(entries) || entries.length === 0) return '';
+            return entries
+                .map(item => String(item || '').toLowerCase())
+                .filter(Boolean)
+                .slice(0, 6)
+                .join(', ');
+        }
+
+        function isDetectedAsIosIncompatibleVideo(compatibility = null) {
+            if (!compatibility || !compatibility.checked || compatibility.isCompatible) return false;
+            const entries = Array.isArray(compatibility.entries) ? compatibility.entries : [];
+            const hasKnownIncompatibleEntry = entries.some((rawEntry) => {
+                const entry = String(rawEntry || '').toLowerCase();
+                return entry.includes(':vp09') || entry.includes(':vp08') || entry.includes(':av01');
+            });
+            return hasKnownIncompatibleEntry || compatibility.reason === 'incompatible-codec' || compatibility.reason === 'unknown-video-codec';
+        }
+
         async function getVideoMetadataForCompression(file) {
             return new Promise((resolve, reject) => {
                 if (!(file instanceof File)) {
@@ -15398,6 +15417,15 @@
                         percent: 45
                     });
 
+                    const iosCompatibility = await analyzeLocalVideoCompatibilityForIOS(uploadVideoFile);
+                    if (isDetectedAsIosIncompatibleVideo(iosCompatibility)) {
+                        const codecDetails = formatIosCompatibilityEntries(iosCompatibility.entries);
+                        throw new Error(
+                            `Video incompativel com iPhone (${codecDetails || iosCompatibility.reason || 'codec desconhecido'}). ` +
+                            'Exporte em MP4 (H264 + AAC) e tente novamente.'
+                        );
+                    }
+
                     renderUploadProgressState(uploadArea, {
                         title: 'Enviando video...',
                         detail: formatBytesAdmin(uploadVideoFile.size),
@@ -15489,6 +15517,17 @@
                         let uploadFile = file;
                         if (isVideo) {
                             uploadFile = normalizeInstagramVideoFileForUpload(file);
+                            const iosCompatibility = await analyzeLocalVideoCompatibilityForIOS(uploadFile);
+                            if (isDetectedAsIosIncompatibleVideo(iosCompatibility)) {
+                                const codecDetails = formatIosCompatibilityEntries(iosCompatibility.entries);
+                                showModal(
+                                    'Erro',
+                                    `Video "${file.name}" incompativel com iPhone (${codecDetails || iosCompatibility.reason || 'codec desconhecido'}). ` +
+                                    'Exporte em MP4 (H264 + AAC).',
+                                    'error'
+                                );
+                                continue;
+                            }
                             renderUploadProgressState(uploadArea, {
                                 title: `Preparando ${file.name}...`,
                                 detail: formatBytesAdmin(uploadFile.size),

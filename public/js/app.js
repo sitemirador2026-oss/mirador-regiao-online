@@ -3917,6 +3917,18 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         }
     };
 
+    const resolvePlaybackFailureReason = (fallbackReason = 'error') => {
+        if (lastCompatibilityProbe && lastCompatibilityProbe.checked && !lastCompatibilityProbe.isCompatible) {
+            return 'codec-unsupported';
+        }
+        const mediaErrorCode = Number(player.error?.code || lastMediaError?.code || 0);
+        if (mediaErrorCode === 4) return 'source-not-supported';
+        if (mediaErrorCode === 3) return 'decode-error';
+        if (mediaErrorCode === 2) return 'network-error';
+        if (mediaErrorCode === 1) return 'aborted';
+        return String(fallbackReason || 'error');
+    };
+
     const copyVideoDiagnosticsToClipboard = async () => {
         const text = String(errorDebug?.textContent || '').trim();
         if (!text) return;
@@ -3966,12 +3978,23 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         const mimeType = inferVideoMimeTypeFromUrl(sourceUrl);
         const isWebm = mimeType === 'video/webm' || /\.webm(\?|#|$)/i.test(sourceUrl);
         const isUnsupported = mimeType && !canPlayVideoMimeOnCurrentDevice(mimeType);
+        const incompatibleEntries = Array.isArray(lastCompatibilityProbe?.entries)
+            ? lastCompatibilityProbe.entries.map(item => String(item || '').toLowerCase())
+            : [];
+        const hasVp9 = incompatibleEntries.some(item => item.includes(':vp09') || item.includes(':vp08'));
+        const hasAv1 = incompatibleEntries.some(item => item.includes(':av01'));
 
         let message = 'Nao foi possivel reproduzir este video no celular.';
         if (isWebm || isUnsupported) {
             message = 'Este video foi publicado em formato nao compativel com celular. Reenvie em MP4.';
         } else if (reason === 'codec-unsupported' || reason === 'decode-error') {
-            message = 'Falha de decodificacao no celular. Esse arquivo pode estar com codec/perfil nao suportado.';
+            if (hasVp9) {
+                message = 'Este arquivo MP4 foi exportado em VP9 e o iPhone nao reproduz. Reenvie em MP4 H264 + AAC.';
+            } else if (hasAv1) {
+                message = 'Este arquivo usa AV1, que pode falhar no iPhone. Reenvie em MP4 H264 + AAC.';
+            } else {
+                message = 'Falha de decodificacao no celular. Esse arquivo pode estar com codec/perfil nao suportado.';
+            }
         } else if (reason === 'source-not-supported') {
             message = 'O navegador do celular nao aceitou a fonte do video.';
         } else if (reason === 'empty-source') {
@@ -4163,6 +4186,17 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
                     }
                     return;
                 }
+                if ((error?.name || '') === 'NotSupportedError') {
+                    const reason = resolvePlaybackFailureReason('source-not-supported');
+                    if (!allowSourceSwitch || activeSourceIndex !== sourceIndexAtStart) {
+                        setPlayerErrorState(reason);
+                        return;
+                    }
+                    if (!tryNextSource(reason)) {
+                        setPlayerErrorState(reason);
+                    }
+                    return;
+                }
                 await attemptMutedRecovery();
             });
         }
@@ -4249,15 +4283,17 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
                     const recovered = hasPlaybackStarted || (!player.paused && Number.isFinite(retriedCurrent) && retriedCurrent > 0.02);
                     if (recovered) return;
                     pushDebugEvent('startup-timeout-after-retry', { sourceIndex: watchedSourceIndex });
-                    if (!tryNextSource('startup-timeout')) {
-                        setPlayerErrorState('startup-timeout');
+                    const timeoutReason = resolvePlaybackFailureReason('startup-timeout');
+                    if (!tryNextSource(timeoutReason)) {
+                        setPlayerErrorState(timeoutReason);
                     }
                 }, 1500);
                 return;
             }
             pushDebugEvent('startup-timeout', { sourceIndex: watchedSourceIndex });
-            if (!tryNextSource('startup-timeout')) {
-                setPlayerErrorState('startup-timeout');
+            const timeoutReason = resolvePlaybackFailureReason('startup-timeout');
+            if (!tryNextSource(timeoutReason)) {
+                setPlayerErrorState(timeoutReason);
             }
         }, SOURCE_STARTUP_TIMEOUT_MS);
     };
@@ -4436,12 +4472,13 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             readyState: player.readyState
         });
 
-        const reason =
+        const reason = resolvePlaybackFailureReason(
             mediaErrorCode === 3 ? 'decode-error' :
                 mediaErrorCode === 4 ? 'source-not-supported' :
                     mediaErrorCode === 2 ? 'network-error' :
                         mediaErrorCode === 1 ? 'aborted' :
-                            'error';
+                            'error'
+        );
 
         if (tryNextSource(reason)) return;
         setPlayerErrorState(reason);
