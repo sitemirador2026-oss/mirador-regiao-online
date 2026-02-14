@@ -5,7 +5,7 @@
 
 const express = require('express');
 const multer = require('multer');
-const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const cors = require('cors');
 const path = require('path');
 const { setTimeout: delay } = require('timers/promises');
@@ -63,6 +63,115 @@ const instagramMetaCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const instagramOembedCache = new Map();
 const MAX_UPLOAD_FILE_BYTES = 120 * 1024 * 1024;
+const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
+const articleLikesLocks = new Map();
+
+function clampToSafeInt(value) {
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.round(parsed));
+}
+
+function sanitizeNewsId(value) {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    const sanitized = raw.replace(/[^a-zA-Z0-9_-]/g, '');
+    return sanitized;
+}
+
+function getArticleLikesKey(newsId) {
+    const safeNewsId = sanitizeNewsId(newsId);
+    return safeNewsId ? `${ARTICLE_LIKES_PREFIX}/${safeNewsId}.json` : '';
+}
+
+async function bodyToString(body) {
+    if (!body) return '';
+    if (typeof body.transformToString === 'function') {
+        return body.transformToString();
+    }
+
+    return await new Promise((resolve, reject) => {
+        const chunks = [];
+        body.on('data', chunk => chunks.push(Buffer.from(chunk)));
+        body.on('error', reject);
+        body.on('end', () => resolve(Buffer.concat(chunks).toString('utf-8')));
+    });
+}
+
+async function readArticleLikesFromR2(newsId) {
+    const key = getArticleLikesKey(newsId);
+    if (!key) return 0;
+
+    try {
+        const command = new GetObjectCommand({
+            Bucket: R2_CONFIG.bucketName,
+            Key: key
+        });
+        const result = await s3Client.send(command);
+        const rawBody = await bodyToString(result.Body);
+        const payload = JSON.parse(rawBody || '{}');
+        return clampToSafeInt(payload.likes);
+    } catch (error) {
+        const statusCode = Number(error?.$metadata?.httpStatusCode || 0);
+        if (
+            error?.name === 'NoSuchKey' ||
+            error?.Code === 'NoSuchKey' ||
+            statusCode === 404
+        ) {
+            return 0;
+        }
+        throw error;
+    }
+}
+
+async function writeArticleLikesToR2(newsId, likes) {
+    const key = getArticleLikesKey(newsId);
+    if (!key) throw new Error('ID da notícia inválido');
+
+    const payload = {
+        newsId: sanitizeNewsId(newsId),
+        likes: clampToSafeInt(likes),
+        updatedAt: Date.now()
+    };
+
+    const command = new PutObjectCommand({
+        Bucket: R2_CONFIG.bucketName,
+        Key: key,
+        Body: Buffer.from(JSON.stringify(payload)),
+        ContentType: 'application/json; charset=utf-8',
+        CacheControl: 'no-store'
+    });
+    await s3Client.send(command);
+
+    return payload.likes;
+}
+
+function runLikesLocked(newsId, task) {
+    const safeNewsId = sanitizeNewsId(newsId);
+    if (!safeNewsId) return Promise.reject(new Error('ID da notícia inválido'));
+
+    const previousTask = articleLikesLocks.get(safeNewsId) || Promise.resolve();
+    const nextTask = previousTask
+        .catch(() => { })
+        .then(task)
+        .finally(() => {
+            if (articleLikesLocks.get(safeNewsId) === nextTask) {
+                articleLikesLocks.delete(safeNewsId);
+            }
+        });
+
+    articleLikesLocks.set(safeNewsId, nextTask);
+    return nextTask;
+}
+
+async function incrementArticleLikesInR2(newsId) {
+    return runLikesLocked(newsId, async () => {
+        const currentLikes = await readArticleLikesFromR2(newsId);
+        const nextLikes = clampToSafeInt(currentLikes + 1);
+        await writeArticleLikesToR2(newsId, nextLikes);
+        return nextLikes;
+    });
+}
 
 function decodeHtmlEntities(text = '') {
     const input = String(text || '');
@@ -757,6 +866,44 @@ const upload = multer({
 // Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', service: 'R2 Upload Server' });
+});
+
+app.get('/api/news/:id/likes', async (req, res) => {
+    try {
+        const newsId = sanitizeNewsId(req.params.id);
+        if (!newsId) {
+            return res.status(400).json({ success: false, error: 'ID da notícia inválido' });
+        }
+
+        const likes = await readArticleLikesFromR2(newsId);
+        return res.json({
+            success: true,
+            newsId,
+            likes
+        });
+    } catch (error) {
+        console.error('Erro ao consultar curtidas no R2:', error);
+        return res.status(500).json({ success: false, error: 'Falha ao consultar curtidas' });
+    }
+});
+
+app.post('/api/news/:id/like', async (req, res) => {
+    try {
+        const newsId = sanitizeNewsId(req.params.id);
+        if (!newsId) {
+            return res.status(400).json({ success: false, error: 'ID da notícia inválido' });
+        }
+
+        const likes = await incrementArticleLikesInR2(newsId);
+        return res.json({
+            success: true,
+            newsId,
+            likes
+        });
+    } catch (error) {
+        console.error('Erro ao registrar curtida no R2:', error);
+        return res.status(500).json({ success: false, error: 'Falha ao registrar curtida' });
+    }
 });
 
 app.get('/api/instagram/meta', async (req, res) => {
