@@ -11373,6 +11373,61 @@
             };
         }
 
+        function buildExcerptFromHtmlString(htmlContent, maxLen = 300) {
+            if (!htmlContent) return '';
+
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(String(htmlContent), 'text/html');
+                const text = String(doc.body?.textContent || '')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+                if (!text) return '';
+                if (text.length <= maxLen) return text;
+
+                const clipped = text.slice(0, maxLen);
+                const boundary = clipped.lastIndexOf(' ');
+                const safeCut = boundary > Math.floor(maxLen * 0.45) ? clipped.slice(0, boundary) : clipped;
+                return `${safeCut.trim()}...`;
+            } catch (_error) {
+                return '';
+            }
+        }
+
+        async function tryExtractArticleContent(url) {
+            const encodedUrl = encodeURIComponent(url);
+            const isFileProtocol = Boolean(typeof window !== 'undefined' && window.location && window.location.protocol === 'file:');
+            const isLocalhost = Boolean(typeof window !== 'undefined' && window.location && ['localhost', '127.0.0.1'].includes(window.location.hostname));
+            const workerBaseUrl = (typeof getWorkerBaseUrl === 'function')
+                ? getWorkerBaseUrl().replace(/\/$/, '')
+                : 'https://mirador-r2.sitemirador2026.workers.dev';
+
+            const workerEndpoint = `${workerBaseUrl}/api/article/extract?url=${encodedUrl}`;
+            const localEndpoint = `/api/article/extract?url=${encodedUrl}`;
+            const localhostEndpoint = `http://localhost:3000/api/article/extract?url=${encodedUrl}`;
+
+            const endpoints = [
+                ...(isFileProtocol ? [localhostEndpoint] : [localEndpoint, workerEndpoint]),
+                ...(isLocalhost && !isFileProtocol ? [localhostEndpoint] : []),
+                ...(isFileProtocol ? [workerEndpoint] : [])
+            ];
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetchWithTimeout(endpoint, 15000);
+                    if (!response.ok) continue;
+
+                    const payload = await response.json();
+                    if (payload && payload.success) {
+                        return payload;
+                    }
+                } catch (_error) { }
+            }
+
+            return null;
+        }
+
         async function fetchNewsFromUrl() {
             const urlInput = document.getElementById('importUrlInput');
             const url = urlInput.value.trim();
@@ -11389,12 +11444,16 @@
             preview.style.display = 'none';
 
             try {
-                const extractedData = await tryExtractData(url);
+                const [extractedData, extractedArticle] = await Promise.all([
+                    tryExtractData(url),
+                    tryExtractArticleContent(url)
+                ]);
                 const urlObj = new URL(url);
-                const domain = extractedData.domain || urlObj.hostname.replace(/^www\./i, '');
+                const domain = (extractedArticle?.sourceDomain || extractedData.domain || urlObj.hostname.replace(/^www\./i, '')).trim();
+                const importedContentHtml = String(extractedArticle?.content || '').trim();
 
                 // Tentar extrair titulo da URL se nao encontrado
-                let title = extractedData.title;
+                let title = extractedArticle?.title || extractedData.title;
                 if (!title || title.trim() === '') {
                     // Extrair do pathname da URL
                     const pathParts = urlObj.pathname.split('/').filter(p => p.length > 3);
@@ -11416,7 +11475,10 @@
                 }
 
                 // Tentar pegar descricao de meta tags se nao tiver
-                let description = extractedData.description;
+                let description = extractedArticle?.excerpt || extractedArticle?.description || extractedData.description;
+                if ((!description || description.trim() === '') && importedContentHtml) {
+                    description = buildExcerptFromHtmlString(importedContentHtml, 320);
+                }
                 if (!description || description.trim() === '') {
                     description = 'Leia a noticia completa no site ' + domain;
                 }
@@ -11424,7 +11486,8 @@
                 importedNewsData = {
                     title: title,
                     excerpt: description,
-                    image: extractedData.image || '',
+                    content: importedContentHtml,
+                    image: extractedArticle?.image || extractedData.image || '',
                     externalUrl: url,
                     sourceDomain: domain,
                     sourceFavicon: extractedData.favicon || `https://www.google.com/s2/favicons?domain=${domain}&sz=128`,
@@ -11446,7 +11509,7 @@
                 preview.style.display = 'block';
 
                 // Se os dados estiverem incompletos, mostrar aviso mas permitir editar
-                if (!extractedData.title || !extractedData.description) {
+                if (!title || (!description && !importedContentHtml)) {
                     showEditFields();
                 }
 

@@ -1150,6 +1150,30 @@
             return bases;
         }
 
+        async function fetchExternalArticleViaApi(externalUrl) {
+            const safeExternalUrl = sanitizeExternalUrl(externalUrl);
+            if (!safeExternalUrl) return null;
+
+            const endpointPath = `/api/article/extract?url=${encodeURIComponent(safeExternalUrl)}`;
+            const bases = getArticleLikeApiBases();
+
+            for (const base of bases) {
+                const endpoint = `${base}${endpointPath}`;
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' }
+                    });
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    if (!payload || payload.success !== true) continue;
+                    return payload;
+                } catch (_error) { }
+            }
+
+            return null;
+        }
+
         async function incrementArticleLikeViaFirestoreTransaction(newsId) {
             const safeNewsId = String(newsId || '').trim();
             if (!safeNewsId) throw new Error('ID da noticia invalido');
@@ -1712,9 +1736,28 @@
                 `
                 : '';
 
-            const safeContentHtml = sanitizeArticleHtml(article.content || '');
-            const safeExcerptHtml = sanitizeArticleHtml(article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : '');
-            const articleImage = sanitizeMediaUrl(article.image || '');
+            let safeContentHtml = sanitizeArticleHtml(article.content || '');
+            let safeExcerptHtml = sanitizeArticleHtml(article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : '');
+            let articleImage = sanitizeMediaUrl(article.image || '');
+
+            if (!safeContentHtml && externalUrl) {
+                try {
+                    const extractedExternalArticle = await fetchExternalArticleViaApi(externalUrl);
+                    if (extractedExternalArticle) {
+                        const extractedContentHtml = sanitizeArticleHtml(extractedExternalArticle.content || '');
+                        const extractedExcerptHtml = sanitizeArticleHtml(
+                            extractedExternalArticle.excerpt
+                                ? `<p>${escapeHtml(extractedExternalArticle.excerpt)}</p>`
+                                : ''
+                        );
+                        if (extractedContentHtml) safeContentHtml = extractedContentHtml;
+                        if (!safeExcerptHtml && extractedExcerptHtml) safeExcerptHtml = extractedExcerptHtml;
+                        if (!articleImage) {
+                            articleImage = sanitizeMediaUrl(extractedExternalArticle.image || '');
+                        }
+                    }
+                } catch (_error) { }
+            }
             let articleLikes = Math.max(0, Number(article.articleLikes) || 0);
             const likesFromApi = await fetchArticleLikesViaApi(newsId);
             if (Number.isFinite(likesFromApi)) {
@@ -1743,31 +1786,15 @@
                 `;
             }
             
-            if (externalUrl) {
-                const externalPreview = safeContentHtml || safeExcerptHtml;
-                if (externalPreview) {
-                    html += `
-                        <div class="article-content">
-                            ${externalPreview}
-                        </div>
-                    `;
-                }
-                html += `
-                    <div class="article-embed">
-                        <iframe class="article-embed-frame" src="${externalUrl}" loading="lazy"></iframe>
-                        <div class="article-embed-fallback">
-                            Se o conteúdo não carregar, <a href="${externalUrl}" target="_blank" rel="noopener">abra no site original</a>.
-                        </div>
-                    </div>
-                `;
-            } else {
-                // Adicionar conteúdo interno
-                html += `
-                    <div class="article-content">
-                        ${safeContentHtml || safeExcerptHtml}
-                    </div>
-                `;
-            }
+            const articleBodyHtml = safeContentHtml
+                || safeExcerptHtml
+                || (externalUrl ? '<p>Conteudo resumido disponivel. Use o link acima para abrir a materia completa no site original.</p>' : '');
+
+            html += `
+                <div class="article-content">
+                    ${articleBodyHtml}
+                </div>
+            `;
 
             html += `
                 <div class="article-footer">

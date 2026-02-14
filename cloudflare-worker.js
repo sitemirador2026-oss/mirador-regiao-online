@@ -33,6 +33,12 @@ const instagramHeaders = {
   'Upgrade-Insecure-Requests': '1',
   'Cookie': 'ig_did=E8A4E4A0-1B2C-4D3E-A5F6-789012345678; csrftoken=missing; ig_nrcb=1; mid=ZwAABAABAAGAAA'
 };
+const ARTICLE_FETCH_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+  'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7',
+  'Cache-Control': 'no-cache'
+};
 
 const instagramProfileCache = new Map();
 const INSTAGRAM_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 horas
@@ -172,6 +178,440 @@ function extractMetaTagContent(html = '', key = '', type = 'property') {
   const patternB = new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*${type}=["']${escapedKey}["'][^>]*>`, 'i');
   const match = html.match(patternA) || html.match(patternB);
   return match ? decodeHtmlEntities(match[1]).trim() : '';
+}
+
+function sanitizeExternalArticleUrl(value = '') {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  try {
+    const parsed = new URL(raw);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return parsed.toString();
+    }
+  } catch (_error) { }
+
+  return '';
+}
+
+function escapeHtmlText(value = '') {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function escapeHtmlAttribute(value = '') {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function shortenText(value = '', limit = 300) {
+  const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!normalized) return '';
+  if (normalized.length <= limit) return normalized;
+
+  const clipped = normalized.slice(0, limit);
+  const boundary = clipped.lastIndexOf(' ');
+  const safeCut = boundary > Math.floor(limit * 0.45) ? clipped.slice(0, boundary) : clipped;
+  return `${safeCut.trim()}...`;
+}
+
+function stripHtmlToText(html = '') {
+  return decodeHtmlEntities(
+    String(html || '')
+      .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+      .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+      .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
+      .replace(/<br\b[^>]*\/?>/gi, '\n')
+      .replace(/<\/p>/gi, '\n')
+      .replace(/<\/div>/gi, '\n')
+      .replace(/<\/h[1-6]>/gi, '\n')
+      .replace(/<\/li>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\r/g, '')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim()
+  );
+}
+
+function extractTitleTagContent(html = '') {
+  const match = String(html || '').match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  return match ? decodeHtmlEntities(match[1]).replace(/\s+/g, ' ').trim() : '';
+}
+
+function extractImageFromJsonLdValue(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value.trim();
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const extracted = extractImageFromJsonLdValue(item);
+      if (extracted) return extracted;
+    }
+    return '';
+  }
+  if (typeof value === 'object') {
+    return String(
+      value.url ||
+      value.contentUrl ||
+      value.thumbnailUrl ||
+      value['@id'] ||
+      ''
+    ).trim();
+  }
+  return '';
+}
+
+function collectJsonLdNodes(payload) {
+  const queue = Array.isArray(payload) ? [...payload] : [payload];
+  const nodes = [];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (!current) continue;
+
+    if (Array.isArray(current)) {
+      queue.push(...current);
+      continue;
+    }
+
+    if (typeof current !== 'object') continue;
+    nodes.push(current);
+
+    if (Array.isArray(current['@graph'])) queue.push(...current['@graph']);
+    if (current.mainEntity) queue.push(current.mainEntity);
+    if (current.itemListElement) queue.push(current.itemListElement);
+  }
+
+  return nodes;
+}
+
+function extractJsonLdArticleData(html = '') {
+  const scripts = String(html || '').match(/<script\b[^>]*type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [];
+  const best = {
+    title: '',
+    description: '',
+    articleBody: '',
+    image: ''
+  };
+
+  for (const scriptTag of scripts) {
+    const jsonText = String(scriptTag || '')
+      .replace(/^<script\b[^>]*>/i, '')
+      .replace(/<\/script>$/i, '')
+      .trim();
+    if (!jsonText) continue;
+
+    let parsed;
+    try {
+      parsed = JSON.parse(jsonText);
+    } catch (_error) {
+      continue;
+    }
+
+    const nodes = collectJsonLdNodes(parsed);
+    for (const node of nodes) {
+      const typeRaw = node?.['@type'];
+      const typeText = (Array.isArray(typeRaw) ? typeRaw.join(' ') : String(typeRaw || '')).toLowerCase();
+      if (!/(newsarticle|article|blogposting|reportage|analysis)/i.test(typeText)) continue;
+
+      const title = String(node.headline || node.name || '').trim();
+      const description = String(node.description || '').trim();
+      const articleBody = String(node.articleBody || node.text || '').trim();
+      const image = extractImageFromJsonLdValue(node.image || node.thumbnailUrl);
+
+      if (!best.title && title) best.title = title;
+      if (!best.description && description) best.description = description;
+      if (!best.image && image) best.image = image;
+      if (articleBody.length > best.articleBody.length) best.articleBody = articleBody;
+    }
+  }
+
+  return best;
+}
+
+function extractBestArticleBlockHtml(rawHtml = '') {
+  const html = String(rawHtml || '');
+  if (!html) return '';
+
+  const searchSpace = html
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<!--[\s\S]*?-->/g, ' ');
+
+  const candidates = [];
+  const pushCandidate = (candidateHtml = '') => {
+    const cleanHtml = String(candidateHtml || '').trim();
+    if (!cleanHtml) return;
+
+    const plainText = stripHtmlToText(cleanHtml);
+    const textLength = plainText.length;
+    if (textLength < 280) return;
+
+    const paragraphCount = (cleanHtml.match(/<p\b/gi) || []).length;
+    const headingCount = (cleanHtml.match(/<h[1-6]\b/gi) || []).length;
+    const imageCount = (cleanHtml.match(/<img\b/gi) || []).length;
+    const noisyPenalty = /(newsletter|publicidade|anuncio|advert|cookie|consent|inscreva|assine|share|social|coment[aá]rio)/i.test(cleanHtml) ? 900 : 0;
+    const score = textLength + paragraphCount * 140 + headingCount * 90 + imageCount * 30 - noisyPenalty;
+
+    candidates.push({ html: cleanHtml, score, textLength });
+  };
+
+  const patternList = [
+    /<article\b[^>]*>[\s\S]*?<\/article>/gi,
+    /<(main|section|div)\b[^>]*(?:itemprop=["']articleBody["']|id=["'][^"']*(?:article|content|post|entry|story|news|materia|conteudo|texto)[^"']*["']|class=["'][^"']*(?:article|content|post|entry|story|news|materia|conteudo|texto)[^"']*["'])[^>]*>[\s\S]*?<\/\1>/gi
+  ];
+
+  for (const pattern of patternList) {
+    let match;
+    while ((match = pattern.exec(searchSpace)) !== null) {
+      pushCandidate(match[0]);
+    }
+  }
+
+  if (candidates.length === 0) {
+    const bodyMatch = searchSpace.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i);
+    pushCandidate(bodyMatch ? bodyMatch[1] : searchSpace);
+  }
+
+  if (candidates.length === 0) return '';
+  candidates.sort((a, b) => b.score - a.score || b.textLength - a.textLength);
+  return candidates[0].html;
+}
+
+function normalizeResourceUrl(value = '', baseUrl = '', options = {}) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const attrName = String(options.forAttribute || '').toLowerCase();
+  const lower = raw.toLowerCase();
+  if (lower.startsWith('javascript:') || lower.startsWith('vbscript:')) return '';
+
+  if (attrName === 'href' && (raw.startsWith('#') || lower.startsWith('mailto:') || lower.startsWith('tel:'))) {
+    return raw;
+  }
+
+  if (attrName === 'src' && lower.startsWith('data:image/')) {
+    return raw;
+  }
+
+  if (lower.startsWith('data:')) return '';
+  if (/^https?:\/\//i.test(raw)) return raw;
+  if (raw.startsWith('//')) return `https:${raw}`;
+
+  try {
+    return new URL(raw, baseUrl).toString();
+  } catch (_error) {
+    return '';
+  }
+}
+
+function sanitizeExtractedArticleHtml(rawHtml = '', baseUrl = '') {
+  if (!rawHtml) return '';
+
+  let html = String(rawHtml)
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript\b[^>]*>[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<(iframe|object|embed|form|input|button|textarea|select|svg|canvas|audio|video)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
+    .replace(/<(iframe|object|embed|form|input|button|textarea|select|svg|canvas|audio|video)\b[^>]*\/?>/gi, ' ');
+
+  const noisyBlockPattern = /<(div|section|aside|nav|footer|header)\b[^>]*(?:id|class)=["'][^"']*(?:ad-|ads|advert|banner|cookie|consent|newsletter|promo|related|share|social|outbrain|taboola|recommended|comment|paywall|subscribe|popup|modal)[^"']*["'][^>]*>[\s\S]*?<\/\1>/gi;
+  html = html.replace(noisyBlockPattern, ' ');
+
+  const allowedTags = new Set([
+    'p', 'br', 'strong', 'em', 'b', 'i', 'u',
+    'a', 'ul', 'ol', 'li', 'blockquote',
+    'h2', 'h3', 'h4', 'h5', 'h6',
+    'img', 'figure', 'figcaption', 'div', 'span'
+  ]);
+
+  html = html.replace(/<(\/?)([a-z0-9:-]+)([^>]*)>/gi, (_fullMatch, slash, rawTagName, rawAttrs = '') => {
+    const tagName = String(rawTagName || '').toLowerCase();
+    if (!allowedTags.has(tagName)) return '';
+
+    if (slash) {
+      return `</${tagName}>`;
+    }
+
+    if (tagName === 'br') return '<br>';
+
+    const attributes = [];
+    const attrRegex = /([a-z0-9:-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'=<>`]+))/gi;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(rawAttrs)) !== null) {
+      const name = String(attrMatch[1] || '').toLowerCase();
+      const rawValue = String(attrMatch[3] ?? attrMatch[4] ?? attrMatch[5] ?? '').trim();
+      if (!name || !rawValue) continue;
+
+      if (
+        name.startsWith('on') ||
+        name === 'style' ||
+        name === 'class' ||
+        name === 'id' ||
+        name === 'srcset' ||
+        name === 'sizes' ||
+        name === 'width' ||
+        name === 'height' ||
+        name.startsWith('data-')
+      ) {
+        continue;
+      }
+
+      if (tagName === 'a') {
+        if (name !== 'href') continue;
+        const safeHref = normalizeResourceUrl(rawValue, baseUrl, { forAttribute: 'href' });
+        if (!safeHref) continue;
+        attributes.push(`href="${escapeHtmlAttribute(safeHref)}"`);
+        continue;
+      }
+
+      if (tagName === 'img') {
+        if (!['src', 'alt', 'title', 'loading'].includes(name)) continue;
+        if (name === 'src') {
+          const safeSrc = normalizeResourceUrl(rawValue, baseUrl, { forAttribute: 'src' });
+          if (!safeSrc) continue;
+          attributes.push(`src="${escapeHtmlAttribute(safeSrc)}"`);
+          continue;
+        }
+        attributes.push(`${name}="${escapeHtmlAttribute(rawValue)}"`);
+        continue;
+      }
+
+      if (['title'].includes(name)) {
+        attributes.push(`${name}="${escapeHtmlAttribute(rawValue)}"`);
+      }
+    }
+
+    if (tagName === 'a') {
+      attributes.push('target="_blank"');
+      attributes.push('rel="noopener nofollow"');
+    }
+
+    if (tagName === 'img' && !attributes.some(attr => attr.startsWith('loading='))) {
+      attributes.push('loading="lazy"');
+    }
+
+    return `<${tagName}${attributes.length > 0 ? ` ${attributes.join(' ')}` : ''}>`;
+  });
+
+  html = html
+    .replace(/<(p|div|span|figure|figcaption|li|blockquote|h2|h3|h4|h5|h6)\b[^>]*>\s*<\/\1>/gi, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
+
+  if (html.length > 250000) {
+    html = html.slice(0, 250000);
+  }
+
+  return html;
+}
+
+function extractArticlePayloadFromHtml(html = '', pageUrl = '') {
+  const cleanHtml = String(html || '');
+  const jsonLd = extractJsonLdArticleData(cleanHtml);
+
+  const metaTitle = extractMetaTagContent(cleanHtml, 'og:title', 'property')
+    || extractMetaTagContent(cleanHtml, 'twitter:title', 'name')
+    || extractTitleTagContent(cleanHtml);
+  const metaDescription = extractMetaTagContent(cleanHtml, 'og:description', 'property')
+    || extractMetaTagContent(cleanHtml, 'description', 'name')
+    || extractMetaTagContent(cleanHtml, 'twitter:description', 'name');
+  const metaImage = extractMetaTagContent(cleanHtml, 'og:image', 'property')
+    || extractMetaTagContent(cleanHtml, 'twitter:image', 'name')
+    || '';
+
+  const fallbackArticleBodyHtml = jsonLd.articleBody
+    ? String(jsonLd.articleBody)
+      .split(/\n{2,}/)
+      .map(chunk => chunk.trim())
+      .filter(Boolean)
+      .map(chunk => `<p>${escapeHtmlText(chunk)}</p>`)
+      .join('')
+    : '';
+
+  const bestBlockHtml = extractBestArticleBlockHtml(cleanHtml);
+  const sanitizedContent = sanitizeExtractedArticleHtml(bestBlockHtml || fallbackArticleBodyHtml, pageUrl);
+  const textFromContent = stripHtmlToText(sanitizedContent || fallbackArticleBodyHtml);
+  const fallbackParagraphContent = textFromContent
+    ? textFromContent
+      .split(/\n{2,}/)
+      .map(chunk => chunk.trim())
+      .filter(Boolean)
+      .slice(0, 40)
+      .map(chunk => `<p>${escapeHtmlText(chunk)}</p>`)
+      .join('')
+    : '';
+  const finalContent = sanitizedContent || fallbackParagraphContent;
+
+  const title = decodeEscapedText(jsonLd.title || metaTitle || '');
+  const description = decodeEscapedText(jsonLd.description || metaDescription || '');
+  const excerpt = shortenText(description || textFromContent, 320);
+
+  const firstContentImage = extractFirstValueByPatterns(finalContent, [
+    /<img\b[^>]*src=["']([^"']+)["']/i
+  ]);
+  const image = normalizeResourceUrl(
+    jsonLd.image || metaImage || firstContentImage,
+    pageUrl,
+    { forAttribute: 'src' }
+  );
+
+  return {
+    title,
+    description,
+    excerpt,
+    image,
+    content: finalContent
+  };
+}
+
+async function fetchAndExtractArticle(url = '') {
+  const targetUrl = sanitizeExternalArticleUrl(url);
+  if (!targetUrl) {
+    throw new Error('URL invalida. Informe um link http(s).');
+  }
+
+  const response = await fetch(targetUrl, {
+    method: 'GET',
+    headers: ARTICLE_FETCH_HEADERS,
+    redirect: 'follow',
+    cf: {
+      cacheTtl: 0,
+      cacheEverything: false
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`Falha ao buscar pagina de origem (HTTP ${response.status})`);
+  }
+
+  const finalUrl = sanitizeExternalArticleUrl(response.url || targetUrl) || targetUrl;
+  const html = await response.text();
+  const payload = extractArticlePayloadFromHtml(html, finalUrl);
+  const sourceDomain = (() => {
+    try {
+      return new URL(finalUrl).hostname.replace(/^www\./i, '');
+    } catch (_error) {
+      return '';
+    }
+  })();
+
+  return {
+    ...payload,
+    externalUrl: finalUrl,
+    sourceDomain
+  };
 }
 
 function parseCompactNumber(value) {
@@ -820,6 +1260,49 @@ export default {
         return new Response(
           JSON.stringify({ success: false, error: error.message || 'Erro ao extrair metadados do Instagram' }),
           { status: 500, headers: instagramMetaHeaders }
+        );
+      }
+    }
+
+    if (path === '/api/article/extract') {
+      const articleHeaders = {
+        ...corsHeaders,
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      };
+
+      try {
+        const requestedUrl = String(url.searchParams.get('url') || '').trim();
+        if (!requestedUrl) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'Parametro url e obrigatorio' }),
+            { status: 400, headers: articleHeaders }
+          );
+        }
+
+        const extracted = await fetchAndExtractArticle(requestedUrl);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            title: extracted.title || '',
+            description: extracted.description || '',
+            excerpt: extracted.excerpt || '',
+            image: extracted.image || '',
+            content: extracted.content || '',
+            sourceDomain: extracted.sourceDomain || '',
+            externalUrl: extracted.externalUrl || sanitizeExternalArticleUrl(requestedUrl) || ''
+          }),
+          { headers: articleHeaders }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: error?.message || 'Falha ao extrair conteudo da noticia'
+          }),
+          { status: 500, headers: articleHeaders }
         );
       }
     }
