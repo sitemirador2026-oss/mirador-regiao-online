@@ -3085,6 +3085,40 @@ async function probeRemoteVideoCompatibilityForIOS(videoUrl = '') {
     }
 }
 
+async function requestIosCompatibleTranscode(videoUrl = '') {
+    const clean = sanitizeMediaUrl(videoUrl);
+    if (!clean) {
+        throw new Error('URL de video invalida para transcodificacao.');
+    }
+
+    let response;
+    try {
+        response = await fetch('/api/video/transcode-ios', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: clean })
+        });
+    } catch (error) {
+        throw new Error(error?.message || 'Falha de rede ao solicitar transcodificacao.');
+    }
+
+    let payload = null;
+    try {
+        payload = await response.json();
+    } catch (_error) {
+        payload = null;
+    }
+
+    if (!response.ok || !payload || payload.success !== true || !payload.url) {
+        const message =
+            String(payload?.error || '').trim() ||
+            `Falha ao gerar versao compativel (HTTP ${response.status || 500}).`;
+        throw new Error(message);
+    }
+
+    return payload;
+}
+
 function canPlayVideoMimeOnCurrentDevice(mimeType = '') {
     const mime = String(mimeType || '').trim().toLowerCase();
     if (!mime) return true;
@@ -3813,6 +3847,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     let lastCompatibilityProbe = null;
     let lastMediaError = null;
     let lastErrorReason = '';
+    let iosServerTranscodeAttempted = false;
+    let iosServerTranscodeInFlight = false;
+    let lastIosTranscodeError = '';
     const debugEventTrail = [];
 
     const pushDebugEvent = (eventName = '', payload = {}) => {
@@ -3870,6 +3907,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         const compatibilityText = lastCompatibilityProbe
             ? `checked=${Boolean(lastCompatibilityProbe.checked)} compatible=${Boolean(lastCompatibilityProbe.isCompatible)} entries=${compatibilityEntries || 'n/a'}`
             : 'n/a';
+        const iosTranscodeErrorText = String(lastIosTranscodeError || '')
+            .replace(/\s+/g, ' ')
+            .trim();
 
         const lines = [
             `reason=${String(reason || lastErrorReason || 'generic')}`,
@@ -3888,12 +3928,16 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             lines.push(`head_error=${validationError}`);
         }
         lines.push(`codec_probe=${compatibilityText}`);
+        lines.push(`ios_transcode_attempted=${iosServerTranscodeAttempted} in_flight=${iosServerTranscodeInFlight}`);
+        if (iosTranscodeErrorText) {
+            lines.push(`ios_transcode_error=${iosTranscodeErrorText}`);
+        }
         lines.push(`ios_device=${isIOSAppleMobileDevice()} platform=${platform}`);
         lines.push(`ua=${userAgent}`);
 
         if (debugEventTrail.length > 0) {
             lines.push('trail=');
-            debugEventTrail.slice(-6).forEach((entry) => {
+            debugEventTrail.slice(-10).forEach((entry) => {
                 const payload = JSON.stringify(entry.payload || {});
                 lines.push(` - ${entry.at} ${entry.event} ${payload}`);
             });
@@ -3983,17 +4027,32 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             : [];
         const hasVp9 = incompatibleEntries.some(item => item.includes(':vp09') || item.includes(':vp08'));
         const hasAv1 = incompatibleEntries.some(item => item.includes(':av01'));
+        const iosTranscodeErrorHint = (() => {
+            if (!iosServerTranscodeAttempted) return '';
+            const cleaned = String(lastIosTranscodeError || '').replace(/\s+/g, ' ').trim();
+            if (!cleaned) return '';
+            const short = cleaned.length > 140 ? `${cleaned.slice(0, 137)}...` : cleaned;
+            return ` Detalhe tecnico: ${short}`;
+        })();
 
         let message = 'Nao foi possivel reproduzir este video no celular.';
         if (isWebm || isUnsupported) {
-            message = 'Este video foi publicado em formato nao compativel com celular. Reenvie em MP4.';
+            message = iosServerTranscodeAttempted
+                ? `Formato nao compativel no iPhone e a conversao automatica falhou.${iosTranscodeErrorHint}`
+                : 'Formato de video nao suportado nativamente no iPhone.';
         } else if (reason === 'codec-unsupported' || reason === 'decode-error') {
             if (hasVp9) {
-                message = 'Este arquivo MP4 foi exportado em VP9 e o iPhone nao reproduz. Reenvie em MP4 H264 + AAC.';
+                message = iosServerTranscodeAttempted
+                    ? `Este MP4 usa VP9 e o iPhone nao reproduz. A conversao automatica falhou.${iosTranscodeErrorHint}`
+                    : 'Este MP4 usa VP9 e o iPhone nao reproduz.';
             } else if (hasAv1) {
-                message = 'Este arquivo usa AV1, que pode falhar no iPhone. Reenvie em MP4 H264 + AAC.';
+                message = iosServerTranscodeAttempted
+                    ? `Este arquivo usa AV1 e falhou no iPhone. A conversao automatica falhou.${iosTranscodeErrorHint}`
+                    : 'Este arquivo usa AV1 e pode falhar no iPhone.';
             } else {
-                message = 'Falha de decodificacao no celular. Esse arquivo pode estar com codec/perfil nao suportado.';
+                message = iosServerTranscodeAttempted
+                    ? `Falha de decodificacao no iPhone e a conversao automatica falhou.${iosTranscodeErrorHint}`
+                    : 'Falha de decodificacao no celular. Esse arquivo pode estar com codec/perfil nao suportado.';
             }
         } else if (reason === 'source-not-supported') {
             message = 'O navegador do celular nao aceitou a fonte do video.';
@@ -4189,11 +4248,11 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
                 if ((error?.name || '') === 'NotSupportedError') {
                     const reason = resolvePlaybackFailureReason('source-not-supported');
                     if (!allowSourceSwitch || activeSourceIndex !== sourceIndexAtStart) {
-                        setPlayerErrorState(reason);
+                        recoverOrSetError(reason);
                         return;
                     }
                     if (!tryNextSource(reason)) {
-                        setPlayerErrorState(reason);
+                        recoverOrSetError(reason);
                     }
                     return;
                 }
@@ -4285,7 +4344,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
                     pushDebugEvent('startup-timeout-after-retry', { sourceIndex: watchedSourceIndex });
                     const timeoutReason = resolvePlaybackFailureReason('startup-timeout');
                     if (!tryNextSource(timeoutReason)) {
-                        setPlayerErrorState(timeoutReason);
+                        recoverOrSetError(timeoutReason);
                     }
                 }, 1500);
                 return;
@@ -4293,7 +4352,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             pushDebugEvent('startup-timeout', { sourceIndex: watchedSourceIndex });
             const timeoutReason = resolvePlaybackFailureReason('startup-timeout');
             if (!tryNextSource(timeoutReason)) {
-                setPlayerErrorState(timeoutReason);
+                recoverOrSetError(timeoutReason);
             }
         }, SOURCE_STARTUP_TIMEOUT_MS);
     };
@@ -4371,7 +4430,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             });
             if (validation.valid) return;
             if (!tryNextSource('empty-source')) {
-                setPlayerErrorState('empty-source');
+                recoverOrSetError('empty-source');
             }
         })();
 
@@ -4395,6 +4454,93 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         }
 
         return true;
+    };
+
+    async function maybeRecoverWithServerTranscode(reason = '') {
+        const normalizedReason = String(reason || '').toLowerCase();
+        const eligibleReason =
+            normalizedReason === 'codec-unsupported' ||
+            normalizedReason === 'source-not-supported' ||
+            normalizedReason === 'decode-error';
+
+        if (!eligibleReason) return false;
+        if (!isIOSAppleMobileDevice()) return false;
+        if (iosServerTranscodeAttempted || iosServerTranscodeInFlight) return false;
+
+        const activeSource = sourcePool[activeSourceIndex] || {};
+        const sourceUrl = sanitizeMediaUrl(activeSource.url || '');
+        if (!sourceUrl || !/^https?:\/\//i.test(sourceUrl)) return false;
+
+        iosServerTranscodeAttempted = true;
+        iosServerTranscodeInFlight = true;
+        lastIosTranscodeError = '';
+        pushDebugEvent('ios-transcode-request', {
+            reason: normalizedReason,
+            source: sourceUrl
+        });
+
+        if (errorPanel) errorPanel.style.display = 'none';
+        if (errorText) {
+            errorText.textContent = 'Gerando versao compativel para iPhone...';
+        }
+        setInstagramVideoModalState('loading');
+
+        try {
+            const payload = await requestIosCompatibleTranscode(sourceUrl);
+            const transcodedUrl = sanitizeMediaUrl(payload.url || '');
+            if (!transcodedUrl) {
+                throw new Error('URL da versao compativel nao retornada.');
+            }
+
+            const fallbackPoster = sanitizeMediaUrl(activeSource.poster || '');
+            const rebuiltPool = [];
+            const seen = new Set();
+            const pushSource = (item) => {
+                const cleanUrl = sanitizeMediaUrl(item?.url || '');
+                if (!cleanUrl || seen.has(cleanUrl)) return;
+                seen.add(cleanUrl);
+                rebuiltPool.push({
+                    type: 'video',
+                    url: cleanUrl,
+                    poster: sanitizeMediaUrl(item?.poster || '') || fallbackPoster
+                });
+            };
+
+            pushSource({ url: transcodedUrl, poster: fallbackPoster });
+            sourcePool.forEach(pushSource);
+            sourcePool = rebuiltPool;
+
+            pushDebugEvent('ios-transcode-success', {
+                source: transcodedUrl,
+                reused: Boolean(payload.reused),
+                outputBytes: Number(payload.outputBytes || 0)
+            });
+
+            const applied = applySource(0, { autoplay: true, preferMuted: true });
+            if (!applied) {
+                throw new Error('Nao foi possivel aplicar a versao compativel.');
+            }
+
+            return true;
+        } catch (error) {
+            lastIosTranscodeError = String(error?.message || 'erro-desconhecido').replace(/\s+/g, ' ').trim();
+            pushDebugEvent('ios-transcode-fail', {
+                message: lastIosTranscodeError || 'erro-desconhecido'
+            });
+            console.error('[Instagram] Falha ao gerar versao compativel automaticamente:', error);
+            return false;
+        } finally {
+            iosServerTranscodeInFlight = false;
+        }
+    }
+
+    const recoverOrSetError = (reason = 'error') => {
+        void (async () => {
+            const recovered = await maybeRecoverWithServerTranscode(reason);
+            if (!recovered) {
+                setPlayerErrorState(reason);
+            }
+        })();
     };
 
     const tryNextSource = (_reason = 'error') => {
@@ -4481,7 +4627,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         );
 
         if (tryNextSource(reason)) return;
-        setPlayerErrorState(reason);
+        recoverOrSetError(reason);
     };
 
     const handleEnded = () => {

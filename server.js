@@ -9,7 +9,18 @@ const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, G
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const crypto = require('crypto');
+const { spawn } = require('child_process');
 const { setTimeout: delay } = require('timers/promises');
+const fsp = fs.promises;
+
+let ffmpegBinaryPath = '';
+try {
+    ffmpegBinaryPath = process.env.FFMPEG_PATH || require('ffmpeg-static') || '';
+} catch (_error) {
+    ffmpegBinaryPath = process.env.FFMPEG_PATH || '';
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -70,6 +81,8 @@ const instagramMetaCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const instagramOembedCache = new Map();
 const MAX_UPLOAD_FILE_BYTES = 120 * 1024 * 1024;
+const MAX_IOS_TRANSCODE_INPUT_BYTES = 180 * 1024 * 1024;
+const IOS_TRANSCODE_TIMEOUT_MS = 3 * 60 * 1000;
 const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
 const INSTAGRAM_FOLDER_PATTERN = /^instagram(?:\/|$)/i;
 const ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES = new Set([
@@ -80,6 +93,13 @@ const ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES = new Set([
 const articleLikesLocks = new Map();
 const LOCAL_LIKES_DIR = path.join(__dirname, '.metrics');
 const LOCAL_LIKES_FILE = path.join(LOCAL_LIKES_DIR, 'article-likes.json');
+const R2_PUBLIC_HOST = (() => {
+    try {
+        return String(new URL(R2_CONFIG.publicUrl).hostname || '').toLowerCase();
+    } catch (_error) {
+        return '';
+    }
+})();
 
 function clampToSafeInt(value) {
     const parsed = Number(value);
@@ -136,6 +156,221 @@ function normalizeUploadedContentType(fileType = '', fileName = '') {
     if (ext === 'mov') return 'video/quicktime';
 
     return 'application/octet-stream';
+}
+
+function sanitizeHttpUrl(value = '') {
+    const raw = String(value || '').trim();
+    if (!raw) return '';
+    try {
+        const parsed = new URL(raw);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.toString();
+        }
+    } catch (_error) { }
+    return '';
+}
+
+function extractR2KeyFromPublicUrl(url = '') {
+    const cleanUrl = sanitizeHttpUrl(url);
+    if (!cleanUrl) return '';
+    if (!R2_PUBLIC_HOST) return '';
+
+    try {
+        const parsed = new URL(cleanUrl);
+        if (String(parsed.hostname || '').toLowerCase() !== R2_PUBLIC_HOST) return '';
+        const key = decodeURIComponent(String(parsed.pathname || '').replace(/^\/+/, '').trim());
+        if (!key || key.includes('..')) return '';
+        return key;
+    } catch (_error) {
+        return '';
+    }
+}
+
+function buildIosTranscodedKey(sourceKey = '') {
+    const cleanKey = String(sourceKey || '').trim().replace(/^\/+/, '');
+    if (!cleanKey) return '';
+
+    const parts = cleanKey.split('/');
+    const fileName = parts.pop() || 'video.mp4';
+    const sourceFolder = sanitizeUploadFolder(parts.join('/'), 'instagram');
+    const baseName = fileName
+        .replace(/\.[^.]+$/, '')
+        .replace(/[^a-zA-Z0-9._-]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80) || 'video';
+    const hash = crypto.createHash('sha1').update(cleanKey).digest('hex').slice(0, 12);
+
+    return `${sourceFolder}/transcoded/${baseName}-${hash}-ios-h264.mp4`;
+}
+
+function isR2NotFoundError(error) {
+    const statusCode = Number(error?.$metadata?.httpStatusCode || 0);
+    return (
+        error?.name === 'NoSuchKey' ||
+        error?.Code === 'NoSuchKey' ||
+        statusCode === 404
+    );
+}
+
+async function doesR2ObjectExist(key = '') {
+    if (!key) return false;
+    try {
+        const command = new GetObjectCommand({
+            Bucket: R2_CONFIG.bucketName,
+            Key: key,
+            Range: 'bytes=0-0'
+        });
+        const result = await s3Client.send(command);
+        const body = result?.Body;
+        if (body) {
+            if (typeof body.destroy === 'function') {
+                body.destroy();
+            } else if (typeof body.cancel === 'function') {
+                await body.cancel();
+            }
+        }
+        return true;
+    } catch (error) {
+        if (isR2NotFoundError(error)) return false;
+        throw error;
+    }
+}
+
+async function fetchRemoteVideoBufferWithLimit(url, maxBytes = MAX_IOS_TRANSCODE_INPUT_BYTES) {
+    const response = await fetch(url, {
+        method: 'GET',
+        redirect: 'follow',
+        headers: {
+            'Cache-Control': 'no-cache'
+        }
+    });
+
+    if (!response.ok) {
+        throw new Error(`Falha ao baixar video de origem (HTTP ${response.status})`);
+    }
+
+    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+    const lengthHeader = Number(response.headers.get('content-length') || 0);
+    if (Number.isFinite(lengthHeader) && lengthHeader > maxBytes) {
+        throw new Error(`Video excede limite de processamento (${Math.round(maxBytes / (1024 * 1024))}MB).`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    if (!buffer.length) {
+        throw new Error('Arquivo de origem vazio.');
+    }
+    if (buffer.length > maxBytes) {
+        throw new Error(`Video excede limite de processamento (${Math.round(maxBytes / (1024 * 1024))}MB).`);
+    }
+
+    return {
+        buffer,
+        contentType,
+        finalUrl: sanitizeHttpUrl(response.url || url) || sanitizeHttpUrl(url),
+        status: response.status
+    };
+}
+
+function getFfmpegBinary() {
+    return process.env.FFMPEG_PATH || ffmpegBinaryPath || 'ffmpeg';
+}
+
+function runFfmpegProcess(args = [], timeoutMs = IOS_TRANSCODE_TIMEOUT_MS) {
+    return new Promise((resolve, reject) => {
+        const ffmpegBin = getFfmpegBinary();
+        const child = spawn(ffmpegBin, args, {
+            stdio: ['ignore', 'pipe', 'pipe'],
+            windowsHide: true
+        });
+
+        let stderr = '';
+        let finished = false;
+        const finish = (error = null) => {
+            if (finished) return;
+            finished = true;
+            clearTimeout(timer);
+            if (error) {
+                reject(error);
+                return;
+            }
+            resolve();
+        };
+
+        const timer = setTimeout(() => {
+            try { child.kill('SIGKILL'); } catch (_error) { }
+            finish(new Error('Timeout ao converter video para formato compativel.'));
+        }, Math.max(30000, Number(timeoutMs || IOS_TRANSCODE_TIMEOUT_MS)));
+
+        child.stderr.on('data', (chunk) => {
+            stderr += String(chunk || '');
+            if (stderr.length > 12000) {
+                stderr = stderr.slice(-12000);
+            }
+        });
+
+        child.on('error', (error) => {
+            if (error?.code === 'ENOENT') {
+                finish(new Error('FFmpeg nao encontrado no servidor.'));
+                return;
+            }
+            finish(error);
+        });
+
+        child.on('close', (code) => {
+            if (code === 0) {
+                finish();
+                return;
+            }
+            const detail = String(stderr || '').trim();
+            finish(new Error(`Falha ao converter video (ffmpeg exit ${code}). ${detail || ''}`.trim()));
+        });
+    });
+}
+
+async function transcodeVideoBufferToIosCompatibleMp4(inputBuffer) {
+    if (!Buffer.isBuffer(inputBuffer) || inputBuffer.length <= 0) {
+        throw new Error('Buffer de video invalido para conversao.');
+    }
+
+    const tempDir = await fsp.mkdtemp(path.join(os.tmpdir(), 'mirador-ios-transcode-'));
+    const inputPath = path.join(tempDir, 'input-video.bin');
+    const outputPath = path.join(tempDir, 'output-ios.mp4');
+
+    try {
+        await fsp.writeFile(inputPath, inputBuffer);
+
+        const args = [
+            '-y',
+            '-hide_banner',
+            '-loglevel', 'error',
+            '-i', inputPath,
+            '-map', '0:v:0',
+            '-map', '0:a:0?',
+            '-c:v', 'libx264',
+            '-preset', 'veryfast',
+            '-profile:v', 'high',
+            '-level', '4.1',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            '-c:a', 'aac',
+            '-b:a', '128k',
+            '-ar', '48000',
+            '-ac', '2',
+            '-max_muxing_queue_size', '2048',
+            outputPath
+        ];
+
+        await runFfmpegProcess(args, IOS_TRANSCODE_TIMEOUT_MS);
+        const outputBuffer = await fsp.readFile(outputPath);
+        if (!outputBuffer || outputBuffer.length <= 0) {
+            throw new Error('A conversao retornou arquivo vazio.');
+        }
+        return outputBuffer;
+    } finally {
+        await fsp.rm(tempDir, { recursive: true, force: true }).catch(() => { });
+    }
 }
 
 function getArticleLikesKey(newsId) {
@@ -1583,6 +1818,83 @@ app.get('/api/article/extract', async (req, res) => {
         return res.status(500).json({
             success: false,
             error: error?.message || 'Falha ao extrair conteudo da noticia'
+        });
+    }
+});
+
+app.post('/api/video/transcode-ios', async (req, res) => {
+    try {
+        const sourceUrl = sanitizeHttpUrl(req.body?.url || '');
+        if (!sourceUrl) {
+            return res.status(400).json({ success: false, error: 'Parametro url e obrigatorio.' });
+        }
+
+        const sourceKey = extractR2KeyFromPublicUrl(sourceUrl);
+        if (!sourceKey) {
+            return res.status(400).json({ success: false, error: 'URL de video invalida. Use arquivo do R2 publico.' });
+        }
+
+        const sourceExt = getFileExtension(sourceKey);
+        if (!['mp4', 'm4v', 'mov', 'webm'].includes(sourceExt)) {
+            return res.status(400).json({ success: false, error: `Formato de origem nao suportado: .${sourceExt || 'desconhecido'}` });
+        }
+
+        const targetKey = buildIosTranscodedKey(sourceKey);
+        if (!targetKey) {
+            return res.status(400).json({ success: false, error: 'Nao foi possivel gerar chave de destino para transcodificacao.' });
+        }
+
+        const targetUrl = `${R2_CONFIG.publicUrl}/${targetKey}`;
+        const alreadyExists = await doesR2ObjectExist(targetKey);
+        if (alreadyExists) {
+            return res.json({
+                success: true,
+                reused: true,
+                url: targetUrl,
+                key: targetKey,
+                type: 'video/mp4'
+            });
+        }
+
+        const source = await fetchRemoteVideoBufferWithLimit(sourceUrl, MAX_IOS_TRANSCODE_INPUT_BYTES);
+        const sourceContentType = String(source.contentType || '').toLowerCase();
+        if (sourceContentType && !sourceContentType.startsWith('video/')) {
+            return res.status(400).json({
+                success: false,
+                error: `Arquivo de origem nao e video (${sourceContentType || 'desconhecido'}).`
+            });
+        }
+
+        const outputBuffer = await transcodeVideoBufferToIosCompatibleMp4(source.buffer);
+
+        const putCommand = new PutObjectCommand({
+            Bucket: R2_CONFIG.bucketName,
+            Key: targetKey,
+            Body: outputBuffer,
+            ContentType: 'video/mp4',
+            CacheControl: 'public, max-age=31536000, immutable',
+            ACL: 'public-read',
+            Metadata: {
+                sourcekey: sourceKey.slice(0, 512),
+                generatedfor: 'ios-compatibility'
+            }
+        });
+        await s3Client.send(putCommand);
+
+        return res.json({
+            success: true,
+            reused: false,
+            url: targetUrl,
+            key: targetKey,
+            inputBytes: source.buffer.length,
+            outputBytes: outputBuffer.length,
+            type: 'video/mp4'
+        });
+    } catch (error) {
+        console.error('Erro ao gerar versao iOS compativel:', error);
+        return res.status(500).json({
+            success: false,
+            error: error?.message || 'Falha ao gerar versao compativel para iOS.'
         });
     }
 });

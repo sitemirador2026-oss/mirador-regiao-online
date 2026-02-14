@@ -15420,10 +15420,11 @@
                     const iosCompatibility = await analyzeLocalVideoCompatibilityForIOS(uploadVideoFile);
                     if (isDetectedAsIosIncompatibleVideo(iosCompatibility)) {
                         const codecDetails = formatIosCompatibilityEntries(iosCompatibility.entries);
-                        throw new Error(
-                            `Video incompativel com iPhone (${codecDetails || iosCompatibility.reason || 'codec desconhecido'}). ` +
-                            'Exporte em MP4 (H264 + AAC) e tente novamente.'
-                        );
+                        console.warn('[Admin] Video com codec potencialmente incompativel no iPhone:', {
+                            fileName: uploadVideoFile.name,
+                            reason: iosCompatibility.reason,
+                            entries: codecDetails
+                        });
                     }
 
                     renderUploadProgressState(uploadArea, {
@@ -15520,13 +15521,11 @@
                             const iosCompatibility = await analyzeLocalVideoCompatibilityForIOS(uploadFile);
                             if (isDetectedAsIosIncompatibleVideo(iosCompatibility)) {
                                 const codecDetails = formatIosCompatibilityEntries(iosCompatibility.entries);
-                                showModal(
-                                    'Erro',
-                                    `Video "${file.name}" incompativel com iPhone (${codecDetails || iosCompatibility.reason || 'codec desconhecido'}). ` +
-                                    'Exporte em MP4 (H264 + AAC).',
-                                    'error'
-                                );
-                                continue;
+                                console.warn('[Admin] Video da galeria com codec potencialmente incompativel no iPhone:', {
+                                    fileName: file.name,
+                                    reason: iosCompatibility.reason,
+                                    entries: codecDetails
+                                });
                             }
                             renderUploadProgressState(uploadArea, {
                                 title: `Preparando ${file.name}...`,
