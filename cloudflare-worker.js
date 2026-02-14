@@ -1681,9 +1681,27 @@ export default {
           );
         }
 
-        // Gerar nome Ãºnico
-        const timestamp = Date.now();
+        // Verifica se e MP4 com codec VP9 (nao suportado no iPhone)
         const safeName = String(file.name || 'arquivo').replace(/[^a-zA-Z0-9.-]/g, '-');
+        const extension = safeName.split('.').pop().toLowerCase();
+        if (fileType === 'video/mp4' || extension === 'mp4') {
+          // Le os primeiros 64KB do arquivo para verificar o codec
+          const slice = file.slice(0, Math.min(fileSize, 65536));
+          const arrayBuffer = await slice.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          const text = new TextDecoder('latin1').decode(uint8Array);
+          if (text.includes('vp09') || text.includes('vp08') || text.includes('VP09') || text.includes('VP08')) {
+            return new Response(
+              JSON.stringify({ 
+                error: 'Este video usa codec VP9 que nao e compativel com iPhone. Por favor, converta para H.264 (AVC) antes de fazer o upload. Voce pode usar ferramentas online ou editores de video para converter.' 
+              }),
+              { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+        }
+
+        // Gerar nome unico
+        const timestamp = Date.now();
         const key = `${folder}/${timestamp}-${safeName}`;
         const normalizedContentType = normalizeUploadedContentType(fileType, safeName);
 

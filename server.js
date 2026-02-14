@@ -1899,6 +1899,17 @@ app.post('/api/video/transcode-ios', async (req, res) => {
     }
 });
 
+// Verifica se o buffer do arquivo MP4 contem codec VP9/VP8 (nao suportado no iOS)
+function hasVp9Codec(buffer) {
+    if (!buffer || buffer.length < 100) return false;
+    // Procura por 'vp09' ou 'vp08' nos primeiros 64KB do arquivo
+    const searchLimit = Math.min(buffer.length, 65536);
+    const searchBuffer = buffer.slice(0, searchLimit);
+    const text = searchBuffer.toString('latin1');
+    return text.includes('vp09') || text.includes('vp08') || 
+           text.includes('VP09') || text.includes('VP08');
+}
+
 // Upload de arquivo
 app.post('/api/upload', upload.single('file'), async (req, res) => {
     try {
@@ -1922,6 +1933,16 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
         if (isVideo && INSTAGRAM_FOLDER_PATTERN.test(folder) && !ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES.has(fileType)) {
             return res.status(400).json({ error: `Formato de video nao suportado para Instagram: ${req.file.mimetype || 'desconhecido'}. Use MP4, MOV ou M4V.` });
+        }
+
+        // Verifica se e MP4 com codec VP9 (nao suportado no iPhone)
+        const extension = String(req.file.originalname || '').split('.').pop().toLowerCase();
+        if ((fileType === 'video/mp4' || extension === 'mp4') && req.file.buffer) {
+            if (hasVp9Codec(req.file.buffer)) {
+                return res.status(400).json({ 
+                    error: 'Este video usa codec VP9 que nao e compativel com iPhone. Por favor, converta para H.264 (AVC) antes de fazer o upload. Voce pode usar ferramentas online ou editores de video para converter.' 
+                });
+            }
         }
 
         const timestamp = Date.now();

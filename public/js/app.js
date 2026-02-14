@@ -4027,45 +4027,30 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             : [];
         const hasVp9 = incompatibleEntries.some(item => item.includes(':vp09') || item.includes(':vp08'));
         const hasAv1 = incompatibleEntries.some(item => item.includes(':av01'));
-        const iosTranscodeErrorHint = (() => {
-            if (!iosServerTranscodeAttempted) return '';
-            const cleaned = String(lastIosTranscodeError || '').replace(/\s+/g, ' ').trim();
-            if (!cleaned) return '';
-            const short = cleaned.length > 140 ? `${cleaned.slice(0, 137)}...` : cleaned;
-            return ` Detalhe tecnico: ${short}`;
-        })();
-
+        // Mensagem simplificada - sem detalhes tecnicos para o usuario
         let message = 'Nao foi possivel reproduzir este video no celular.';
         if (isWebm || isUnsupported) {
-            message = iosServerTranscodeAttempted
-                ? `Formato nao compativel no iPhone e a conversao automatica falhou.${iosTranscodeErrorHint}`
-                : 'Formato de video nao suportado nativamente no iPhone.';
+            message = 'Formato de video nao suportado no iPhone.';
         } else if (reason === 'codec-unsupported' || reason === 'decode-error') {
             if (hasVp9) {
-                message = iosServerTranscodeAttempted
-                    ? `Este MP4 usa VP9 e o iPhone nao reproduz. A conversao automatica falhou.${iosTranscodeErrorHint}`
-                    : 'Este MP4 usa VP9 e o iPhone nao reproduz.';
+                message = 'Este video nao e compativel com iPhone. Use formato H.264 (AVC).';
             } else if (hasAv1) {
-                message = iosServerTranscodeAttempted
-                    ? `Este arquivo usa AV1 e falhou no iPhone. A conversao automatica falhou.${iosTranscodeErrorHint}`
-                    : 'Este arquivo usa AV1 e pode falhar no iPhone.';
+                message = 'Este video usa AV1 que nao e suportado no iPhone.';
             } else {
-                message = iosServerTranscodeAttempted
-                    ? `Falha de decodificacao no iPhone e a conversao automatica falhou.${iosTranscodeErrorHint}`
-                    : 'Falha de decodificacao no celular. Esse arquivo pode estar com codec/perfil nao suportado.';
+                message = 'Formato de video nao suportado no celular.';
             }
         } else if (reason === 'source-not-supported') {
-            message = 'O navegador do celular nao aceitou a fonte do video.';
+            message = 'O navegador nao suporta este formato de video.';
         } else if (reason === 'empty-source') {
-            message = 'Este video parece invalido (arquivo vazio ou resposta nao-video).';
+            message = 'Este video parece invalido ou corrompido.';
         } else if (reason === 'autoplay-blocked') {
-            message = 'O celular bloqueou o autoplay. Use "Tentar no celular" ou toque para reproduzir.';
+            message = 'Toque no video para reproduzir.';
         } else if (reason === 'startup-timeout') {
-            message = 'O video nao iniciou a tempo. Verifique rede e tente novamente.';
+            message = 'O video nao iniciou. Verifique sua conexao.';
         } else if (reason === 'network-no-source' || reason === 'network-error') {
-            message = 'Falha de rede ao carregar o video no celular.';
+            message = 'Erro de conexao ao carregar o video.';
         } else if (reason === 'native-retry-failed') {
-            message = 'Tentativa nativa falhou. Veja o diagnostico tecnico abaixo.';
+            message = 'Nao foi possivel reproduzir este video.';
         }
 
         if (errorPanel) {
@@ -4083,7 +4068,8 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         player.controls = true;
         player.setAttribute('controls', '');
         player.removeAttribute('controlsList');
-        showVideoErrorDebug(lastErrorReason);
+        // Nao mostrar diagnostico tecnico ao usuario (apenas no console)
+        console.warn('[Instagram] Erro de reproducao:', lastErrorReason, buildVideoErrorDebugText(lastErrorReason));
         setInstagramVideoModalState('error');
     };
 

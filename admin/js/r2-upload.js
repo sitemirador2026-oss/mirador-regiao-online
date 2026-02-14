@@ -84,9 +84,34 @@ class R2Storage {
     }
     
     /**
+     * Verifica se o arquivo MP4 usa codec VP9 (nao suportado no iOS)
+     * Analisa os primeiros bytes do arquivo procurando por 'vp09' ou 'vp08'
+     */
+    async checkVp9Codec(file) {
+        // So verificar arquivos de video
+        if (!file.type.startsWith('video/')) return false;
+        
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const buffer = e.target.result;
+                const text = new TextDecoder('latin1').decode(buffer);
+                // Procura por assinaturas de codec VP9/VP8 nos boxes MP4
+                const hasVp9 = text.includes('vp09') || text.includes('vp08') || 
+                               text.includes('VP09') || text.includes('VP08');
+                resolve(hasVp9);
+            };
+            reader.onerror = () => resolve(false);
+            // Le os primeiros 64KB do arquivo (onde fica o header MP4)
+            const slice = file.slice(0, Math.min(file.size, 65536));
+            reader.readAsArrayBuffer(slice);
+        });
+    }
+
+    /**
      * Valida o arquivo antes do upload
      */
-    validateFile(file) {
+    async validateFile(file) {
         const maxSize = 50 * 1024 * 1024; // 50MB
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
         
@@ -96,6 +121,14 @@ class R2Storage {
         
         if (!allowedTypes.includes(file.type)) {
             throw new Error(`Tipo de arquivo não permitido. Use: JPG, PNG, WEBP, GIF, MP4, WEBM`);
+        }
+        
+        // Verifica se e MP4 com codec VP9 (nao suportado no iPhone)
+        if (file.type === 'video/mp4' || file.name.toLowerCase().endsWith('.mp4')) {
+            const hasVp9 = await this.checkVp9Codec(file);
+            if (hasVp9) {
+                throw new Error('Este video usa codec VP9 que não é compatível com iPhone. Por favor, converta para H.264 (AVC) antes de fazer o upload. Você pode usar ferramentas online ou editores de vídeo para converter.');
+            }
         }
         
         return true;
@@ -110,7 +143,7 @@ class R2Storage {
     async uploadFile(file, folder = 'noticias') {
         try {
             // Validar arquivo
-            this.validateFile(file);
+            await this.validateFile(file);
             
             // Aguardar inicialização do cliente
             if (!this.s3Client) {
