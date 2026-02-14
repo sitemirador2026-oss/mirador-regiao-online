@@ -8,6 +8,7 @@ const multer = require('multer');
 const { S3Client, PutObjectCommand, ListObjectsV2Command, DeleteObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { setTimeout: delay } = require('timers/promises');
 
 const app = express();
@@ -65,6 +66,8 @@ const instagramOembedCache = new Map();
 const MAX_UPLOAD_FILE_BYTES = 120 * 1024 * 1024;
 const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
 const articleLikesLocks = new Map();
+const LOCAL_LIKES_DIR = path.join(__dirname, '.metrics');
+const LOCAL_LIKES_FILE = path.join(LOCAL_LIKES_DIR, 'article-likes.json');
 
 function clampToSafeInt(value) {
     const parsed = Number(value);
@@ -171,6 +174,68 @@ async function incrementArticleLikesInR2(newsId) {
         await writeArticleLikesToR2(newsId, nextLikes);
         return nextLikes;
     });
+}
+
+async function readArticleLikesFromLocalStore(newsId) {
+    const safeNewsId = sanitizeNewsId(newsId);
+    if (!safeNewsId) return 0;
+
+    try {
+        const raw = await fs.promises.readFile(LOCAL_LIKES_FILE, 'utf8');
+        const payload = JSON.parse(raw || '{}');
+        if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+            return 0;
+        }
+        return clampToSafeInt(payload[safeNewsId]);
+    } catch (error) {
+        if (error && error.code === 'ENOENT') return 0;
+        console.warn('[Likes] Falha ao ler fallback local:', error?.message || error);
+        return 0;
+    }
+}
+
+async function writeArticleLikesToLocalStore(newsId, likes) {
+    const safeNewsId = sanitizeNewsId(newsId);
+    if (!safeNewsId) throw new Error('ID da notícia inválido');
+
+    let payload = {};
+    try {
+        const raw = await fs.promises.readFile(LOCAL_LIKES_FILE, 'utf8');
+        const parsed = JSON.parse(raw || '{}');
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+            payload = parsed;
+        }
+    } catch (error) {
+        if (!(error && error.code === 'ENOENT')) {
+            console.warn('[Likes] Falha ao carregar fallback local para escrita:', error?.message || error);
+        }
+    }
+
+    payload[safeNewsId] = clampToSafeInt(likes);
+    await fs.promises.mkdir(LOCAL_LIKES_DIR, { recursive: true });
+    await fs.promises.writeFile(LOCAL_LIKES_FILE, JSON.stringify(payload), 'utf8');
+    return payload[safeNewsId];
+}
+
+async function readArticleLikesWithFallback(newsId) {
+    try {
+        return await readArticleLikesFromR2(newsId);
+    } catch (error) {
+        console.warn('[Likes] R2 indisponível (leitura), usando fallback local:', error?.message || error);
+        return readArticleLikesFromLocalStore(newsId);
+    }
+}
+
+async function incrementArticleLikesWithFallback(newsId) {
+    try {
+        return await incrementArticleLikesInR2(newsId);
+    } catch (error) {
+        console.warn('[Likes] R2 indisponível (incremento), usando fallback local:', error?.message || error);
+        const currentLikes = await readArticleLikesFromLocalStore(newsId);
+        const nextLikes = clampToSafeInt(currentLikes + 1);
+        await writeArticleLikesToLocalStore(newsId, nextLikes);
+        return nextLikes;
+    }
 }
 
 function decodeHtmlEntities(text = '') {
@@ -875,7 +940,7 @@ app.get('/api/news/:id/likes', async (req, res) => {
             return res.status(400).json({ success: false, error: 'ID da notícia inválido' });
         }
 
-        const likes = await readArticleLikesFromR2(newsId);
+        const likes = await readArticleLikesWithFallback(newsId);
         return res.json({
             success: true,
             newsId,
@@ -894,7 +959,7 @@ app.post('/api/news/:id/like', async (req, res) => {
             return res.status(400).json({ success: false, error: 'ID da notícia inválido' });
         }
 
-        const likes = await incrementArticleLikesInR2(newsId);
+        const likes = await incrementArticleLikesWithFallback(newsId);
         return res.json({
             success: true,
             newsId,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Cloudflare Worker - Upload Proxy para R2
  * Usando R2 Bindings (API nativa do Cloudflare)
  */
@@ -40,6 +40,66 @@ const instagramMetaCache = new Map();
 const INSTAGRAM_META_CACHE_TTL = 2 * 60 * 1000; // 2 minutos
 const instagramOembedCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
+const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
+
+function clampToSafeInt(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return 0;
+  return Math.max(0, Math.round(parsed));
+}
+
+function sanitizeNewsId(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  return raw.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function getArticleLikesKey(newsId) {
+  const safeNewsId = sanitizeNewsId(newsId);
+  return safeNewsId ? `${ARTICLE_LIKES_PREFIX}/${safeNewsId}.json` : '';
+}
+
+async function readArticleLikesFromR2(env, newsId) {
+  const key = getArticleLikesKey(newsId);
+  if (!key) return 0;
+
+  const object = await env.R2_BUCKET.get(key);
+  if (!object) return 0;
+
+  try {
+    const rawText = await object.text();
+    const payload = JSON.parse(rawText || '{}');
+    return clampToSafeInt(payload.likes);
+  } catch (_error) {
+    return 0;
+  }
+}
+
+async function writeArticleLikesToR2(env, newsId, likes) {
+  const key = getArticleLikesKey(newsId);
+  if (!key) throw new Error('ID da notÃ­cia invÃ¡lido');
+
+  const payload = {
+    newsId: sanitizeNewsId(newsId),
+    likes: clampToSafeInt(likes),
+    updatedAt: Date.now()
+  };
+
+  await env.R2_BUCKET.put(key, JSON.stringify(payload), {
+    httpMetadata: {
+      contentType: 'application/json; charset=utf-8'
+    }
+  });
+
+  return payload.likes;
+}
+
+async function incrementArticleLikesInR2(env, newsId) {
+  const currentLikes = await readArticleLikesFromR2(env, newsId);
+  const nextLikes = clampToSafeInt(currentLikes + 1);
+  await writeArticleLikesToR2(env, newsId, nextLikes);
+  return nextLikes;
+}
 
 function decodeHtmlEntities(text = '') {
   const input = String(text || '');
@@ -746,7 +806,7 @@ export default {
         const instagramUrl = url.searchParams.get('url') || '';
         if (!instagramUrl) {
           return new Response(
-            JSON.stringify({ success: false, error: 'Parâmetro url é obrigatório' }),
+            JSON.stringify({ success: false, error: 'ParÃ¢metro url Ã© obrigatÃ³rio' }),
             { status: 400, headers: instagramMetaHeaders }
           );
         }
@@ -764,15 +824,63 @@ export default {
       }
     }
 
-    // Verificar se o binding R2 está configurado
+    // Verificar se o binding R2 estÃ¡ configurado
     if (!env.R2_BUCKET) {
       return new Response(
-        JSON.stringify({ error: 'R2_BUCKET binding não configurado. Vá em Settings > Bindings e adicione o bucket.' }),
+        JSON.stringify({ error: 'R2_BUCKET binding nÃ£o configurado. VÃ¡ em Settings > Bindings e adicione o bucket.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Status básico
+    const likesGetMatch = path.match(/^\/api\/news\/([^/]+)\/likes$/);
+    if (likesGetMatch && request.method === 'GET') {
+      try {
+        const newsId = sanitizeNewsId(likesGetMatch[1]);
+        if (!newsId) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'ID da notícia inválido' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const likes = await readArticleLikesFromR2(env, newsId);
+        return new Response(
+          JSON.stringify({ success: true, newsId, likes }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, error: error?.message || 'Falha ao consultar curtidas' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    const likesPostMatch = path.match(/^\/api\/news\/([^/]+)\/like$/);
+    if (likesPostMatch && request.method === 'POST') {
+      try {
+        const newsId = sanitizeNewsId(likesPostMatch[1]);
+        if (!newsId) {
+          return new Response(
+            JSON.stringify({ success: false, error: 'ID da notícia inválido' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const likes = await incrementArticleLikesInR2(env, newsId);
+        return new Response(
+          JSON.stringify({ success: true, newsId, likes }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ success: false, error: error?.message || 'Falha ao registrar curtida' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Status bÃ¡sico
     if (path === '/api/status') {
       return new Response(
         JSON.stringify({ status: 'ok', service: 'mirador-r2-worker', timestamp: new Date().toISOString() }),
@@ -817,7 +925,7 @@ export default {
       }
     }
 
-    // Estatísticas de uso
+    // EstatÃ­sticas de uso
     if (path === '/api/r2/usage') {
       try {
         const objects = await env.R2_BUCKET.list();
@@ -883,21 +991,21 @@ export default {
           );
         }
 
-        // Validar tipo - aceitar todas as imagens e vídeos comuns
+        // Validar tipo - aceitar todas as imagens e vÃ­deos comuns
         const fileType = (file.type || '').toLowerCase();
 
-        // Verificar se é imagem ou vídeo válido
+        // Verificar se Ã© imagem ou vÃ­deo vÃ¡lido
         const isImage = fileType.startsWith('image/');
         const isVideo = fileType.startsWith('video/');
 
         if (!isImage && !isVideo) {
           return new Response(
-            JSON.stringify({ error: `Tipo não suportado: ${file.type}. Apenas imagens e vídeos são permitidos.` }),
+            JSON.stringify({ error: `Tipo nÃ£o suportado: ${file.type}. Apenas imagens e vÃ­deos sÃ£o permitidos.` }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
-        // Gerar nome único
+        // Gerar nome Ãºnico
         const timestamp = Date.now();
         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
         const key = `${folder}/${timestamp}-${safeName}`;
@@ -944,7 +1052,7 @@ export default {
       }
     }
 
-    // Rota não encontrada
+    // Rota nÃ£o encontrada
     return new Response(
       JSON.stringify({ error: 'Not found' }),
       { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

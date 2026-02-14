@@ -4,12 +4,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="NotÃ­cias de Mirador, regiÃ£o e Brasil">
-    <title id="siteTitle">NotÃ­cia - Mirador e RegiÃ£o Online</title>
+    <meta name="description" content="Notícias de Mirador, região e Brasil">
+    <title id="siteTitle">Notícia - Mirador e Região Online</title>
     <link rel="stylesheet" href="css/styles.css?v=163">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;500;700;800&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
         /* Logo styles for public site */
@@ -79,13 +79,23 @@
 
             .nav-desktop a {
                 color: var(--header-top-strip-text, #ffffff);
-                font-weight: 600;
+                font-family: 'Source Sans 3', 'Segoe UI', Tahoma, sans-serif;
+                font-size: 1.03rem;
+                font-weight: 700;
+                letter-spacing: 0.01em;
             }
 
             .nav-desktop a:hover {
                 color: var(--header-top-strip-text, #ffffff);
                 background: rgba(255, 255, 255, 0.14);
             }
+        }
+
+        .mobile-nav a {
+            font-family: 'Source Sans 3', 'Segoe UI', Tahoma, sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            letter-spacing: 0.01em;
         }
 
         /* Article Page Styles */
@@ -294,30 +304,157 @@
             border-top: 1px solid var(--border);
         }
 
+        /* Header/Footer formal typography and footer layout */
+        .footer {
+            border-top-color: color-mix(in srgb, var(--footer-text, var(--footer-text-auto)) 20%, transparent);
+        }
+
+        .footer .container {
+            max-width: 1180px;
+        }
+
+        .footer-title,
+        .footer-heading,
+        .footer-text,
+        .footer-links a,
+        .footer-contact-text,
+        .footer-contact-phone,
+        .footer-contact-email,
+        .social-links a.social-link-with-label span,
+        .footer-bottom {
+            font-family: 'Source Sans 3', 'Segoe UI', Tahoma, sans-serif;
+        }
+
+        .footer-title,
+        .footer-heading {
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 700;
+        }
+
+        .footer-title {
+            font-size: 1.04rem;
+            margin-bottom: 0.65rem;
+        }
+
+        .footer-text {
+            font-size: 0.96rem;
+            line-height: 1.45;
+        }
+
+        .footer-heading {
+            font-size: 1.02rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.48rem;
+        }
+
+        .footer-links.footer-links-inline {
+            justify-content: flex-start;
+        }
+
+        .footer-links a {
+            font-size: 0.98rem;
+            line-height: 1.35;
+            text-decoration: none;
+        }
+
+        .footer-contact-block {
+            align-items: flex-start;
+            gap: 0.4rem;
+            margin-top: 0.7rem;
+        }
+
+        .footer-contact-text,
+        .footer-contact-phone,
+        .footer-contact-email {
+            font-size: 0.96rem;
+            line-height: 1.35;
+            text-align: left;
+        }
+
+        .social-links {
+            justify-content: flex-start;
+        }
+
+        .social-links a.social-link-with-label {
+            border-radius: 8px;
+            min-height: 34px;
+            padding: 0.34rem 0.68rem;
+            border-color: color-mix(in srgb, var(--footer-text, var(--footer-text-auto)) 45%, transparent);
+            background: transparent;
+        }
+
+        .footer-bottom {
+            font-size: 0.9rem;
+            padding-top: 0.95rem;
+            border-top-color: color-mix(in srgb, var(--footer-text, var(--footer-text-auto)) 22%, transparent);
+        }
+
+        @media (min-width: 1024px) {
+            .footer-grid {
+                grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 0.95fr);
+                gap: 0;
+                justify-items: stretch;
+                text-align: left;
+                margin-bottom: 1rem;
+            }
+
+            .footer-col-brand {
+                grid-column: auto;
+            }
+
+            .footer-col {
+                width: 100%;
+                min-height: 220px;
+                padding: 0.2rem 1.8rem 0 1.8rem;
+                border-left: 1px solid color-mix(in srgb, var(--footer-text, var(--footer-text-auto)) 18%, transparent);
+            }
+
+            .footer-col-brand,
+            .footer-col-links,
+            .footer-col-social {
+                justify-self: stretch;
+            }
+        }
+
+        .article-share-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--muted-foreground);
+            font-weight: 700;
+            margin-bottom: 0.7rem;
+        }
+
         .article-actions {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
-            gap: 0.75rem;
-            margin-bottom: 1rem;
+            gap: 0.55rem;
+            margin-bottom: 0.8rem;
         }
 
         .article-action-btn {
             display: inline-flex;
             align-items: center;
             gap: 0.45rem;
-            border: 1px solid #d3dceb;
+            border: 1px solid #d7e0ea;
             border-radius: 999px;
             background: #ffffff;
-            color: #0f172a;
+            color: #334155;
             text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 700;
+            font-size: 0.84rem;
+            font-weight: 600;
             line-height: 1;
-            padding: 0.56rem 0.95rem;
+            padding: 0.48rem 0.8rem;
             cursor: pointer;
-            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
-            transition: transform 0.2s ease, opacity 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: none;
+            transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
         }
 
         .article-action-btn span {
@@ -325,30 +462,29 @@
         }
 
         .article-action-btn--whatsapp {
-            background: #25d366;
-            color: #ffffff;
-            border-color: #25d366;
-            box-shadow: 0 6px 14px rgba(37, 211, 102, 0.28);
+            color: #334155;
         }
 
         .article-action-btn--instagram {
-            background: linear-gradient(135deg, #f58529 0%, #e1306c 45%, #833ab4 78%, #515bd4 100%);
-            color: #ffffff;
-            border-color: transparent;
-            box-shadow: 0 6px 14px rgba(129, 52, 175, 0.24);
+            color: #334155;
+        }
+
+        .article-action-btn--whatsapp .article-action-icon-brand {
+            color: #25d366;
+        }
+
+        .article-action-btn--instagram .article-action-icon-brand {
+            color: #e1306c;
         }
 
         .article-action-btn.like-btn {
-            background: #fff5f7;
-            border-color: #fecdd3;
             color: #be123c;
-            box-shadow: 0 6px 12px rgba(190, 24, 93, 0.08);
         }
 
         .article-action-btn:hover {
-            transform: translateY(-1px);
-            opacity: 0.95;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+            background: #f8fafc;
+            border-color: #c5d2e2;
+            color: #0f172a;
         }
 
         .article-action-btn svg {
@@ -366,8 +502,8 @@
         }
 
         .article-action-btn.like-btn.is-liked {
-            background: #ffe4ea;
-            border-color: #fb7185;
+            background: #fff1f3;
+            border-color: #fda4af;
             color: #e11d48;
             cursor: default;
         }
@@ -403,26 +539,72 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            color: var(--primary);
+            color: var(--muted-foreground);
             text-decoration: none;
-            font-weight: 700;
-            padding: 0.62rem 1rem;
-            border-radius: 999px;
-            border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
-            background: color-mix(in srgb, var(--primary) 9%, transparent);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s ease, filter 0.2s ease;
+            font-weight: 600;
+            padding: 0.1rem 0;
+            border: 0;
+            background: transparent;
+            box-shadow: none;
+            transition: color 0.18s ease;
         }
 
         .back-link:hover {
-            filter: brightness(0.98);
-            transform: translateY(-1px);
+            color: var(--foreground);
+            text-decoration: underline;
         }
 
         @media (max-width: 768px) {
             .site-logo {
                 max-height: 40px;
                 max-width: 168px;
+            }
+
+            .nav-desktop a {
+                font-size: 0.96rem;
+            }
+
+            .footer-grid {
+                grid-template-columns: 1fr;
+                gap: 0;
+                text-align: left;
+            }
+
+            .footer-col {
+                width: 100%;
+                border-left: 0;
+                border-top: 1px solid color-mix(in srgb, var(--footer-text, var(--footer-text-auto)) 18%, transparent);
+                min-height: auto;
+                padding: 0.95rem 0.25rem;
+            }
+
+            .footer-col:first-child {
+                border-top: 0;
+                padding-top: 0.35rem;
+            }
+
+            .footer-title,
+            .footer-heading {
+                font-size: 0.96rem;
+                margin-bottom: 0.52rem;
+            }
+
+            .footer-text,
+            .footer-links a,
+            .footer-contact-text,
+            .footer-contact-phone,
+            .footer-contact-email {
+                font-size: 0.9rem;
+            }
+
+            .social-links {
+                justify-content: flex-start;
+            }
+
+            .footer-bottom {
+                text-align: left;
+                font-size: 0.78rem;
+                padding-top: 0.75rem;
             }
 
             .header-content {
@@ -466,12 +648,12 @@
             .article-actions {
                 display: grid;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.6rem;
+                gap: 0.5rem;
             }
 
             .article-action-btn {
                 font-size: 0.83rem;
-                padding: 0.62rem 0.75rem;
+                padding: 0.58rem 0.72rem;
                 width: 100%;
                 justify-content: center;
                 min-height: 44px;
@@ -507,16 +689,16 @@
             <div class="header-content">
                 <a href="index.html" class="logo" id="siteLogoLink">
                     <img id="siteLogoImg" class="site-logo" src="" alt="" style="display: none;">
-                    <span id="siteLogoText" class="logo-text">Mirador e RegiÃ£o Online</span>
+                    <span id="siteLogoText" class="logo-text">Mirador e Região Online</span>
                 </a>
 
                 <nav class="nav-desktop">
                     <a href="index.html?category=mirador">Mirador</a>
-                    <a href="index.html?category=regiao">RegiÃ£o</a>
+                    <a href="index.html?category=regiao">Região</a>
                     <a href="index.html?category=brasil">Brasil</a>
-                    <a href="index.html?category=policia">PolÃ­cia</a>
+                    <a href="index.html?category=policia">Polícia</a>
                     <a href="index.html?category=esportes">Esportes</a>
-                    <a href="index.html?category=politica">PolÃ­tica</a>
+                    <a href="index.html?category=politica">Política</a>
                 </nav>
 
                 <div class="header-actions">
@@ -533,8 +715,8 @@
         <div class="header-top-strip">
             <div class="container">
                 <div class="header-top-strip-brand">
-                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÃCIAS</span>
-                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃƒO ONLINE</span>
+                    <span id="siteTopStripTagline" class="header-top-strip-subtitle">PORTAL DE NOTÍCIAS</span>
+                    <span id="siteTopStripName" class="header-top-strip-title">MIRADOR E REGIÃO ONLINE</span>
                 </div>
             </div>
         </div>
@@ -544,7 +726,7 @@
     <div class="search-modal" id="searchModal">
         <div class="search-modal-content">
             <button class="search-close" onclick="closeSearch()">&times;</button>
-            <input type="text" id="searchInput" placeholder="Buscar notÃ­cias..." class="search-input" onkeyup="handleSearch(event)">
+            <input type="text" id="searchInput" placeholder="Buscar notícias..." class="search-input" onkeyup="handleSearch(event)">
             <div id="searchResults" class="search-results"></div>
         </div>
     </div>
@@ -554,18 +736,18 @@
         <button class="mobile-menu-close" onclick="toggleMobileMenu()">&times;</button>
         <nav class="mobile-nav">
             <a href="index.html?category=mirador">Mirador</a>
-            <a href="index.html?category=regiao">RegiÃ£o</a>
+            <a href="index.html?category=regiao">Região</a>
             <a href="index.html?category=brasil">Brasil</a>
-            <a href="index.html?category=policia">PolÃ­cia</a>
+            <a href="index.html?category=policia">Polícia</a>
             <a href="index.html?category=esportes">Esportes</a>
-            <a href="index.html?category=politica">PolÃ­tica</a>
+            <a href="index.html?category=politica">Política</a>
         </nav>
     </div>
 
     <!-- Main Content -->
     <main class="main">
         <article class="article-container" id="newsArticle">
-            <!-- ConteÃºdo serÃ¡ carregado aqui -->
+            <!-- Conteúdo será carregado aqui -->
         </article>
     </main>
 
@@ -668,7 +850,7 @@
                     .get();
 
                 if (snapshot.empty) {
-                    resultsContainer.innerHTML = '<div class="search-no-results">Nenhuma notÃ­cia encontrada</div>';
+                    resultsContainer.innerHTML = '<div class="search-no-results">Nenhuma notícia encontrada</div>';
                     return;
                 }
 
@@ -756,9 +938,9 @@
             };
 
             return text
-                .replace(/\bregiao\b/gi, match => fixWord(match, 'regiÃ£o'))
-                .replace(/\bregi\u00e3o\b/gi, match => fixWord(match, 'regiÃ£o'))
-                .replace(/\bnoticias\b/gi, match => fixWord(match, 'notÃ­cias'));
+                .replace(/\bregiao\b/gi, match => fixWord(match, 'região'))
+                .replace(/\bregi\u00e3o\b/gi, match => fixWord(match, 'região'))
+                .replace(/\bnoticias\b/gi, match => fixWord(match, 'notícias'));
         }
 
         function escapeHtml(value) {
@@ -930,57 +1112,142 @@
             }
 
             if (likeLabel) {
-                likeLabel.textContent = currentArticleContext.liked ? 'Curtido' : 'Curtir notÃ­cia';
+                likeLabel.textContent = currentArticleContext.liked ? 'Curtido' : 'Curtir notícia';
             }
+        }
+
+        function getArticleLikeApiBases() {
+            const bases = [];
+            const addBase = (value) => {
+                const normalized = String(value || '').trim().replace(/\/+$/, '');
+                if (!normalized || bases.includes(normalized)) return;
+                bases.push(normalized);
+            };
+
+            const workerUrlFromStorage = (() => {
+                try {
+                    return String(localStorage.getItem('cloudflareWorkerUrl') || '').trim();
+                } catch (_error) {
+                    return '';
+                }
+            })();
+
+            const workerUrlFromGlobal = (() => {
+                try {
+                    return String(window.CLOUDFLARE_WORKER_URL || '').trim();
+                } catch (_error) {
+                    return '';
+                }
+            })();
+
+            addBase(workerUrlFromStorage);
+            addBase(workerUrlFromGlobal);
+            addBase('https://mirador-r2.sitemirador2026.workers.dev');
+            addBase(window.location.origin || '');
+            addBase('https://mirador-web.onrender.com');
+            addBase('https://mirador-admin.onrender.com');
+
+            return bases;
+        }
+
+        async function incrementArticleLikeViaFirestoreTransaction(newsId) {
+            const safeNewsId = String(newsId || '').trim();
+            if (!safeNewsId) throw new Error('ID da noticia invalido');
+
+            const docRef = db.collection('news').doc(safeNewsId);
+
+            const nextLikes = await db.runTransaction(async (transaction) => {
+                const snapshot = await transaction.get(docRef);
+                if (!snapshot.exists) {
+                    throw new Error('Noticia nao encontrada para curtida');
+                }
+
+                const data = snapshot.data() || {};
+                const currentLikes = Math.max(0, Number(data.articleLikes) || 0);
+                const updatedLikes = currentLikes + 1;
+                transaction.update(docRef, { articleLikes: updatedLikes });
+                return updatedLikes;
+            });
+
+            const numericLikes = Number(nextLikes);
+            if (!Number.isFinite(numericLikes) || numericLikes < 0) {
+                throw new Error('Resposta invalida da transacao de curtida');
+            }
+
+            return Math.round(numericLikes);
         }
 
         async function fetchArticleLikesViaApi(newsId) {
             const safeNewsId = String(newsId || '').trim();
             if (!safeNewsId) return null;
 
-            try {
-                const response = await fetch(`/api/news/${encodeURIComponent(safeNewsId)}/likes`, {
-                    method: 'GET',
-                    headers: { Accept: 'application/json' }
-                });
-                if (!response.ok) return null;
-                const payload = await response.json();
-                if (!payload || payload.success !== true) return null;
-                const likes = Number(payload.likes);
-                return Number.isFinite(likes) && likes >= 0 ? Math.round(likes) : null;
-            } catch (_error) {
-                return null;
+            const endpointPath = `/api/news/${encodeURIComponent(safeNewsId)}/likes`;
+            const bases = getArticleLikeApiBases();
+
+            for (const base of bases) {
+                const endpoint = `${base}${endpointPath}`;
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' }
+                    });
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    if (!payload || payload.success !== true) continue;
+                    const likes = Number(payload.likes);
+                    if (Number.isFinite(likes) && likes >= 0) {
+                        return Math.round(likes);
+                    }
+                } catch (_error) { }
             }
+
+            return null;
         }
 
         async function incrementArticleLikeViaApi(newsId) {
             const safeNewsId = String(newsId || '').trim();
             if (!safeNewsId) throw new Error('ID da noticia invalido');
 
-            const response = await fetch(`/api/news/${encodeURIComponent(safeNewsId)}/like`, {
-                method: 'POST',
-                headers: { Accept: 'application/json' }
-            });
+            const endpointPath = `/api/news/${encodeURIComponent(safeNewsId)}/like`;
+            const bases = getArticleLikeApiBases();
+            let lastError = null;
 
-            if (!response.ok) {
-                throw new Error(`Falha HTTP ${response.status}`);
+            for (const base of bases) {
+                const endpoint = `${base}${endpointPath}`;
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { Accept: 'application/json' }
+                    });
+                    if (!response.ok) {
+                        lastError = new Error(`Falha HTTP ${response.status}`);
+                        continue;
+                    }
+
+                    const payload = await response.json();
+                    if (!payload || payload.success !== true) {
+                        lastError = new Error('Resposta invalida');
+                        continue;
+                    }
+
+                    const likes = Number(payload.likes);
+                    if (!Number.isFinite(likes) || likes < 0) {
+                        lastError = new Error('Contador invalido');
+                        continue;
+                    }
+
+                    return Math.round(likes);
+                } catch (error) {
+                    lastError = error;
+                }
             }
 
-            const payload = await response.json();
-            if (!payload || payload.success !== true) {
-                throw new Error('Resposta invalida');
-            }
-
-            const likes = Number(payload.likes);
-            if (!Number.isFinite(likes) || likes < 0) {
-                throw new Error('Contador invalido');
-            }
-            return Math.round(likes);
+            throw (lastError || new Error('Falha ao registrar curtida na API'));
         }
 
         function shareArticleToWhatsApp() {
             if (!currentArticleContext) return;
-            const title = String(currentArticleContext.title || 'Confira esta notÃ­cia');
+            const title = String(currentArticleContext.title || 'Confira esta notícia');
             const text = encodeURIComponent(`${title}\n${currentArticleContext.url}`);
             window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');
             setArticleActionFeedback('Link preparado para compartilhar no WhatsApp.');
@@ -1002,7 +1269,7 @@
             if (copied) {
                 setArticleActionFeedback('Link copiado. Cole no Instagram.');
             } else {
-                setArticleActionFeedback('Abra o Instagram e compartilhe o link da notÃ­cia.');
+                setArticleActionFeedback('Abra o Instagram e compartilhe o link da notícia.');
             }
         }
 
@@ -1036,22 +1303,20 @@
             } catch (error) {
                 console.error('Erro ao registrar curtida:', error);
 
-                const shouldTryApiFallback = Boolean(
-                    error && (
-                        error.code === 'permission-denied' ||
-                        error.code === 'failed-precondition' ||
-                        error.code === 'unavailable'
-                    )
-                );
+                try {
+                    const likesFromFirestore = await incrementArticleLikeViaFirestoreTransaction(currentArticleContext.id);
+                    applyLikeSuccess(likesFromFirestore);
+                    return;
+                } catch (transactionError) {
+                    console.error('Erro ao registrar curtida via transacao Firestore:', transactionError);
+                }
 
-                if (shouldTryApiFallback) {
-                    try {
-                        const likesFromApi = await incrementArticleLikeViaApi(currentArticleContext.id);
-                        applyLikeSuccess(likesFromApi);
-                        return;
-                    } catch (apiError) {
-                        console.error('Erro ao registrar curtida via API:', apiError);
-                    }
+                try {
+                    const likesFromApi = await incrementArticleLikeViaApi(currentArticleContext.id);
+                    applyLikeSuccess(likesFromApi);
+                    return;
+                } catch (apiError) {
+                    console.error('Erro ao registrar curtida via API:', apiError);
                 }
 
                 if (likeBtn) likeBtn.disabled = false;
@@ -1059,7 +1324,7 @@
             }
         }
 
-        // Carregar configuraÃ§Ãµes do Firebase
+        // Carregar configurações do Firebase
         async function loadAndApplySettings() {
             try {
                 // Carregar cores
@@ -1093,8 +1358,8 @@
                 const brandDoc = await db.collection('settings').doc('brand').get();
                 if (brandDoc.exists) {
                     const brand = brandDoc.data();
-                    const siteName = normalizeBrandText(brand.siteName || 'Mirador e RegiÃ£o Online');
-                    const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de NotÃ­cias');
+                    const siteName = normalizeBrandText(brand.siteName || 'Mirador e Região Online');
+                    const siteTagline = normalizeBrandText((brand.siteTagline && String(brand.siteTagline).trim()) || 'Portal de Notícias');
                     const topStripTitleText = normalizeBrandText((brand.topStripTitleText && String(brand.topStripTitleText).trim()) || siteName);
                     const topStripSubtitleText = normalizeBrandText((brand.topStripSubtitleText && String(brand.topStripSubtitleText).trim()) || siteTagline);
                     const topStripBgColor = String(brand.topStripBgColor || '').trim();
@@ -1103,7 +1368,7 @@
                     
                     // Update title
                     const siteTitleEl = document.getElementById('siteTitle');
-                    if (siteTitleEl) siteTitleEl.textContent = 'NotÃ­cia - ' + siteName;
+                    if (siteTitleEl) siteTitleEl.textContent = 'Notícia - ' + siteName;
                     
                     // Update logo in header
                     const logoImg = document.getElementById('siteLogoImg');
@@ -1157,13 +1422,13 @@
                     return siteName;
                 }
             } catch (error) {
-                console.error('Erro ao carregar configuraÃ§Ãµes:', error);
+                console.error('Erro ao carregar configurações:', error);
             }
-            return 'Mirador e RegiÃ£o Online';
+            return 'Mirador e Região Online';
         }
 
         const footerInstitutionalData = {
-            siteName: 'Mirador e RegiÃ£o Online',
+            siteName: 'Mirador e Região Online',
             about: '',
             privacy: '',
             terms: ''
@@ -1199,21 +1464,21 @@
         }
 
         function getDefaultFooterAbout(siteName) {
-            return `${siteName} nasceu para informar Mirador e toda a regiÃ£o com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
+            return `${siteName} nasceu para informar Mirador e toda a região com jornalismo local, responsabilidade editorial e compromisso com a comunidade.`;
         }
 
         function getDefaultFooterPrivacy(siteName) {
-            return `${siteName} utiliza dados mÃ­nimos de navegaÃ§Ã£o apenas para melhorar a experiÃªncia no portal e nÃ£o comercializa dados pessoais de leitores.`;
+            return `${siteName} utiliza dados mínimos de navegação apenas para melhorar a experiência no portal e não comercializa dados pessoais de leitores.`;
         }
 
         function getDefaultFooterTerms(siteName) {
             return [
-                `Os termos de uso do ${siteName} definem as regras para acesso e utilizaÃ§Ã£o do conteÃºdo publicado no portal.`,
-                '1. O conteÃºdo tem finalidade jornalÃ­stica e informativa.',
-                '2. A reproduÃ§Ã£o total do material depende de autorizaÃ§Ã£o prÃ©via da redaÃ§Ã£o.',
-                '3. ComentÃ¡rios e interaÃ§Ãµes devem respeitar a legislaÃ§Ã£o vigente e a boa convivÃªncia.',
-                '4. A equipe editorial pode atualizar, corrigir ou remover publicaÃ§Ãµes para preservar qualidade e veracidade.',
-                '5. O uso contÃ­nuo do portal representa concordÃ¢ncia com estes termos.'
+                `Os termos de uso do ${siteName} definem as regras para acesso e utilização do conteúdo publicado no portal.`,
+                '1. O conteúdo tem finalidade jornalística e informativa.',
+                '2. A reprodução total do material depende de autorização prévia da redação.',
+                '3. Comentários e interações devem respeitar a legislação vigente e a boa convivência.',
+                '4. A equipe editorial pode atualizar, corrigir ou remover publicações para preservar qualidade e veracidade.',
+                '5. O uso contínuo do portal representa concordância com estes termos.'
             ].join('\n\n');
         }
 
@@ -1226,7 +1491,7 @@
 
         function persistInstitutionalContent(siteName) {
             const payload = {
-                siteName: String(siteName || '').trim() || 'Mirador e RegiÃ£o Online',
+                siteName: String(siteName || '').trim() || 'Mirador e Região Online',
                 about: footerInstitutionalData.about,
                 privacy: footerInstitutionalData.privacy,
                 terms: footerInstitutionalData.terms,
@@ -1241,7 +1506,7 @@
         function applyFooterSettings(links, siteName) {
             const DEFAULT_VISIBLE_FOOTER_EMAIL = 'miradoreregiaoonline@gmail.com';
             const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            const safeSiteName = String(siteName || 'Mirador e RegiÃ£o Online').trim() || 'Mirador e RegiÃ£o Online';
+            const safeSiteName = String(siteName || 'Mirador e Região Online').trim() || 'Mirador e Região Online';
             const aboutRaw = String(links?.aboutText || links?.aboutDescription || '').trim();
             const privacyRaw = String(links?.privacyText || '').trim();
             const termsRaw = String(links?.termsText || '').trim();
@@ -1336,7 +1601,7 @@
             applyFooterSettings({}, siteName);
         }
         
-        // Carregar notÃ­cia do Firebase
+        // Carregar notícia do Firebase
         async function loadNewsFromFirebase(newsId) {
             try {
                 const doc = await db.collection('news').doc(newsId).get();
@@ -1345,7 +1610,7 @@
                 }
                 return null;
             } catch (error) {
-                console.error('Erro ao carregar notÃ­cia:', error);
+                console.error('Erro ao carregar notícia:', error);
                 return null;
             }
         }
@@ -1366,11 +1631,11 @@
         }
 
         document.addEventListener('DOMContentLoaded', async function () {
-            // Carregar configuraÃ§Ãµes do Firebase
+            // Carregar configurações do Firebase
             const siteName = await loadAndApplySettings();
             await loadAndApplyFooterSettings(siteName);
             
-            // Pegar ID da notÃ­cia da URL
+            // Pegar ID da notícia da URL
             const urlParams = new URLSearchParams(window.location.search);
             const newsId = urlParams.get('id');
             
@@ -1379,22 +1644,22 @@
             if (!newsId) {
                 container.innerHTML = `
                     <div class="empty-state" style="padding: 4rem 0; text-align: center;">
-                        <h2>NotÃ­cia nÃ£o encontrada</h2>
-                        <p>ID da notÃ­cia nÃ£o especificado.</p>
-                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar para home</a>
+                        <h2>Notícia não encontrada</h2>
+                        <p>ID da notícia não especificado.</p>
+                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar</a>
                     </div>`;
                 return;
             }
 
-            // Carregar notÃ­cia do Firebase
+            // Carregar notícia do Firebase
             const article = await loadNewsFromFirebase(newsId);
 
             if (!article) {
                 container.innerHTML = `
                     <div class="empty-state" style="padding: 4rem 0; text-align: center;">
-                        <h2>NotÃ­cia nÃ£o encontrada</h2>
-                        <p>NÃ£o foi possÃ­vel encontrar a notÃ­cia solicitada.</p>
-                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar para home</a>
+                        <h2>Notícia não encontrada</h2>
+                        <p>Não foi possível encontrar a notícia solicitada.</p>
+                        <a href="index.html" class="back-link" style="margin-top: 1rem;">&larr; Voltar</a>
                     </div>`;
                 return;
             }
@@ -1432,7 +1697,7 @@
             const safeSourceDomain = escapeHtml(sourceDomain);
             const safeCategory = escapeHtml(article.categoryName || article.category || 'Geral');
             const safeTitle = escapeHtml(article.title || '');
-            const safeAuthor = escapeHtml(article.author || 'RedaÃ§Ã£o');
+            const safeAuthor = escapeHtml(article.author || 'Redação');
             const safeDateTime = escapeHtml(formattedDateTime);
             const sourceLogo = sourceDomain
                 ? `https://www.google.com/s2/favicons?domain=${sourceDomain}&sz=64`
@@ -1456,7 +1721,7 @@
                 articleLikes = Math.max(articleLikes, likesFromApi);
             }
 
-            // Montar HTML da notÃ­cia
+            // Montar HTML da notícia
             let html = `
                 <div class="article-header">
                     <span class="article-category">${safeCategory}</span>
@@ -1491,12 +1756,12 @@
                     <div class="article-embed">
                         <iframe class="article-embed-frame" src="${externalUrl}" loading="lazy"></iframe>
                         <div class="article-embed-fallback">
-                            Se o conteÃºdo nÃ£o carregar, <a href="${externalUrl}" target="_blank" rel="noopener">abra no site original</a>.
+                            Se o conteúdo não carregar, <a href="${externalUrl}" target="_blank" rel="noopener">abra no site original</a>.
                         </div>
                     </div>
                 `;
             } else {
-                // Adicionar conteÃºdo interno
+                // Adicionar conteúdo interno
                 html += `
                     <div class="article-content">
                         ${safeContentHtml || safeExcerptHtml}
@@ -1506,6 +1771,7 @@
 
             html += `
                 <div class="article-footer">
+                    <div class="article-share-title">Compartilhar</div>
                     <div class="article-actions">
                         <button type="button" class="article-action-btn article-action-btn--whatsapp" onclick="shareArticleToWhatsApp()">
                             <svg class="article-action-icon-brand" viewBox="0 0 24 24" aria-hidden="true">
@@ -1523,7 +1789,7 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m20.8 5.6-.1-.1a5.4 5.4 0 0 0-7.7 0L12 6.6l-1-1.1a5.4 5.4 0 0 0-7.7 0l-.1.1a5.7 5.7 0 0 0 0 7.9L12 22l8.8-8.5a5.7 5.7 0 0 0 0-7.9z"></path>
                             </svg>
-                            <span id="articleLikeLabel">Curtir notÃ­cia</span>
+                            <span id="articleLikeLabel">Curtir notícia</span>
                         </button>
                         <span class="article-like-count" id="articleLikeCount"></span>
                         <div class="article-action-feedback" id="articleActionFeedback" aria-live="polite"></div>
@@ -1532,7 +1798,7 @@
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"></path>
                         </svg>
-                        <span>Voltar para home</span>
+                        <span>Voltar</span>
                     </a>
                 </div>
             `;
@@ -1540,7 +1806,7 @@
             container.innerHTML = html;
             currentArticleContext = {
                 id: newsId,
-                title: article.title || 'NotÃ­cia',
+                title: article.title || 'Notícia',
                 url: window.location.href,
                 likes: articleLikes,
                 liked: hasLikedArticle(newsId)
@@ -1554,4 +1820,5 @@
 </body>
 
 </html>
+
 
