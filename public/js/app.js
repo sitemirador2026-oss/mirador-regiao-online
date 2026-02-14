@@ -3355,10 +3355,15 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     const modal = document.getElementById('instagramVideoModal');
     const player = document.getElementById('instagramVideoPlayer');
     const stage = document.getElementById('instagramVideoStage');
+    const progressBar = document.getElementById('instagramVideoProgressBar');
     if (!modal || !player || !stage) return;
 
     cleanupInstagramVideoModalSession();
     setInstagramVideoModalState('loading');
+
+    if (progressBar) {
+        progressBar.style.width = '0%';
+    }
 
     player.pause();
     player.controls = false;
@@ -3380,6 +3385,7 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         if (player.videoWidth > 0 && player.videoHeight > 0) {
             stage.style.setProperty('--instagram-video-aspect', `${player.videoWidth} / ${player.videoHeight}`);
         }
+        updatePlaybackProgress();
     };
 
     const handleCanPlay = () => {
@@ -3392,6 +3398,23 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
 
     const handleError = () => {
         setInstagramVideoModalState('error');
+    };
+
+    const updatePlaybackProgress = () => {
+        if (!progressBar) return;
+        const duration = Number(player.duration);
+        const currentTime = Number(player.currentTime);
+        if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(currentTime)) {
+            progressBar.style.width = '0%';
+            return;
+        }
+
+        const percent = Math.max(0, Math.min(100, (currentTime / duration) * 100));
+        progressBar.style.width = `${percent.toFixed(2)}%`;
+    };
+
+    const handleEnded = () => {
+        if (progressBar) progressBar.style.width = '100%';
     };
 
     const handleTapToggle = (evt) => {
@@ -3417,6 +3440,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     player.addEventListener('waiting', handleWaiting);
     player.addEventListener('stalled', handleWaiting);
     player.addEventListener('error', handleError);
+    player.addEventListener('timeupdate', updatePlaybackProgress);
+    player.addEventListener('seeking', updatePlaybackProgress);
+    player.addEventListener('ended', handleEnded);
     player.addEventListener('click', handleTapToggle);
 
     instagramVideoModalSessionCleanup = () => {
@@ -3426,6 +3452,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         player.removeEventListener('waiting', handleWaiting);
         player.removeEventListener('stalled', handleWaiting);
         player.removeEventListener('error', handleError);
+        player.removeEventListener('timeupdate', updatePlaybackProgress);
+        player.removeEventListener('seeking', updatePlaybackProgress);
+        player.removeEventListener('ended', handleEnded);
         player.removeEventListener('click', handleTapToggle);
     };
 
@@ -3482,6 +3511,7 @@ function closeInstagramVideoModal() {
     const modal = document.getElementById('instagramVideoModal');
     const player = document.getElementById('instagramVideoPlayer');
     const stage = document.getElementById('instagramVideoStage');
+    const progressBar = document.getElementById('instagramVideoProgressBar');
     if (!modal || !player) return;
 
     cleanupInstagramVideoModalSession();
@@ -3500,6 +3530,9 @@ function closeInstagramVideoModal() {
     player.load();
     if (stage) {
         stage.style.setProperty('--instagram-video-aspect', '9 / 16');
+    }
+    if (progressBar) {
+        progressBar.style.width = '0%';
     }
 
     document.body.style.overflow = '';
