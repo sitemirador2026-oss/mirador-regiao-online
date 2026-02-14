@@ -359,8 +359,15 @@ function extractBestArticleBlockHtml(rawHtml = '') {
     const paragraphCount = (cleanHtml.match(/<p\b/gi) || []).length;
     const headingCount = (cleanHtml.match(/<h[1-6]\b/gi) || []).length;
     const imageCount = (cleanHtml.match(/<img\b/gi) || []).length;
-    const noisyPenalty = /(newsletter|publicidade|anuncio|advert|cookie|consent|inscreva|assine|share|social|coment[aá]rio)/i.test(cleanHtml) ? 900 : 0;
-    const score = textLength + paragraphCount * 140 + headingCount * 90 + imageCount * 30 - noisyPenalty;
+    const linkCount = (cleanHtml.match(/<a\b/gi) || []).length;
+    const listItemCount = (cleanHtml.match(/<li\b/gi) || []).length;
+    const textPerLink = textLength / Math.max(1, linkCount);
+    const linkDensity = linkCount / Math.max(1, paragraphCount + headingCount + 1);
+    const listDensity = listItemCount / Math.max(1, paragraphCount + 1);
+    const noisyPenalty = /(newsletter|publicidade|anuncio|advert|cookie|consent|inscreva|assine|share|social|coment[aá]rio|tags?|assuntos?|recomendad|mais lidas|relacionad|trust project|seguir|seguindo|siga-nos|autor|reda[cç][aã]o|biografia)/i.test(cleanHtml) ? 1100 : 0;
+    const linkPenalty = (linkDensity > 1.4 ? Math.round((linkDensity - 1.4) * 520) : 0) + (textPerLink < 90 ? 900 : 0);
+    const listPenalty = listDensity > 2.2 ? Math.round((listDensity - 2.2) * 380) : 0;
+    const score = textLength + paragraphCount * 160 + headingCount * 100 + imageCount * 40 - noisyPenalty - linkPenalty - listPenalty;
 
     candidates.push({ html: cleanHtml, score, textLength });
   };
@@ -425,15 +432,18 @@ function sanitizeExtractedArticleHtml(rawHtml = '', baseUrl = '') {
     .replace(/<(iframe|object|embed|form|input|button|textarea|select|svg|canvas|audio|video)\b[^>]*>[\s\S]*?<\/\1>/gi, ' ')
     .replace(/<(iframe|object|embed|form|input|button|textarea|select|svg|canvas|audio|video)\b[^>]*\/?>/gi, ' ');
 
-  const noisyBlockPattern = /<(div|section|aside|nav|footer|header)\b[^>]*(?:id|class)=["'][^"']*(?:ad-|ads|advert|banner|cookie|consent|newsletter|promo|related|share|social|outbrain|taboola|recommended|comment|paywall|subscribe|popup|modal)[^"']*["'][^>]*>[\s\S]*?<\/\1>/gi;
+  const noisyBlockPattern = /<(div|section|aside|nav|footer|header)\b[^>]*(?:id|class)=["'][^"']*(?:ad-|ads|advert|banner|cookie|consent|newsletter|promo|related|share|social|outbrain|taboola|recommended|comment|paywall|subscribe|popup|modal|author|bio|tag|tags|assunto|list|lista|menu|header|footer|sidebar|widget|trust|recomendad|mais-lidas|mais-lidos|veja-tambem|leia-tambem)[^"']*["'][^>]*>[\s\S]*?<\/\1>/gi;
   html = html.replace(noisyBlockPattern, ' ');
 
   const allowedTags = new Set([
     'p', 'br', 'strong', 'em', 'b', 'i', 'u',
-    'a', 'ul', 'ol', 'li', 'blockquote',
+    'a', 'blockquote',
     'h2', 'h3', 'h4', 'h5', 'h6',
-    'img', 'figure', 'figcaption', 'div', 'span'
+    'img', 'figure', 'figcaption'
   ]);
+  const noisyImagePattern = /(avatar|author|profile|perfil|logo|icon|ico|sprite|favicon|gravatar|newsletter|ads?|banner|placeholder|thumb|thumbnail|marca-dagua|watermark|\/assets\/img\/|\/lgo\/|\.svg(?:$|\?))/i;
+  let keptImageCount = 0;
+  const MAX_CONTENT_IMAGES = 6;
 
   html = html.replace(/<(\/?)([a-z0-9:-]+)([^>]*)>/gi, (_fullMatch, slash, rawTagName, rawAttrs = '') => {
     const tagName = String(rawTagName || '').toLowerCase();
@@ -480,9 +490,12 @@ function sanitizeExtractedArticleHtml(rawHtml = '', baseUrl = '') {
         if (name === 'src') {
           const safeSrc = normalizeResourceUrl(rawValue, baseUrl, { forAttribute: 'src' });
           if (!safeSrc) continue;
+          if (noisyImagePattern.test(safeSrc)) continue;
+          if (keptImageCount >= MAX_CONTENT_IMAGES) continue;
           attributes.push(`src="${escapeHtmlAttribute(safeSrc)}"`);
           continue;
         }
+        if (name === 'alt' && noisyImagePattern.test(rawValue)) continue;
         attributes.push(`${name}="${escapeHtmlAttribute(rawValue)}"`);
         continue;
       }
@@ -500,12 +513,15 @@ function sanitizeExtractedArticleHtml(rawHtml = '', baseUrl = '') {
     if (tagName === 'img' && !attributes.some(attr => attr.startsWith('loading='))) {
       attributes.push('loading="lazy"');
     }
+    if (tagName === 'img' && attributes.some(attr => attr.startsWith('src='))) {
+      keptImageCount += 1;
+    }
 
     return `<${tagName}${attributes.length > 0 ? ` ${attributes.join(' ')}` : ''}>`;
   });
 
   html = html
-    .replace(/<(p|div|span|figure|figcaption|li|blockquote|h2|h3|h4|h5|h6)\b[^>]*>\s*<\/\1>/gi, ' ')
+    .replace(/<(p|figure|figcaption|blockquote|h2|h3|h4|h5|h6)\b[^>]*>\s*<\/\1>/gi, ' ')
     .replace(/\n{3,}/g, '\n\n')
     .replace(/[ \t]{2,}/g, ' ')
     .trim();
@@ -513,6 +529,50 @@ function sanitizeExtractedArticleHtml(rawHtml = '', baseUrl = '') {
   if (html.length > 250000) {
     html = html.slice(0, 250000);
   }
+
+  return html;
+}
+
+function postProcessArticleContentHtml(contentHtml = '') {
+  let html = String(contentHtml || '');
+  if (!html) return '';
+
+  const noisySnippetPattern = /(leia tamb[eé]m|veja tamb[eé]m|mais lidas|mais lidos|mais not[ií]cias|conte[uú]do patrocinado|publicidade|an[uú]ncio|assine|inscreva-se|newsletter|siga-nos|compartilhe|coment[aá]rios?|tags?:|assuntos?:|trust project|todos os direitos reservados|pol[ií]tica de privacidade|termos de uso|seguir|seguindo|por reda[cç][aã]o|por poder360|veja gente|copyright|resumo foi|resumo gerado por ferramenta de ia)/i;
+
+  html = html
+    .replace(/<h([2-6])>\s*<p>/gi, '<h$1>')
+    .replace(/<\/p>\s*<\/h([2-6])>/gi, '</h$1>');
+
+  html = html.replace(/<(p|h2|h3|h4|h5|h6|figcaption|blockquote)\b[^>]*>[\s\S]*?<\/\1>/gi, (blockHtml) => {
+    const blockText = stripHtmlToText(blockHtml);
+    const linkCount = (String(blockHtml).match(/<a\b/gi) || []).length;
+
+    if (!blockText) return ' ';
+    if (noisySnippetPattern.test(blockText) && blockText.length < 450) return ' ';
+    if (linkCount >= 3 && blockText.length < 360) return ' ';
+    if (linkCount >= 2 && blockText.length < 210) return ' ';
+    if (blockText.length < 26 && !/[.!?]/.test(blockText) && linkCount === 0) return ' ';
+    return blockHtml;
+  });
+
+  const structuredBlocks = html.match(/<(h2|h3|h4|h5|h6|p|blockquote|figure|figcaption)\b[\s\S]*?<\/\1>/gi) || [];
+  if (structuredBlocks.length > 0) {
+    const blocksHtml = structuredBlocks.join('\n');
+    const originalTextLength = stripHtmlToText(html).length;
+    const blocksTextLength = stripHtmlToText(blocksHtml).length;
+    if (blocksTextLength > 0 && (blocksTextLength / Math.max(1, originalTextLength)) >= 0.55) {
+      html = blocksHtml;
+    }
+  }
+
+  html = html
+    .replace(/<img\b(?![^>]*\bsrc=)[^>]*>/gi, ' ')
+    .replace(/<figure\b[^>]*>(?:(?!<img\b)[\s\S])*?<\/figure>/gi, ' ')
+    .replace(/<a\b[^>]*>\s*<\/a>/gi, ' ')
+    .replace(/<(p|figure|figcaption|blockquote|h2|h3|h4|h5|h6)\b[^>]*>\s*<\/\1>/gi, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .replace(/[ \t]{2,}/g, ' ')
+    .trim();
 
   return html;
 }
@@ -542,7 +602,8 @@ function extractArticlePayloadFromHtml(html = '', pageUrl = '') {
 
   const bestBlockHtml = extractBestArticleBlockHtml(cleanHtml);
   const sanitizedContent = sanitizeExtractedArticleHtml(bestBlockHtml || fallbackArticleBodyHtml, pageUrl);
-  const textFromContent = stripHtmlToText(sanitizedContent || fallbackArticleBodyHtml);
+  const curatedContent = postProcessArticleContentHtml(sanitizedContent);
+  const textFromContent = stripHtmlToText(curatedContent || fallbackArticleBodyHtml);
   const fallbackParagraphContent = textFromContent
     ? textFromContent
       .split(/\n{2,}/)
@@ -552,7 +613,14 @@ function extractArticlePayloadFromHtml(html = '', pageUrl = '') {
       .map(chunk => `<p>${escapeHtmlText(chunk)}</p>`)
       .join('')
     : '';
-  const finalContent = sanitizedContent || fallbackParagraphContent;
+  let finalContent = curatedContent || fallbackParagraphContent;
+  if ((String(finalContent).match(/<img\b/gi) || []).length === 0) {
+    finalContent = String(finalContent)
+      .replace(/<figcaption\b[^>]*>[\s\S]*?<\/figcaption>/gi, ' ')
+      .replace(/<figure\b[^>]*>\s*<\/figure>/gi, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
 
   const title = decodeEscapedText(jsonLd.title || metaTitle || '');
   const description = decodeEscapedText(jsonLd.description || metaDescription || '');

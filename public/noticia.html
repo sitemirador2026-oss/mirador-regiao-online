@@ -1047,6 +1047,88 @@
             return template.innerHTML;
         }
 
+        function cleanupExternalImportedContentHtml(rawHtml) {
+            const html = String(rawHtml || '').trim();
+            if (!html) return '';
+
+            const template = document.createElement('template');
+            template.innerHTML = html;
+
+            const noisySelector = [
+                'nav', 'aside', 'footer', 'header',
+                '[class*="tag"]', '[id*="tag"]',
+                '[class*="related"]', '[id*="related"]',
+                '[class*="recommend"]', '[id*="recommend"]',
+                '[class*="share"]', '[id*="share"]',
+                '[class*="social"]', '[id*="social"]',
+                '[class*="newsletter"]', '[id*="newsletter"]',
+                '[class*="author"]', '[id*="author"]',
+                '[class*="bio"]', '[id*="bio"]',
+                '[class*="comment"]', '[id*="comment"]',
+                '[class*="ads"]', '[id*="ads"]',
+                '[class*="advert"]', '[id*="advert"]',
+                '[class*="cookie"]', '[id*="cookie"]',
+                '[class*="trust"]', '[id*="trust"]'
+            ].join(',');
+
+            template.content.querySelectorAll(noisySelector).forEach(el => el.remove());
+
+            const noisyImagePattern = /(avatar|author|profile|perfil|logo|icon|ico|sprite|favicon|newsletter|ads?|banner|placeholder|thumb|thumbnail|marca-dagua|watermark|\/assets\/img\/|\/lgo\/|\.svg(?:$|\?))/i;
+            template.content.querySelectorAll('img').forEach(img => {
+                const src = String(img.getAttribute('src') || '').trim();
+                if (!src || noisyImagePattern.test(src)) {
+                    img.remove();
+                }
+            });
+
+            template.content.querySelectorAll('figure').forEach(figure => {
+                if (!figure.querySelector('img')) {
+                    figure.remove();
+                }
+            });
+
+            const noisyTextPattern = /(leia também|veja também|mais lidas|mais lidos|mais notícias|conteúdo patrocinado|publicidade|anúncio|assine|inscreva-se|newsletter|siga-nos|compartilhe|coment[aá]rios?|tags?:|assuntos?:|trust project|todos os direitos reservados|política de privacidade|termos de uso|seguir|seguindo|por reda[cç][aã]o|por poder360|veja gente|copyright|resumo foi|resumo gerado por ferramenta de ia)/i;
+            template.content.querySelectorAll('p,h2,h3,h4,h5,h6,li,figcaption,div,span,blockquote').forEach(el => {
+                const text = String(el.textContent || '').replace(/\s+/g, ' ').trim();
+                const linkCount = el.querySelectorAll('a').length;
+                if (!text) {
+                    el.remove();
+                    return;
+                }
+                if (noisyTextPattern.test(text) && text.length < 450) {
+                    el.remove();
+                    return;
+                }
+                if (linkCount >= 3 && text.length < 360) {
+                    el.remove();
+                    return;
+                }
+                if (linkCount >= 2 && text.length < 210) {
+                    el.remove();
+                    return;
+                }
+                if (text.length < 26 && linkCount === 0 && !/[.!?]/.test(text)) {
+                    el.remove();
+                }
+            });
+
+            template.content.querySelectorAll('ul,ol').forEach(list => {
+                const text = String(list.textContent || '').replace(/\s+/g, ' ').trim();
+                const linkCount = list.querySelectorAll('a').length;
+                if (!text || (linkCount >= 4 && text.length < 420)) {
+                    list.remove();
+                }
+            });
+
+            template.content.querySelectorAll('a').forEach(anchor => {
+                if (!String(anchor.textContent || '').trim()) {
+                    anchor.remove();
+                }
+            });
+
+            return template.innerHTML.trim();
+        }
+
         let currentArticleContext = null;
         let articleActionFeedbackTimer = null;
 
@@ -1739,6 +1821,9 @@
             let safeContentHtml = sanitizeArticleHtml(article.content || '');
             let safeExcerptHtml = sanitizeArticleHtml(article.excerpt ? `<p>${escapeHtml(article.excerpt)}</p>` : '');
             let articleImage = sanitizeMediaUrl(article.image || '');
+            if (externalUrl && safeContentHtml) {
+                safeContentHtml = cleanupExternalImportedContentHtml(safeContentHtml);
+            }
 
             if (!safeContentHtml && externalUrl) {
                 try {
@@ -1750,7 +1835,9 @@
                                 ? `<p>${escapeHtml(extractedExternalArticle.excerpt)}</p>`
                                 : ''
                         );
-                        if (extractedContentHtml) safeContentHtml = extractedContentHtml;
+                        if (extractedContentHtml) {
+                            safeContentHtml = cleanupExternalImportedContentHtml(extractedContentHtml);
+                        }
                         if (!safeExcerptHtml && extractedExcerptHtml) safeExcerptHtml = extractedExcerptHtml;
                         if (!articleImage) {
                             articleImage = sanitizeMediaUrl(extractedExternalArticle.image || '');
