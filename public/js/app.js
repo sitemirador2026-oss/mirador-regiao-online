@@ -3799,10 +3799,18 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
         errorPanel.style.display = 'none';
     }
     if (errorText) {
-        errorText.textContent = 'Nao foi possivel reproduzir este video.';
+        errorText.style.display = 'none';
+        errorText.textContent = '';
     }
     if (errorAction) {
         errorAction.style.display = post.instagramUrl ? 'inline-flex' : 'none';
+        errorAction.textContent = 'Assistir no Instagram';
+    }
+    if (retryNativeAction) {
+        retryNativeAction.style.display = 'none';
+    }
+    if (copyDebugAction) {
+        copyDebugAction.style.display = 'none';
     }
     if (errorDebug) {
         errorDebug.hidden = true;
@@ -4017,59 +4025,34 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
     const setPlayerErrorState = (reason = 'generic') => {
         lastErrorReason = String(reason || 'generic');
         pushDebugEvent('set-error', { reason: lastErrorReason });
-        const activeSource = sourcePool[activeSourceIndex] || {};
-        const sourceUrl = String(activeSource.url || '').toLowerCase();
-        const mimeType = inferVideoMimeTypeFromUrl(sourceUrl);
-        const isWebm = mimeType === 'video/webm' || /\.webm(\?|#|$)/i.test(sourceUrl);
-        const isUnsupported = mimeType && !canPlayVideoMimeOnCurrentDevice(mimeType);
-        const incompatibleEntries = Array.isArray(lastCompatibilityProbe?.entries)
-            ? lastCompatibilityProbe.entries.map(item => String(item || '').toLowerCase())
-            : [];
-        const hasVp9 = incompatibleEntries.some(item => item.includes(':vp09') || item.includes(':vp08'));
-        const hasAv1 = incompatibleEntries.some(item => item.includes(':av01'));
-        // Mensagem simplificada - sem detalhes tecnicos para o usuario
-        let message = 'Nao foi possivel reproduzir este video no celular.';
-        if (isWebm || isUnsupported) {
-            message = 'Formato de video nao suportado no iPhone.';
-        } else if (reason === 'codec-unsupported' || reason === 'decode-error') {
-            if (hasVp9) {
-                message = 'Este video nao e compativel com iPhone. Use formato H.264 (AVC).';
-            } else if (hasAv1) {
-                message = 'Este video usa AV1 que nao e suportado no iPhone.';
-            } else {
-                message = 'Formato de video nao suportado no celular.';
-            }
-        } else if (reason === 'source-not-supported') {
-            message = 'O navegador nao suporta este formato de video.';
-        } else if (reason === 'empty-source') {
-            message = 'Este video parece invalido ou corrompido.';
-        } else if (reason === 'autoplay-blocked') {
-            message = 'Toque no video para reproduzir.';
-        } else if (reason === 'startup-timeout') {
-            message = 'O video nao iniciou. Verifique sua conexao.';
-        } else if (reason === 'network-no-source' || reason === 'network-error') {
-            message = 'Erro de conexao ao carregar o video.';
-        } else if (reason === 'native-retry-failed') {
-            message = 'Nao foi possivel reproduzir este video.';
-        }
+        
+        // Log no console para debug (nao visivel ao usuario)
+        console.warn('[Instagram] Erro de reproducao:', lastErrorReason);
 
+        // Mostra apenas o painel de erro com botao para Instagram
+        // Sem mensagens tecnicas para o usuario
         if (errorPanel) {
             errorPanel.style.display = 'flex';
         }
+        // Esconde o texto de erro - usuario nao precisa saber o que aconteceu
         if (errorText) {
-            errorText.textContent = message;
+            errorText.style.display = 'none';
         }
+        // Mostra apenas o botao "Abrir no Instagram" se tiver URL
         if (errorAction) {
             errorAction.style.display = post.instagramUrl ? 'inline-flex' : 'none';
+            errorAction.textContent = 'Assistir no Instagram';
         }
+        // Esconde botoes desnecessarios
         if (retryNativeAction) {
-            retryNativeAction.style.display = 'inline-flex';
+            retryNativeAction.style.display = 'none';
         }
-        player.controls = true;
-        player.setAttribute('controls', '');
-        player.removeAttribute('controlsList');
-        // Nao mostrar diagnostico tecnico ao usuario (apenas no console)
-        console.warn('[Instagram] Erro de reproducao:', lastErrorReason, buildVideoErrorDebugText(lastErrorReason));
+        if (copyDebugAction) {
+            copyDebugAction.style.display = 'none';
+        }
+        
+        player.controls = false;
+        player.removeAttribute('controls');
         setInstagramVideoModalState('error');
     };
 
