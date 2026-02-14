@@ -6765,6 +6765,106 @@
             return toNumberSafe(newsItem.articleLikes);
         }
 
+        function sanitizeNewsIdForLikesApi(newsId) {
+            const raw = String(newsId || '').trim();
+            if (!raw) return '';
+            return raw.replace(/[^a-zA-Z0-9_-]/g, '');
+        }
+
+        function getNewsLikesApiBases() {
+            const bases = [];
+            const addBase = (value) => {
+                const normalized = String(value || '').trim().replace(/\/+$/, '');
+                if (!normalized || bases.includes(normalized)) return;
+                bases.push(normalized);
+            };
+
+            try {
+                if (typeof getWorkerBaseUrl === 'function') {
+                    addBase(getWorkerBaseUrl());
+                }
+            } catch (_error) { }
+
+            addBase(window.location.origin || '');
+            addBase('https://mirador-r2.sitemirador2026.workers.dev');
+            addBase('https://mirador-web.onrender.com');
+            addBase('https://mirador-admin.onrender.com');
+
+            return bases;
+        }
+
+        const NEWS_LIKES_API_CACHE_TTL_MS = 15000;
+        const newsLikesApiCache = new Map();
+
+        async function fetchNewsLikesViaApi(newsId) {
+            const safeNewsId = sanitizeNewsIdForLikesApi(newsId);
+            if (!safeNewsId) return null;
+            const cached = newsLikesApiCache.get(safeNewsId);
+            if (cached && cached.expiresAt > Date.now()) {
+                return cached.likes;
+            }
+
+            const endpointPath = `/api/news/${encodeURIComponent(safeNewsId)}/likes`;
+            const bases = getNewsLikesApiBases();
+
+            for (const base of bases) {
+                const endpoint = `${base}${endpointPath}`;
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4500);
+                    const response = await fetch(endpoint, {
+                        method: 'GET',
+                        headers: { Accept: 'application/json' },
+                        cache: 'no-store',
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    if (!payload || payload.success !== true) continue;
+                    const likes = Number(payload.likes);
+                    if (!Number.isFinite(likes) || likes < 0) continue;
+
+                    const normalizedLikes = Math.round(likes);
+                    newsLikesApiCache.set(safeNewsId, {
+                        likes: normalizedLikes,
+                        expiresAt: Date.now() + NEWS_LIKES_API_CACHE_TTL_MS
+                    });
+                    return normalizedLikes;
+                } catch (_error) { }
+            }
+
+            return null;
+        }
+
+        async function syncNewsLikesFromApi(newsItems = []) {
+            if (!Array.isArray(newsItems) || newsItems.length === 0) return;
+
+            const uniqueIds = [...new Set(
+                newsItems
+                    .map(item => sanitizeNewsIdForLikesApi(item?.id))
+                    .filter(Boolean)
+            )];
+            if (uniqueIds.length === 0) return;
+
+            const likesEntries = await Promise.all(
+                uniqueIds.map(async (id) => [id, await fetchNewsLikesViaApi(id)])
+            );
+            const likesById = new Map(likesEntries);
+
+            newsItems.forEach(item => {
+                const safeId = sanitizeNewsIdForLikesApi(item?.id);
+                if (!safeId) return;
+                const apiLikes = likesById.get(safeId);
+                if (!Number.isFinite(apiLikes) || apiLikes < 0) return;
+
+                const currentLikes = toNumberSafe(item.articleLikes);
+                const mergedLikes = Math.max(currentLikes, Math.round(apiLikes));
+                item.articleLikes = mergedLikes;
+            });
+        }
+
         function isPublishedNews(newsItem = {}) {
             const status = String(newsItem.status || 'published').toLowerCase();
             return status !== 'draft' && status !== 'rascunho';
@@ -8649,6 +8749,8 @@
                     loadedNews.push({ id: doc.id, ...doc.data() });
                 });
 
+                await syncNewsLikesFromApi(loadedNews);
+
                 allNewsData = loadedNews.filter(isRegularNewsItem);
                 const publishedNewsCount = allNewsData.filter(isPublishedNews).length;
                 const publishedInstagramPostsCount = loadedNews.filter(item => isInstagramNewsItem(item) && isPublishedNews(item)).length;
@@ -8791,6 +8893,8 @@
                 snapshot.forEach(doc => {
                     loadedNews.push({ id: doc.id, ...doc.data() });
                 });
+
+                await syncNewsLikesFromApi(loadedNews);
 
                 allImportedNewsData = loadedNews.filter(isImportedUrlNewsItem);
                 currentImportedNewsPage = 1;
