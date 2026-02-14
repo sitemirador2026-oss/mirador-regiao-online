@@ -47,6 +47,12 @@ const INSTAGRAM_META_CACHE_TTL = 2 * 60 * 1000; // 2 minutos
 const instagramOembedCache = new Map();
 const INSTAGRAM_OEMBED_CACHE_TTL = 10 * 60 * 1000; // 10 minutos
 const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
+const INSTAGRAM_FOLDER_PATTERN = /^instagram(?:\/|$)/i;
+const ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES = new Set([
+  'video/mp4',
+  'video/quicktime',
+  'video/x-m4v'
+]);
 
 function clampToSafeInt(value) {
   const parsed = Number(value);
@@ -58,6 +64,17 @@ function sanitizeNewsId(value) {
   const raw = String(value || '').trim();
   if (!raw) return '';
   return raw.replace(/[^a-zA-Z0-9_-]/g, '');
+}
+
+function sanitizeUploadFolder(value, fallback = 'noticias') {
+  const raw = String(value || '').trim();
+  const normalized = raw
+    .replace(/\\/g, '/')
+    .replace(/[^a-zA-Z0-9/_-]/g, '')
+    .replace(/\/{2,}/g, '/')
+    .replace(/^\/+|\/+$/g, '');
+
+  return normalized || fallback;
 }
 
 function getArticleLikesKey(newsId) {
@@ -1592,11 +1609,19 @@ export default {
       try {
         const formData = await request.formData();
         const file = formData.get('file');
-        const folder = formData.get('folder') || 'noticias';
+        const folder = sanitizeUploadFolder(formData.get('folder') || 'noticias');
 
-        if (!file) {
+        if (!file || typeof file !== 'object' || typeof file.stream !== 'function') {
           return new Response(
             JSON.stringify({ error: 'Nenhum arquivo enviado' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        const fileSize = Number(file.size || 0);
+        if (!Number.isFinite(fileSize) || fileSize <= 0) {
+          return new Response(
+            JSON.stringify({ error: 'Arquivo invalido: tamanho 0 bytes.' }),
             { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
@@ -1615,15 +1640,23 @@ export default {
           );
         }
 
+        if (isVideo && INSTAGRAM_FOLDER_PATTERN.test(folder) && !ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES.has(fileType)) {
+          return new Response(
+            JSON.stringify({ error: `Formato de video nao suportado para Instagram: ${file.type || 'desconhecido'}. Use MP4, MOV ou M4V.` }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
         // Gerar nome Ãºnico
         const timestamp = Date.now();
-        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-');
+        const safeName = String(file.name || 'arquivo').replace(/[^a-zA-Z0-9.-]/g, '-');
         const key = `${folder}/${timestamp}-${safeName}`;
 
         // Fazer upload para R2
         await env.R2_BUCKET.put(key, file.stream(), {
           httpMetadata: {
-            contentType: file.type
+            contentType: fileType || 'application/octet-stream',
+            cacheControl: 'public, max-age=31536000, immutable'
           }
         });
 
@@ -1631,7 +1664,9 @@ export default {
           JSON.stringify({
             success: true,
             url: `https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev/${key}`,
-            key: key
+            key: key,
+            size: fileSize,
+            type: fileType
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

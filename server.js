@@ -71,6 +71,12 @@ const INSTAGRAM_OEMBED_CACHE_TTL_MS = 10 * 60 * 1000; // 10 min
 const instagramOembedCache = new Map();
 const MAX_UPLOAD_FILE_BYTES = 120 * 1024 * 1024;
 const ARTICLE_LIKES_PREFIX = 'metrics/article-likes';
+const INSTAGRAM_FOLDER_PATTERN = /^instagram(?:\/|$)/i;
+const ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES = new Set([
+    'video/mp4',
+    'video/quicktime',
+    'video/x-m4v'
+]);
 const articleLikesLocks = new Map();
 const LOCAL_LIKES_DIR = path.join(__dirname, '.metrics');
 const LOCAL_LIKES_FILE = path.join(LOCAL_LIKES_DIR, 'article-likes.json');
@@ -86,6 +92,16 @@ function sanitizeNewsId(value) {
     if (!raw) return '';
     const sanitized = raw.replace(/[^a-zA-Z0-9_-]/g, '');
     return sanitized;
+}
+
+function sanitizeUploadFolder(value, fallback = 'noticias') {
+    const raw = String(value || '').trim();
+    const normalized = raw
+        .replace(/\\/g, '/')
+        .replace(/[^a-zA-Z0-9/_-]/g, '')
+        .replace(/\/{2,}/g, '/')
+        .replace(/^\/+|\/+$/g, '');
+    return normalized || fallback;
 }
 
 function getArticleLikesKey(newsId) {
@@ -1432,7 +1448,7 @@ const upload = multer({
         fileSize: MAX_UPLOAD_FILE_BYTES
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/webm'];
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif', 'video/mp4', 'video/quicktime', 'video/x-m4v', 'video/webm'];
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
@@ -1544,10 +1560,31 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             return res.status(400).json({ error: 'Nenhum arquivo enviado' });
         }
 
-        const folder = req.body.folder || 'noticias';
+        const folder = sanitizeUploadFolder(req.body.folder || 'noticias');
+        const fileType = String(req.file.mimetype || '').toLowerCase();
+        const fileSize = Number(req.file.size || 0);
+        const isImage = fileType.startsWith('image/');
+        const isVideo = fileType.startsWith('video/');
+
+        if (!Number.isFinite(fileSize) || fileSize <= 0) {
+            return res.status(400).json({ error: 'Arquivo invalido: tamanho 0 bytes.' });
+        }
+
+        if (!isImage && !isVideo) {
+            return res.status(400).json({ error: 'Tipo de arquivo nao suportado. Apenas imagem e video.' });
+        }
+
+        if (isVideo && INSTAGRAM_FOLDER_PATTERN.test(folder) && !ALLOWED_INSTAGRAM_VIDEO_MIME_TYPES.has(fileType)) {
+            return res.status(400).json({ error: `Formato de video nao suportado para Instagram: ${req.file.mimetype || 'desconhecido'}. Use MP4, MOV ou M4V.` });
+        }
+
         const timestamp = Date.now();
         const random = Math.random().toString(36).substring(2, 8);
-        const extension = req.file.originalname.split('.').pop();
+        const extension = String(req.file.originalname || '')
+            .split('.')
+            .pop()
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .toLowerCase() || 'bin';
         const key = `${folder}/${timestamp}-${random}.${extension}`;
 
         // Upload para R2
@@ -1555,7 +1592,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             Bucket: R2_CONFIG.bucketName,
             Key: key,
             Body: req.file.buffer,
-            ContentType: req.file.mimetype,
+            ContentType: fileType || 'application/octet-stream',
+            CacheControl: 'public, max-age=31536000, immutable',
             ACL: 'public-read'
         });
 
@@ -1567,8 +1605,8 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             success: true,
             url: publicUrl,
             key: key,
-            size: req.file.size,
-            type: req.file.mimetype
+            size: fileSize,
+            type: fileType
         });
 
     } catch (error) {
