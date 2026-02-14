@@ -295,10 +295,19 @@
         }
 
         .article-action-btn.like-btn.is-liked {
-            background: #dcfce7;
-            border-color: #86efac;
-            color: #166534;
+            background: #ffe4ea;
+            border-color: #fda4af;
+            color: #e11d48;
             cursor: default;
+        }
+
+        .article-action-btn.like-btn.is-liked svg {
+            color: #e11d48;
+        }
+
+        .article-action-btn.like-btn.is-liked svg path {
+            fill: currentColor;
+            stroke: currentColor;
         }
 
         .article-action-btn:disabled {
@@ -325,11 +334,18 @@
             gap: 0.5rem;
             color: var(--primary);
             text-decoration: none;
-            font-weight: 500;
+            font-weight: 700;
+            padding: 0.62rem 1rem;
+            border-radius: 999px;
+            border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+            background: color-mix(in srgb, var(--primary) 9%, transparent);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, filter 0.2s ease;
         }
 
         .back-link:hover {
-            text-decoration: underline;
+            filter: brightness(0.98);
+            transform: translateY(-1px);
         }
 
         @media (max-width: 768px) {
@@ -883,9 +899,9 @@
             if (likeBtn) likeBtn.disabled = true;
 
             try {
-                await db.collection('news').doc(currentArticleContext.id).set({
+                await db.collection('news').doc(currentArticleContext.id).update({
                     articleLikes: firebase.firestore.FieldValue.increment(1)
-                }, { merge: true });
+                });
 
                 currentArticleContext.likes = Math.max(0, Number(currentArticleContext.likes || 0) + 1);
                 currentArticleContext.liked = true;
@@ -895,7 +911,11 @@
             } catch (error) {
                 console.error('Erro ao registrar curtida:', error);
                 if (likeBtn) likeBtn.disabled = false;
-                setArticleActionFeedback('Não foi possível registrar a curtida agora.');
+                if (error && error.code === 'permission-denied') {
+                    setArticleActionFeedback('Curtida bloqueada pelas regras do Firebase. Libere o campo articleLikes.');
+                } else {
+                    setArticleActionFeedback('Não foi possível registrar a curtida agora.');
+                }
             }
         }
 
@@ -1367,7 +1387,12 @@
                         <span class="article-like-count" id="articleLikeCount"></span>
                         <div class="article-action-feedback" id="articleActionFeedback" aria-live="polite"></div>
                     </div>
-                    <a href="index.html" class="back-link">&larr; Voltar para home</a>
+                    <a href="index.html" class="back-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"></path>
+                        </svg>
+                        <span>Voltar para home</span>
+                    </a>
                 </div>
             `;
             

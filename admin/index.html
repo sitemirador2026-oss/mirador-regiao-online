@@ -6733,10 +6733,8 @@
                 newsItem.totalViews,
                 newsItem.metrics?.views,
                 newsItem.metrics?.totalViews,
-                newsItem.instagramLikes,
                 newsItem.socialViews,
-                newsItem.reach,
-                newsItem.likes
+                newsItem.reach
             ];
 
             for (const candidate of candidates) {
@@ -6745,6 +6743,26 @@
             }
 
             return toNumberSafe(newsItem.views);
+        }
+
+        function getNewsLikesValue(newsItem = {}) {
+            const candidates = [
+                newsItem.articleLikes,
+                newsItem.likes,
+                newsItem.likesCount,
+                newsItem.totalLikes,
+                newsItem.instagramLikes,
+                newsItem.metrics?.likes,
+                newsItem.metrics?.totalLikes,
+                newsItem.socialLikes
+            ];
+
+            for (const candidate of candidates) {
+                const num = toNumberSafe(candidate);
+                if (num > 0) return num;
+            }
+
+            return toNumberSafe(newsItem.articleLikes);
         }
 
         function isPublishedNews(newsItem = {}) {
@@ -8695,6 +8713,7 @@
                 const indicatorClass = n.status === 'draft' ? 'draft' : 'published';
                 const indicatorTitle = n.status === 'draft' ? 'Rascunho' : 'Publicado';
                 const viewsCount = getNewsViewsValue(n);
+                const likesCount = getNewsLikesValue(n);
                 const escapedTitle = (n.title || '').replace(/"/g, '&quot;');
 
                 const imageHtml = n.image
@@ -8712,7 +8731,7 @@
                         <td>${imageHtml}</td>
                         <td class="news-title-cell">
                             <div class="news-title" title="${escapedTitle}">${n.title}</div>
-                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes</div>
+                            <div class="news-meta">Por ${n.author || 'Admin'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes &bull; ${likesCount.toLocaleString('pt-BR')} curtidas</div>
                         </td>
                         <td><span class="category-badge">${n.categoryName || n.category || 'Geral'}</span></td>
                         <td>${date}</td>
@@ -8843,6 +8862,7 @@
                 const indicatorClass = newsItem.status === 'draft' ? 'draft' : 'published';
                 const indicatorTitle = newsItem.status === 'draft' ? 'Rascunho' : 'Publicado';
                 const viewsCount = getNewsViewsValue(newsItem);
+                const likesCount = getNewsLikesValue(newsItem);
                 const sourceDomain = String(newsItem.sourceDomain || '').trim();
                 const escapedTitle = String(newsItem.title || 'Noticia importada').replace(/"/g, '&quot;');
 
@@ -8862,7 +8882,7 @@
                         <td class="news-title-cell">
                             <div class="news-title" title="${escapedTitle}">${newsItem.title || 'Noticia importada'}</div>
                             <div class="news-meta">
-                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes
+                                ${sourceDomain || 'Site externo'} &bull; ${viewsCount.toLocaleString('pt-BR')} visualizacoes &bull; ${likesCount.toLocaleString('pt-BR')} curtidas
                             </div>
                         </td>
                         <td><span class="category-badge">${newsItem.categoryName || newsItem.category || 'Geral'}</span></td>
@@ -11405,6 +11425,12 @@
                     source: importedNewsData.source || 'Importacao URL',
                     importMethod: 'url',
                     views: 0,
+                    articleLikes: toNumberSafe(
+                        importedNewsData.articleLikes ??
+                        importedNewsData.likes ??
+                        importedNewsData.instagramLikes ??
+                        0
+                    ),
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
@@ -12431,6 +12457,7 @@
                     showModal('Sucesso!', `Noticia atualizada como ${status === 'published' ? 'Publicada' : 'Rascunho'}!`, 'success');
                 } else {
                     newsData.views = 0;
+                    newsData.articleLikes = 0;
                     newsData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                     await db.collection('news').add(newsData);
                     showModal('Sucesso!', `Noticia ${status === 'published' ? 'Publicada' : 'Salva como Rascunho'}!`, 'success');
@@ -13994,6 +14021,7 @@
                 instagramMetaUpdatedAt: new Date().toISOString(),
                 gallery: gallery, // Galeria de fotos/videos adicionais
                 views: 0,
+                articleLikes: 0,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 

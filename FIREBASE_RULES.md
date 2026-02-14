@@ -3,7 +3,7 @@
 Use estas regras no Firebase Console para:
 - manter leitura publica de noticias/configuracoes;
 - manter escrita administrativa no painel;
-- permitir que o site publico incremente somente `views` ao abrir noticia/post.
+- permitir que o site publico incremente somente `views` e `articleLikes` nas noticias.
 
 ## Firestore Rules
 
@@ -26,10 +26,16 @@ service cloud.firestore {
         request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
     }
 
+    function isOnlyArticleLikeIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['articleLikes']) &&
+        request.resource.data.articleLikes is int &&
+        request.resource.data.articleLikes == ((resource.data.articleLikes is int) ? resource.data.articleLikes : 0) + 1;
+    }
+
     match /news/{docId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || isOnlyViewIncrement();
+      allow update: if isAdmin() || isOnlyViewIncrement() || isOnlyArticleLikeIncrement();
     }
 
     match /settings/{docId} {
@@ -80,5 +86,5 @@ service firebase.storage {
 ## Observacao
 
 - Com estas regras, visitantes NAO podem editar noticia.
-- Visitantes so conseguem incrementar `views` em +1 por requisicao.
+- Visitantes so conseguem incrementar `views` e `articleLikes` em +1 por requisicao.
 - O painel admin continua com controle total via usuario admin.

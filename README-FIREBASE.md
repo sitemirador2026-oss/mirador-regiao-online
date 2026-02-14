@@ -32,10 +32,16 @@ service cloud.firestore {
         && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
     }
 
+    function isOnlyArticleLikeIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['articleLikes'])
+        && request.resource.data.articleLikes is int
+        && request.resource.data.articleLikes == ((resource.data.articleLikes is int) ? resource.data.articleLikes : 0) + 1;
+    }
+
     match /news/{newsId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || isOnlyViewIncrement();
+      allow update: if isAdmin() || isOnlyViewIncrement() || isOnlyArticleLikeIncrement();
     }
 
     match /settings/{settingId} {
@@ -92,10 +98,16 @@ service cloud.firestore {
         && request.resource.data.views == ((resource.data.views is int) ? resource.data.views : 0) + 1;
     }
 
+    function isOnlyArticleLikeIncrement() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['articleLikes'])
+        && request.resource.data.articleLikes is int
+        && request.resource.data.articleLikes == ((resource.data.articleLikes is int) ? resource.data.articleLikes : 0) + 1;
+    }
+
     match /news/{newsId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      allow update: if isAdmin() || isOnlyViewIncrement();
+      allow update: if isAdmin() || isOnlyViewIncrement() || isOnlyArticleLikeIncrement();
     }
 
     match /settings/{settingId} {
