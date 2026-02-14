@@ -2432,10 +2432,6 @@
             }
 
             #createNewsPage .editor-content .editor-image-actions {
-                right: 0.4rem;
-                left: 0.4rem;
-                top: auto;
-                bottom: 0.4rem;
                 justify-content: flex-end;
             }
 
@@ -5761,6 +5757,8 @@
                         .editor-content figure.editor-image-figure {
                             margin: 1rem 0;
                             max-width: 100%;
+                            display: block;
+                            clear: both;
                             position: relative;
                             border-radius: var(--radius-sm);
                         }
@@ -5823,6 +5821,28 @@
 
                         .editor-image-action-btn:hover {
                             filter: brightness(1.05);
+                        }
+
+                        @media (max-width: 768px) {
+                            #createNewsPage .editor-content .editor-image-actions {
+                                position: static;
+                                margin-top: 0.5rem;
+                                gap: 0.45rem;
+                                justify-content: flex-start;
+                                align-items: center;
+                                flex-wrap: wrap;
+                            }
+
+                            #createNewsPage .editor-content figure.editor-image-figure.is-selected .editor-image-actions {
+                                display: flex;
+                            }
+
+                            #createNewsPage .editor-image-action-btn {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                min-height: 34px;
+                            }
                         }
 
                         .editor-inline-upload-hint {
@@ -5990,7 +6010,7 @@
                                                         title="Limpar Formatacao">Limpar</button>
                                                 </div>
                                                 <div class="editor-toolbar-group">
-                                                    <button type="button" class="is-accent" onclick="newsEditorImageInsertMode='cursor'; triggerEditorImageUpload()"
+                                                    <button type="button" class="is-accent" onclick="newsEditorImageInsertMode='cursor'; newsEditorPendingInsertAfterFigure=null; triggerEditorImageUpload()"
                                                         title="Inserir Imagem">+ Imagem</button>
                                                 </div>
                                             </div>
@@ -8203,6 +8223,7 @@
         let newsEditorSavedRange = null;
         let activeEditorImageFigure = null;
         let newsEditorImageInsertMode = 'cursor';
+        let newsEditorPendingInsertAfterFigure = null;
         const CATEGORY_COLLECTION_NAME = 'categories';
         const DEFAULT_NEWS_CATEGORIES = [
             { id: 'mirador', name: 'Mirador', color: '#1e40af', sortOrder: 10 },
@@ -12011,8 +12032,9 @@
                 event.preventDefault();
                 event.stopPropagation();
                 setActiveEditorImageFigure(figure);
+                newsEditorPendingInsertAfterFigure = figure;
                 newsEditorImageInsertMode = 'after-selected-image';
-                triggerEditorImageUpload();
+                triggerEditorImageUpload({ skipSelectionSave: true });
             });
 
             const removeBtn = document.createElement('button');
@@ -12046,6 +12068,9 @@
                 activeEditorImageFigure.classList.remove('is-selected');
             }
             activeEditorImageFigure = null;
+            if (newsEditorImageInsertMode !== 'after-selected-image') {
+                newsEditorPendingInsertAfterFigure = null;
+            }
         }
 
         function handleEditorClick(event) {
@@ -12146,8 +12171,10 @@
             return true;
         }
 
-        function triggerEditorImageUpload() {
-            saveNewsEditorSelectionRange();
+        function triggerEditorImageUpload(options = {}) {
+            if (!options || !options.skipSelectionSave) {
+                saveNewsEditorSelectionRange();
+            }
             const input = document.getElementById('editorInlineImageInput');
             if (input) input.click();
         }
@@ -12156,15 +12183,23 @@
             const files = Array.from(event?.target?.files || []).filter(file => file?.type?.startsWith('image/'));
             if (files.length === 0) {
                 newsEditorImageInsertMode = 'cursor';
+                newsEditorPendingInsertAfterFigure = null;
                 return;
             }
 
-            if (newsEditorImageInsertMode === 'after-selected-image' && activeEditorImageFigure) {
-                setNewsEditorCaretAfterNode(activeEditorImageFigure);
+            if (newsEditorImageInsertMode === 'after-selected-image') {
+                const editor = document.getElementById('editorContent');
+                const anchorFigure = (newsEditorPendingInsertAfterFigure && editor?.contains(newsEditorPendingInsertAfterFigure))
+                    ? newsEditorPendingInsertAfterFigure
+                    : activeEditorImageFigure;
+                if (anchorFigure) {
+                    setNewsEditorCaretAfterNode(anchorFigure);
+                }
             }
 
             await insertInlineImagesInEditor(files);
             newsEditorImageInsertMode = 'cursor';
+            newsEditorPendingInsertAfterFigure = null;
             if (event?.target) event.target.value = '';
         }
 
@@ -12178,6 +12213,7 @@
             if (imageFiles.length > 0) {
                 event.preventDefault();
                 newsEditorImageInsertMode = 'cursor';
+                newsEditorPendingInsertAfterFigure = null;
                 saveNewsEditorSelectionRange();
                 await insertInlineImagesInEditor(imageFiles);
                 return;
@@ -12189,6 +12225,7 @@
 
             event.preventDefault();
             newsEditorImageInsertMode = 'cursor';
+            newsEditorPendingInsertAfterFigure = null;
             saveNewsEditorSelectionRange();
             await insertInlineImageSourcesInEditor(imageSources);
         }
@@ -12199,6 +12236,7 @@
 
             event.preventDefault();
             newsEditorImageInsertMode = 'cursor';
+            newsEditorPendingInsertAfterFigure = null;
             setNewsEditorCaretFromPoint(event.clientX, event.clientY);
             saveNewsEditorSelectionRange();
             await insertInlineImagesInEditor(files);
@@ -12224,6 +12262,38 @@
         function insertEditorImagePlaceholder(label = 'Enviando imagem...') {
             const editor = document.getElementById('editorContent');
             if (!editor) return null;
+
+            const anchorFigure = newsEditorImageInsertMode === 'after-selected-image'
+                ? (newsEditorPendingInsertAfterFigure || activeEditorImageFigure)
+                : null;
+            if (anchorFigure && editor.contains(anchorFigure)) {
+                const placeholder = document.createElement('span');
+                const placeholderId = `editor-image-placeholder-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                placeholder.id = placeholderId;
+                placeholder.className = 'editor-image-placeholder';
+                placeholder.textContent = label;
+
+                if (anchorFigure.nextSibling) {
+                    anchorFigure.parentNode?.insertBefore(placeholder, anchorFigure.nextSibling);
+                } else {
+                    anchorFigure.parentNode?.appendChild(placeholder);
+                }
+
+                const spacer = document.createTextNode('\n');
+                placeholder.parentNode?.insertBefore(spacer, placeholder.nextSibling);
+
+                const selection = window.getSelection();
+                if (selection) {
+                    const nextRange = document.createRange();
+                    nextRange.setStartAfter(spacer);
+                    nextRange.collapse(true);
+                    selection.removeAllRanges();
+                    selection.addRange(nextRange);
+                    newsEditorSavedRange = nextRange.cloneRange();
+                }
+
+                return placeholderId;
+            }
 
             restoreNewsEditorSelectionRange();
             const selection = window.getSelection();
@@ -12269,6 +12339,7 @@
             ensureEditorImageActions(figure);
             placeholder.replaceWith(figure);
             setActiveEditorImageFigure(figure);
+            newsEditorPendingInsertAfterFigure = figure;
 
             const editor = document.getElementById('editorContent');
             if (editor) {
@@ -12288,6 +12359,9 @@
             if (!activeEditorImageFigure) return;
 
             const figureToRemove = activeEditorImageFigure;
+            if (newsEditorPendingInsertAfterFigure === figureToRemove) {
+                newsEditorPendingInsertAfterFigure = null;
+            }
             const removed = setNewsEditorCaretAfterNode(figureToRemove);
             figureToRemove.remove();
             clearActiveEditorImageFigure();
