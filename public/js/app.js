@@ -3570,7 +3570,7 @@ function createInstagramCard(news) {
         news.comments,
         0
     );
-    const instagramUrl = news.instagramUrl || news.sourceUrl || '#';
+    const instagramUrl = news.instagramUrl || news.sourceUrl || '';
     const rawContent = news.content || news.excerpt || '';
     const content = cleanInstagramCaptionForDisplay(rawContent) || rawContent;
     const profileMeta = normalizeInstagramMeta({
@@ -3687,15 +3687,17 @@ function createInstagramCard(news) {
                     </div>
                     <div class="instagram-card-user">
                         <span class="instagram-card-username" data-id="${news.id}">${profileName}</span>
-                        <svg class="instagram-card-verified" width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                        <svg class="instagram-card-verified" width="14" height="14" viewBox="0 0 24 24" aria-label="Perfil verificado" role="img">
+                            <path fill="#0095f6" d="M12 2.25l2.07 1.37 2.44-.03 1.3 2.06 2.17 1.08-.17 2.44L21.07 12l-1.26 2.08.17 2.44-2.17 1.08-1.3 2.06-2.44-.03L12 21.75l-2.07-1.37-2.44.03-1.3-2.06-2.17-1.08.17-2.44L2.93 12l1.26-2.08-.17-2.44 2.17-1.08 1.3-2.06 2.44.03L12 2.25z"/>
+                            <path fill="#fff" d="M10.28 14.72 8.06 12.5l-1.1 1.1 3.32 3.32 6.76-6.76-1.1-1.1z"/>
                         </svg>
                     </div>
                     <!-- BotÃƒÂ£o fechar (sÃƒÂ³ aparece quando expandido) -->
-                    <button class="instagram-card-close" style="display: none;" onclick="event.stopPropagation(); closeInstagramModal();">
+                    <button class="instagram-card-close" style="display: none;" aria-label="Fechar post" title="Fechar post" onclick="event.stopPropagation(); closeInstagramModal();">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
+                        <span>Fechar post</span>
                     </button>
                 </div>
                 
@@ -3714,20 +3716,20 @@ function createInstagramCard(news) {
                 <!-- AÃƒÂ§ÃƒÂµes com contadores -->
                 <div class="instagram-card-actions">
                     <div class="instagram-card-actions-left">
-                        <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
+                        <button class="instagram-card-action-btn instagram-open-post-btn" onclick="openInstagramPostLink('${news.id}', event)">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
                             </svg>
                             <span class="instagram-likes-count" data-id="${news.id}">${formatNumber(profileMeta.likes)}</span>
                         </button>
-                        <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
+                        <button class="instagram-card-action-btn instagram-open-post-btn" onclick="openInstagramPostLink('${news.id}', event)">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
                             </svg>
                             <span class="instagram-comments-count" data-id="${news.id}">${formatNumber(profileMeta.comments)}</span>
                         </button>
                     </div>
-                    <button class="instagram-card-action-btn" onclick="event.stopPropagation(); window.open('${instagramUrl}', '_blank')">
+                    <button class="instagram-card-action-btn instagram-open-post-btn" onclick="openInstagramPostLink('${news.id}', event)">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
                         </svg>
@@ -3855,10 +3857,13 @@ function openInstagramModal(newsId, cardElement = null) {
     if (!closeBtn) {
         closeBtn = document.createElement('button');
         closeBtn.className = 'instagram-card-close';
+        closeBtn.setAttribute('aria-label', 'Fechar post');
+        closeBtn.setAttribute('title', 'Fechar post');
         closeBtn.innerHTML = `
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
+            <span>Fechar post</span>
         `;
         closeBtn.onclick = (e) => {
             e.stopPropagation();
@@ -3901,17 +3906,15 @@ function openInstagramModal(newsId, cardElement = null) {
     if (likesEl) likesEl.textContent = formatNumber(post.likes || 0);
     if (commentsEl) commentsEl.textContent = formatNumber(post.comments || 0);
 
-    // ATUALIZAR todos os links do Instagram com a URL correta
-    const actionButtons = card.querySelectorAll('.instagram-card-action-btn');
-    actionButtons.forEach(btn => {
-        // Atualizar o onclick para abrir o link correto
-        const newBtn = btn.cloneNode(true);
-        newBtn.onclick = (e) => {
-            e.stopPropagation();
-            window.open(post.instagramUrl, '_blank');
-        };
-        btn.parentNode.replaceChild(newBtn, btn);
+    const openButtons = card.querySelectorAll('.instagram-card-action-btn.instagram-open-post-btn');
+    openButtons.forEach(btn => {
+        btn.onclick = (e) => openInstagramPostLink(newsId, e);
     });
+
+    const shareBtn = card.querySelector('.instagram-card-action-btn.share-btn');
+    if (shareBtn) {
+        shareBtn.onclick = (e) => shareNews(newsId, e);
+    }
 
     // CONFIGURAR GALERIA se houver mÃƒÂºltiplas mÃƒÂ­dias
     setupInstagramGallery(card, post);
@@ -4345,6 +4348,39 @@ function closeInstagramModal() {
         unlockInstagramExpandedPageScroll();
     }
     setInstagramExpandedFocusMode(false);
+}
+
+function resolveInstagramExternalUrl(newsId = '') {
+    const post = instagramPostsData[newsId] || {};
+    const raw = String(post.instagramUrl || post.sourceUrl || '').trim();
+    if (!raw) return '';
+    try {
+        const parsed = new URL(raw, window.location.origin);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+            return parsed.toString();
+        }
+    } catch (_error) { }
+    return '';
+}
+
+function openInstagramPostLink(newsId, event = null) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+
+    const targetUrl = resolveInstagramExternalUrl(newsId);
+    if (!targetUrl) {
+        showToast('Link do post indisponivel no momento.');
+        return;
+    }
+
+    if (isMobileViewport()) {
+        window.location.assign(targetUrl);
+        return;
+    }
+
+    window.open(targetUrl, '_blank', 'noopener');
 }
 
 // FunÃƒÂ§ÃƒÂ£o para compartilhar notÃ­cia

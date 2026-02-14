@@ -1472,18 +1472,34 @@ body {
     display: flex !important;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    background: #f0f0f0;
-    border: none;
-    border-radius: 50%;
+    gap: 0.35rem;
+    min-height: 30px;
+    padding: 0.36rem 0.72rem;
+    background: #f8fafc;
+    border: 1px solid #dbe2ea;
+    border-radius: 999px;
     cursor: pointer;
     margin-left: auto;
     flex-shrink: 0;
+    color: #334155;
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
 }
 
 .instagram-card.expanded .instagram-card-close:hover {
-    background: #e0e0e0;
+    background: #eef2f7;
+    border-color: #cbd5e1;
+}
+
+.instagram-card.expanded .instagram-card-close svg {
+    width: 14px;
+    height: 14px;
+}
+
+.instagram-card.expanded .instagram-card-close span {
+    line-height: 1;
+    white-space: nowrap;
 }
 
 .instagram-card.expanded .instagram-card-title-preview,
@@ -1762,8 +1778,12 @@ body {
 }
 
 .instagram-card-verified {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     color: #0095f6;
     margin-left: 0.25rem;
+    flex-shrink: 0;
 }
 
 /* Corpo do card - Legenda - Escondido em cards compactos */
