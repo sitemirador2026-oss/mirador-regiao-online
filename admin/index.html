@@ -6161,7 +6161,7 @@
                                                 adicionar imagem</div>
                                             <div
                                                 style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                                PNG, JPG (max. 2MB)</div>
+                                                PNG, JPG (compactacao automatica no envio)</div>
                                         </div>
                                         <img id="newsImagePreview" class="featured-image-preview"
                                             style="display: none;">
@@ -12581,8 +12581,9 @@
                 return;
             }
 
-            if (file.size > 2 * 1024 * 1024) {
-                showModal('Erro!', 'Imagem muito grande. Maximo 2MB.', 'error');
+            const MAX_NEWS_COVER_SOURCE_BYTES = 25 * 1024 * 1024;
+            if (file.size > MAX_NEWS_COVER_SOURCE_BYTES) {
+                showModal('Erro!', 'Imagem muito grande para processamento automatico. Maximo 25MB.', 'error');
                 return;
             }
 
