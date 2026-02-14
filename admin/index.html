@@ -6108,19 +6108,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Fonte Externa -->
-                                <div class="editor-sidebar-card">
-                                    <div class="editor-sidebar-title"> Fonte Externa</div>
-                                    <div class="form-group" style="margin-bottom: 0;">
-                                        <input type="url" id="newsExternalUrl" class="form-input"
-                                            placeholder="Cole a URL da noticia (G1, etc.)"
-                                            oninput="handleExternalUrlInput()">
-                                        <div id="newsExternalDomainHint"
-                                            style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <!-- Autor -->
                                 <div class="editor-sidebar-card">
                                     <div class="editor-sidebar-title"> Autor</div>
@@ -11843,7 +11830,6 @@
                 'newsCategory',
                 'newsAuthor',
                 'newsTags',
-                'newsExternalUrl',
                 'newsDate'
             ];
 
@@ -12625,8 +12611,9 @@
             const title = document.getElementById('newsTitle').value.trim();
             let content = getEditorContentHtmlForSave();
             const category = document.getElementById('newsCategory').value;
-            const externalUrl = document.getElementById('newsExternalUrl')?.value.trim() || '';
-            const sourceDomain = normalizeDomainFromUrl(externalUrl);
+            const externalUrlEl = document.getElementById('newsExternalUrl');
+            const externalUrl = externalUrlEl ? String(externalUrlEl.value || '').trim() : '';
+            const sourceDomain = externalUrl ? normalizeDomainFromUrl(externalUrl) : '';
 
             if (!title) {
                 showModal('Erro!', 'O titulo e obrigatorio.', 'error');
@@ -12687,10 +12674,13 @@
                 status: status,
                 featured: false,
                 date: new Date(document.getElementById('newsDate').value).toISOString(),
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                externalUrl: externalUrl,
-                sourceDomain: sourceDomain
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
+
+            if (externalUrlEl) {
+                newsData.externalUrl = externalUrl;
+                newsData.sourceDomain = sourceDomain;
+            }
 
             try {
                 if (editingNewsId) {
