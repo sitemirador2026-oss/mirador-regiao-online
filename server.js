@@ -104,6 +104,40 @@ function sanitizeUploadFolder(value, fallback = 'noticias') {
     return normalized || fallback;
 }
 
+function getFileExtension(fileName = '') {
+    const raw = String(fileName || '').trim().toLowerCase();
+    if (!raw) return '';
+    const dotIndex = raw.lastIndexOf('.');
+    if (dotIndex <= 0 || dotIndex === raw.length - 1) return '';
+    return raw.slice(dotIndex + 1).replace(/[^a-z0-9]/g, '');
+}
+
+function normalizeUploadedContentType(fileType = '', fileName = '') {
+    const type = String(fileType || '').trim().toLowerCase();
+    const ext = getFileExtension(fileName);
+
+    if (ext === 'mp4' || ext === 'm4v' || type === 'video/x-m4v') {
+        return 'video/mp4';
+    }
+    if (ext === 'mov') {
+        return 'video/quicktime';
+    }
+    if (type === 'video/quicktime' && ext === 'mp4') {
+        return 'video/mp4';
+    }
+
+    if (type) return type;
+
+    if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+    if (ext === 'png') return 'image/png';
+    if (ext === 'webp') return 'image/webp';
+    if (ext === 'gif') return 'image/gif';
+    if (ext === 'svg') return 'image/svg+xml';
+    if (ext === 'mov') return 'video/quicktime';
+
+    return 'application/octet-stream';
+}
+
 function getArticleLikesKey(newsId) {
     const safeNewsId = sanitizeNewsId(newsId);
     return safeNewsId ? `${ARTICLE_LIKES_PREFIX}/${safeNewsId}.json` : '';
@@ -1586,13 +1620,14 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             .replace(/[^a-zA-Z0-9]/g, '')
             .toLowerCase() || 'bin';
         const key = `${folder}/${timestamp}-${random}.${extension}`;
+        const normalizedContentType = normalizeUploadedContentType(fileType, req.file.originalname || `arquivo.${extension}`);
 
         // Upload para R2
         const command = new PutObjectCommand({
             Bucket: R2_CONFIG.bucketName,
             Key: key,
             Body: req.file.buffer,
-            ContentType: fileType || 'application/octet-stream',
+            ContentType: normalizedContentType,
             CacheControl: 'public, max-age=31536000, immutable',
             ACL: 'public-read'
         });
@@ -1606,7 +1641,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
             url: publicUrl,
             key: key,
             size: fileSize,
-            type: fileType
+            type: normalizedContentType
         });
 
     } catch (error) {

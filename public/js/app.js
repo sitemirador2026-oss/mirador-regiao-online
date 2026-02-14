@@ -4108,9 +4108,9 @@ function openInstagramVideoPlayer(newsId, event = null, preferredIndex = null, s
             const compatibility = await probeRemoteVideoCompatibilityForIOS(source.url);
             if (activeSourceIndex !== nextIndex) return;
             if (!compatibility.checked || compatibility.isCompatible) return;
-            if (!tryNextSource('codec-unsupported')) {
-                setPlayerErrorState('codec-unsupported');
-            }
+            // Nao bloquear reproducao automaticamente por heuristica de codec.
+            // Alguns videos sao reproduziveis mesmo quando a sonda remota indica incompatibilidade.
+            console.warn('[Instagram] Sonda de codec sinalizou possivel incompatibilidade, mantendo tentativa de reproducao:', compatibility);
         })();
 
         if (autoplay) {
@@ -4465,7 +4465,7 @@ function createInstagramCard(news) {
     const primaryPreviewHtml = primaryMedia.type === 'video'
         ? (useStaticPreviewForVideo
             ? `<img src="${primaryPoster}" alt="${primaryAlt}" loading="lazy" decoding="async" data-instagram-video-poster="true">`
-            : `<video src="${primaryMedia.url}"${primaryPosterAttr} muted playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>`)
+            : `<video src="${primaryMedia.url}"${primaryPosterAttr} muted playsinline webkit-playsinline preload="metadata" data-instagram-card-video="true" onloadedmetadata="primeInstagramCardVideoFrame(this)" oncanplay="primeInstagramCardVideoFrame(this)" onclick="handleInstagramCardVideoClick('${news.id}', event, null, this)"></video>`)
         : `<img src="${primaryMedia.url}" alt="${primaryAlt}" loading="lazy" decoding="async">`;
     const hasGallery = allMedia.length > 1;
     const totalMedia = allMedia.length;
@@ -4793,7 +4793,7 @@ function setupInstagramGallery(card, post) {
 
         imageWrapper.classList.toggle('is-video', primary.type === 'video');
         imageWrapper.innerHTML = primary.type === 'video'
-            ? `<video src="${primary.url}"${primaryPosterAttr} muted playsinline preload="auto" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
+            ? `<video src="${primary.url}"${primaryPosterAttr} muted playsinline webkit-playsinline preload="auto" data-instagram-card-video="true" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)"></video>
                <button type="button" class="instagram-video-play-overlay" onclick="handleInstagramCardVideoClick('${newsId}', event, null, this)" aria-label="Reproduzir video">
                     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
                </button>`

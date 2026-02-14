@@ -77,6 +77,40 @@ function sanitizeUploadFolder(value, fallback = 'noticias') {
   return normalized || fallback;
 }
 
+function getFileExtension(fileName = '') {
+  const raw = String(fileName || '').trim().toLowerCase();
+  if (!raw) return '';
+  const dotIndex = raw.lastIndexOf('.');
+  if (dotIndex <= 0 || dotIndex === raw.length - 1) return '';
+  return raw.slice(dotIndex + 1).replace(/[^a-z0-9]/g, '');
+}
+
+function normalizeUploadedContentType(fileType = '', fileName = '') {
+  const type = String(fileType || '').trim().toLowerCase();
+  const ext = getFileExtension(fileName);
+
+  if (ext === 'mp4' || ext === 'm4v' || type === 'video/x-m4v') {
+    return 'video/mp4';
+  }
+  if (ext === 'mov') {
+    return 'video/quicktime';
+  }
+  if (type === 'video/quicktime' && ext === 'mp4') {
+    return 'video/mp4';
+  }
+
+  if (type) return type;
+
+  if (ext === 'jpg' || ext === 'jpeg') return 'image/jpeg';
+  if (ext === 'png') return 'image/png';
+  if (ext === 'webp') return 'image/webp';
+  if (ext === 'gif') return 'image/gif';
+  if (ext === 'svg') return 'image/svg+xml';
+  if (ext === 'mov') return 'video/quicktime';
+
+  return 'application/octet-stream';
+}
+
 function getArticleLikesKey(newsId) {
   const safeNewsId = sanitizeNewsId(newsId);
   return safeNewsId ? `${ARTICLE_LIKES_PREFIX}/${safeNewsId}.json` : '';
@@ -1651,11 +1685,12 @@ export default {
         const timestamp = Date.now();
         const safeName = String(file.name || 'arquivo').replace(/[^a-zA-Z0-9.-]/g, '-');
         const key = `${folder}/${timestamp}-${safeName}`;
+        const normalizedContentType = normalizeUploadedContentType(fileType, safeName);
 
         // Fazer upload para R2
         await env.R2_BUCKET.put(key, file.stream(), {
           httpMetadata: {
-            contentType: fileType || 'application/octet-stream',
+            contentType: normalizedContentType,
             cacheControl: 'public, max-age=31536000, immutable'
           }
         });
@@ -1666,7 +1701,7 @@ export default {
             url: `https://pub-5b94009c2499437d9f5b2fb46285265a.r2.dev/${key}`,
             key: key,
             size: fileSize,
-            type: fileType
+            type: normalizedContentType
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );

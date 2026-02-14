@@ -3684,7 +3684,7 @@
                                         <p style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);">
                                             Clique ou arraste a imagem aqui</p>
                                         <p style="font-size: 0.8125rem; color: var(--text-muted); margin-top: 0.25rem;">
-                                            JPG, PNG, WebP, MP4, MOV, WebM (videos acima de 10MB sao comprimidos em 70%)</p>
+                                            JPG, PNG, WebP, MP4, MOV, WebM (upload original, sem conversao automatica)</p>
                                     </div>
 
                                     <!-- Preview da Imagem -->
@@ -3744,7 +3744,7 @@
                                         </svg>
                                         <p style="font-size: 0.875rem; color: var(--text-muted); margin: 0;">
                                             Clique ou arraste fotos/videos aqui<br>
-                                            <small>Max: 5 itens. Imagens serao comprimidas e videos acima de 10MB serao reduzidos em 70%.</small>
+                                            <small>Max: 5 itens. Imagens serao comprimidas; videos sao enviados no formato original.</small>
                                         </p>
                                     </div>
 
@@ -14633,6 +14633,37 @@
             return new File([blob], filename, { type: blob.type || 'image/jpeg', lastModified: Date.now() });
         }
 
+        function normalizeInstagramVideoFileForUpload(file) {
+            if (!(file instanceof File)) return file;
+
+            const originalName = String(file.name || 'video.mp4').trim() || 'video.mp4';
+            const name = originalName;
+            const lowerName = name.toLowerCase();
+            const originalType = String(file.type || '').toLowerCase();
+
+            let normalizedType = originalType;
+            if (lowerName.endsWith('.mp4') || lowerName.endsWith('.m4v')) {
+                normalizedType = 'video/mp4';
+            } else if (lowerName.endsWith('.mov')) {
+                normalizedType = 'video/quicktime';
+            } else if (originalType === 'video/x-m4v') {
+                normalizedType = 'video/mp4';
+            }
+
+            if (!normalizedType.startsWith('video/')) {
+                normalizedType = 'video/mp4';
+            }
+
+            if (normalizedType === originalType) {
+                return file;
+            }
+
+            return new File([file], name, {
+                type: normalizedType,
+                lastModified: Number(file.lastModified || Date.now())
+            });
+        }
+
         function getSupportedVideoMimeType() {
             if (typeof MediaRecorder === 'undefined') return '';
             const candidates = [
@@ -15356,36 +15387,12 @@
                         throw new Error(`Video muito grande para processar. Limite: ${formatBytesAdmin(MAX_INSTAGRAM_VIDEO_RAW_UPLOAD_BYTES)}.`);
                     }
 
-                    const preparedVideo = await prepareInstagramVideoForUpload(file, {
-                        onProgress: (progress) => {
-                            const needsSizeCompression = progress?.needsSizeCompression === true;
-                            const targetBytes = Number(progress?.targetBytes) || getInstagramVideoCompressionTargetBytes(file.size);
-                            const title = needsSizeCompression
-                                ? `Comprimindo video em ${INSTAGRAM_VIDEO_COMPRESSION_REDUCTION_PERCENT}%`
-                                : 'Convertendo video para MP4 compativel';
-                            const attemptLabel = progress?.attempt && progress?.totalAttempts
-                                ? `Tentativa ${progress.attempt}/${progress.totalAttempts}`
-                                : (progress?.phase === 'transcode_done' ? 'Finalizado' : 'Processando');
-                            const detail = needsSizeCompression
-                                ? `${attemptLabel} - ${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(targetBytes)}`
-                                : `${attemptLabel} - Gerando codec H264 para celular`;
-                            renderUploadProgressState(uploadArea, {
-                                title,
-                                detail,
-                                percent: progress?.percent || 0
-                            });
-                        }
+                    const uploadVideoFile = normalizeInstagramVideoFileForUpload(file);
+                    renderUploadProgressState(uploadArea, {
+                        title: 'Preparando video para upload...',
+                        detail: formatBytesAdmin(uploadVideoFile.size),
+                        percent: 45
                     });
-
-                    if (preparedVideo.skippedSizeCompression) {
-                        console.warn('[Admin] Compressao por tamanho indisponivel neste navegador; upload sem compressao.');
-                        renderUploadProgressState(uploadArea, {
-                            title: 'Enviando video sem compressao',
-                            detail: 'Codec ja compativel. Este navegador nao suporta compressao MP4 segura.',
-                            percent: 45
-                        });
-                    }
-                    const uploadVideoFile = preparedVideo.uploadFile;
 
                     renderUploadProgressState(uploadArea, {
                         title: 'Enviando video...',
@@ -15477,39 +15484,13 @@
 
                         let uploadFile = file;
                         if (isVideo) {
-                            try {
-                                const preparedVideo = await prepareInstagramVideoForUpload(file, {
-                                    onProgress: (progress) => {
-                                        const needsSizeCompression = progress?.needsSizeCompression === true;
-                                        const targetBytes = Number(progress?.targetBytes) || getInstagramVideoCompressionTargetBytes(file.size);
-                                        const title = needsSizeCompression
-                                            ? `Comprimindo ${file.name}`
-                                            : `Convertendo ${file.name}`;
-                                        const attemptLabel = progress?.attempt && progress?.totalAttempts
-                                            ? `Tentativa ${progress.attempt}/${progress.totalAttempts}`
-                                            : (progress?.phase === 'transcode_done' ? 'Finalizado' : 'Processando');
-                                        const detail = needsSizeCompression
-                                            ? `${attemptLabel} - ${formatBytesAdmin(file.size)} -> ${formatBytesAdmin(targetBytes)}`
-                                            : `${attemptLabel} - MP4 H264 para celular`;
-                                        renderUploadProgressState(uploadArea, {
-                                            title,
-                                            detail,
-                                            percent: progress?.percent || 0,
-                                            compact: true
-                                        });
-                                    }
-                                });
-
-                                if (preparedVideo.skippedSizeCompression) {
-                                    console.warn(`[Admin] Compressao por tamanho indisponivel para "${file.name}"; upload sem compressao.`);
-                                }
-
-                                uploadFile = preparedVideo.uploadFile;
-                            } catch (compressError) {
-                                console.warn(`[Admin] Falha no processamento do video da galeria para "${file.name}":`, compressError?.message || compressError);
-                                showModal('Erro', `Nao foi possivel preparar "${file.name}" para celular.`, 'error');
-                                continue;
-                            }
+                            uploadFile = normalizeInstagramVideoFileForUpload(file);
+                            renderUploadProgressState(uploadArea, {
+                                title: `Preparando ${file.name}...`,
+                                detail: formatBytesAdmin(uploadFile.size),
+                                percent: 45,
+                                compact: true
+                            });
                         } else {
                             const compressedDataUrl = await compressImage(file, 1280, 1280, 0.75);
                             uploadFile = await dataUrlToFile(compressedDataUrl, `${Date.now()}-instagram-gallery.jpg`);
